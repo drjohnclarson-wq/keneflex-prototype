@@ -1,1 +1,342 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Keneflex Prototype 0.4.1</title><meta name="description" content="Keneflex full-solution formative research prototype"><link rel="stylesheet" href="styles.css?v=041"></head><body><header class="topbar"><div class="wrap nav"><div class="logo">KENEFLEX</div><div class="navright"><span class="navpill">Research preview</span></div></div></header><main id="marketing"><div class="wrap hero"><div><div class="eyebrow">Consumer health, made easier</div><h1>Start with what’s bothering you.</h1><p class="lede">Tell Keneflex what’s going on in your own words. We’ll ask only the questions that can change the decision, then build a product solution around what you told us.</p><div class="heroactions"><button class="cta" data-start>Tell Keneflex what’s going on →</button><span class="micro">Research prototype • no purchase will be made</span></div><div class="welcomeMini"><div class="principle"><div class="picon">1</div><h3>Describe it naturally</h3><p>Start with the problem rather than a product category.</p></div><div class="principle"><div class="picon">2</div><h3>Answer what matters</h3><p>Keneflex narrows only the details that can change the decision.</p></div><div class="principle"><div class="picon">3</div><h3>Review the solution</h3><p>See the selected products, fit and reasoning before deciding what to do next.</p></div></div></div><div class="visual" aria-hidden="true"><div class="orb one"><div class="mockProduct"><img src="https://www.neo-g.com/cdn/shop/files/722-13-Box_R_1080x.png?v=1725268865" alt=""></div></div><div class="orb two"><div class="kicker">Start with the problem</div><h3 style="font-size:25px;margin:10px 0 8px">“My wrist and thumb have been bothering me…”</h3><p class="micro" style="font-size:13px;line-height:1.45">Keneflex turns your description into the few details needed to make a product decision.</p></div><div class="orb three"><div class="bigstat">1</div><div class="statlabel">solution to review</div></div></div></div></main><section id="app" class="appshell"><div class="wrap appgrid"><aside class="rail"><div class="railTitle">Building your solution</div><div class="railStep active" data-rail="describe"><span class="railDot"></span>Tell us what’s going on</div><div class="railStep" data-rail="narrow"><span class="railDot"></span>Narrow what matters</div><div class="railStep" data-rail="fit"><span class="railDot"></span>Confirm fit & constraints</div><div class="railStep" data-rail="compare"><span class="railDot"></span>Compare contenders</div><div class="railStep" data-rail="solution"><span class="railDot"></span>Your solution</div></aside><div class="panel"><div class="progress"><i id="prog"></i></div><div class="screen active" id="describe"><div class="kicker">Start anywhere</div><h2 class="question">What’s going on?</h2><p class="help">Describe it in your own words—like you would explain it to a knowledgeable friend. Include what you’re trying to get back to if that matters.</p><textarea id="story" class="textbox" placeholder="What’s bothering you? What are you trying to do?"></textarea><div class="bottomrow"><button class="back" data-home>← Home</button><button class="next" id="storyNext" disabled>Help me figure this out →</button></div></div><div class="screen" id="heard"><div class="kicker">Keneflex is narrowing the problem</div><h2 class="question">Here’s what I heard.</h2><div class="quote" id="storyQuote"></div><div class="heard"><div class="heardCard"><div class="heardLabel">Area</div><div class="heardValue" id="heardArea">—</div></div><div class="heardCard"><div class="heardLabel">Timing</div><div class="heardValue" id="heardTiming">—</div></div><div class="heardCard"><div class="heardLabel">Activity that matters</div><div class="heardValue" id="heardActivity">—</div></div><div class="heardCard"><div class="heardLabel">Priority</div><div class="heardValue" id="heardPriority">—</div></div></div><div class="noteBox">If I missed something important, edit your description. Otherwise I’ll continue with the few details that can change the product decision.</div><div class="bottomrow"><button class="back" data-go="describe">← Edit</button><button class="next" data-go="safety">That’s right →</button></div></div><div class="screen" id="safety"><div class="kicker">Safety first</div><h2 class="question">Before I recommend anything, I need to rule out reasons not to shop.</h2><p class="help">Did this begin with a significant fall/direct blow, obvious deformity, inability to move the hand, new persistent numbness, or an open wound?</p><div class="choices"><button class="choice" data-go="provider"><span>No, none of those apply<small>Continue.</small></span><span class="arr">→</span></button><button class="choice" data-go="stop"><span>Yes / I’m not sure<small>Stop the product flow.</small></span><span class="arr">→</span></button></div></div><div class="screen" id="provider"><div class="kicker">One constraint that can change the answer</div><h2 class="question">Has a healthcare provider told you to use a specific product or type of support?</h2><div class="choices"><button class="choice" data-go="existing"><span>No</span><span class="arr">→</span></button><button class="choice" data-go="providerInfo"><span>Yes</span><span class="arr">→</span></button></div></div><div class="screen" id="providerInfo"><div class="kicker">Provider-directed path</div><h2 class="question">That instruction would become a constraint.</h2><p class="help">An exact named product would not be substituted. A required type or feature would constrain the comparison set.</p><div class="bottomrow"><button class="back" data-go="provider">← Back</button><button class="next" data-go="existing">Continue prototype →</button></div></div><div class="screen" id="existing"><div class="kicker">Check before buying</div><h2 class="question">Do you already own a wrist/thumb support that might work?</h2><p class="help">If you already have something appropriate, another purchase may not be necessary.</p><div class="choices"><button class="choice" data-smart="1"><span>No</span><span class="arr">→</span></button><button class="choice" data-go="keep"><span>Yes<small>We’d assess type, fit, condition and remaining function first.</small></span><span class="arr">→</span></button></div></div><div class="screen" id="keep"><div class="kicker">Existing-product path</div><h2 class="question">If the one you own still does the job, the answer can be KEEP.</h2><div class="noteBox">The finished experience would evaluate its type, fit, condition and remaining function before recommending another purchase.</div><div class="bottomrow"><button class="back" data-go="existing">← Back</button><button class="next" data-smart="1">Continue primary scenario →</button></div></div><div class="screen" id="location"><div class="kicker">This can change the product</div><h2 class="question">Where do you need the support most?</h2><div class="choices"><button class="choice" data-set="loc:both" data-smart="1"><span>Both wrist and thumb</span><span class="arr">→</span></button><button class="choice" data-set="loc:wrist" data-smart="1"><span>Mostly wrist</span><span class="arr">→</span></button><button class="choice" data-set="loc:thumb" data-smart="1"><span>Mostly thumb</span><span class="arr">→</span></button></div></div><div class="screen" id="activity"><div class="kicker">Match the solution to real life</div><h2 class="question">What do you most want to be able to do while using support?</h2><div class="choices"><button class="choice" data-set="activity:pickleball" data-smart="1"><span>Play pickleball / stay active</span><span class="arr">→</span></button><button class="choice" data-set="activity:daily" data-smart="1"><span>Everyday tasks / work</span><span class="arr">→</span></button><button class="choice" data-set="activity:rest" data-smart="1"><span>Mostly rest / protect it</span><span class="arr">→</span></button></div></div><div class="screen" id="mobility"><div class="kicker">Tradeoff that changes the winner</div><h2 class="question">Which matters more right now?</h2><div class="choices"><button class="choice" data-set="stability:flex" data-smart="1"><span>Preserve as much useful movement as practical</span><span class="arr">→</span></button><button class="choice" data-set="stability:moderate" data-smart="1"><span>More stabilization, even if I lose some movement</span><span class="arr">→</span></button><button class="choice" data-set="stability:strong" data-smart="1"><span>Strong motion limitation is the priority</span><span class="arr">→</span></button></div></div><div class="screen" id="size"><div class="kicker">Fit can change the recommendation</div><h2 class="question">Measure around your wrist.</h2><p class="help">Enter the circumference in inches.</p><input class="measure" id="wrist" type="number" min="4" max="12" step=".1" value="7.0"><div class="bottomrow"><button class="back" data-go="mobility">← Back</button><button class="next" id="sizeNext">Build my solution →</button></div></div><div class="screen" id="working"><div class="kicker">Matching your solution</div><h2 class="question">I have what I need. I’m comparing the options now.</h2><p class="help">These are the checks changing the recommendation for this scenario.</p><div class="worklist"><div class="workitem"><span class="check">✓</span><div><strong>Safety constraints checked</strong><div class="micro">The standardized path did not report a red flag.</div></div></div><div class="workitem"><span class="check">✓</span><div><strong>Activity and movement priority matched</strong><div class="micro">Pickleball plus preserving movement weighs against unnecessary rigid restriction.</div></div></div><div class="workitem"><span class="check">✓</span><div><strong>Manufacturer fit checked</strong><div class="micro">A 7.0-inch wrist fits the selected manufacturer size.</div></div></div><div class="workitem"><span class="check">✓</span><div><strong>Serious contenders compared</strong><div class="micro">Flexible support is being compared against more restrictive thumb-stabilization options.</div></div></div><div class="workitem"><span class="check">✓</span><div><strong>Companion items screened</strong><div class="micro">Only a simple recovery component is carried forward.</div></div></div></div><button class="next" style="width:100%" data-solution>Show me the solution →</button></div><div class="screen" id="stop"><div class="kicker">Safety changed the path</div><h2 class="question">I’d stop the shopping flow here.</h2><p class="help">In a finished experience, Keneflex would explain the appropriate next step rather than force a product sale.</p><button class="next" data-go="safety">← Return to test path</button></div></div></div></section><section id="solution" class="appshell"><div class="solutionShell"><div class="solutionHead"><div><div class="eyebrow" style="color:#b6d0c7">Your Keneflex solution • specific to you</div><h1>Here’s what I’d do.</h1><p>Support the activity you want to keep doing, add one simple recovery component, and avoid unnecessary restriction or add-ons.</p></div><div class="solutionMeta"><div class="meta"><b>Problem pattern</b><span>Wrist + thumb • ~3 weeks</span></div><div class="meta"><b>Priority</b><span>Pickleball + useful movement</span></div><div class="meta"><b>Fit input</b><span>7.0-inch wrist</span></div><div class="meta"><b>Provider constraint</b><span>None in test scenario</span></div></div></div><div class="solutionBody"><div class="maincol"><div class="block"><div class="prodtag">1 · Primary support</div><div class="product"><div class="pimage"><img src="https://www.neo-g.com/cdn/shop/files/722-13-Box_R_1080x.png?v=1725268865" alt="Neo G Airflow Wrist and Thumb Support" data-fallback="Neo G Airflow|Wrist & Thumb Support"></div><div><div class="prodname">Neo G Airflow Wrist & Thumb Support</div><div><span class="price">$19.99</span><span class="sizepill">Medium • Black</span></div><ul class="reasonlist"><li><strong>Movement-first:</strong> flexible compression rather than rigid thumb stays.</li><li><strong>Activity match:</strong> intended for active/sporting use.</li><li><strong>Fit match:</strong> 7.0 inches falls inside the Medium size range used for this prototype.</li></ul></div></div></div><div class="block"><div class="prodtag">2 · Recovery component</div><div class="product"><div class="pimage"><img src="https://trkmedicalproducts.com/cdn/shop/products/41_999x.jpg?v=1626891716" alt="Polar Soft Ice wrist wrap" data-fallback="Polar Soft Ice|Wrist Wrap"></div><div><div class="prodname">Polar Soft Ice Wrist Wrap</div><div><span class="price">$21.00</span><span class="sizepill">Universal</span></div><ul class="reasonlist"><li>Reusable hot/cold pack held in a wrist wrap.</li><li>Adds an after-activity recovery option without another restrictive brace.</li><li>No additional health products were added without a reason from the intake.</li></ul></div></div></div><div class="block"><h2>Your simple plan</h2><div class="timeline"><div class="tstep"><div class="tnum">During activity</div><b>Use the selected support</b><span>Use it when support is needed and the fit remains comfortable.</span></div><div class="tstep"><div class="tnum">After activity</div><b>Use the recovery component if appropriate</b><span>Follow the product directions if hot/cold therapy is comfortable and appropriate.</span></div><div class="tstep"><div class="tnum">Monitor</div><b>Reconsider if things change</b><span>New trauma, numbness, worsening function, provider instructions or poor fit change the decision.</span></div></div></div><details class="block disclosure"><summary>See what I ruled out and why</summary><div class="inside"><h2>Why this support won</h2><div class="rejects"><div class="reject"><div style="width:62px;height:72px;border-radius:12px;background:#edf6e8;display:flex;align-items:center;justify-content:center;font-weight:900">✓</div><div><div class="rejectName">Neo G Airflow</div><div class="rejectWhy">Flexible, sport-compatible and size-matched to the scenario.</div></div></div><div class="reject"><div style="width:62px;height:72px;border-radius:12px;background:#f3f1ee;display:flex;align-items:center;justify-content:center;font-weight:900">×</div><div><div class="rejectName">FUTURO Deluxe Thumb Stabilizer</div><div class="rejectWhy">Adds more thumb-specific stabilization than the movement-first scenario calls for.</div></div></div><div class="reject"><div style="width:62px;height:72px;border-radius:12px;background:#f3f1ee;display:flex;align-items:center;justify-content:center;font-weight:900">×</div><div><div class="rejectName">Mueller Reversible Thumb Stabilizer</div><div class="rejectWhy">More rigid thumb motion limitation than requested.</div></div></div><div class="reject"><div style="width:62px;height:72px;border-radius:12px;background:#edf3f0;display:flex;align-items:center;justify-content:center;font-weight:900">+</div><div><div class="rejectName">More products?</div><div class="rejectWhy">Not unless another component solves a need the intake actually identified.</div></div></div></div></div></details><details class="block disclosure"><summary>See evidence confidence & uncertainty</summary><div class="inside"><div class="conf"><div class="heardCard"><div class="heardLabel">Fit facts</div><div class="heardValue">High confidence</div><div class="micro" style="margin-top:5px">A defined manufacturer size contains the test measurement.</div></div><div class="heardCard"><div class="heardLabel">Use-case match</div><div class="heardValue">High confidence</div><div class="micro" style="margin-top:5px">Product architecture matches the activity and movement priorities.</div></div><div class="heardCard"><div class="heardLabel">Symptom outcome</div><div class="heardValue">Not known</div><div class="micro" style="margin-top:5px">A product match cannot guarantee symptom improvement.</div></div></div></div></details><div class="block"><h2>Ask Keneflex about this pick</h2><div class="ask"><button data-answer="a1">Why not a more rigid brace? <span class="arr">+</span></button><div class="answer" id="a1">Because preserving useful movement is a stated priority. A more rigid option would become more attractive only if stronger stabilization became the dominant need.</div><button data-answer="a2">Is this just the most popular product? <span class="arr">+</span></button><div class="answer" id="a2">No. The selection shown here is based on scenario fit, product architecture and sizing—not popularity alone.</div><button data-answer="a3">What would make you change this recommendation? <span class="arr">+</span></button><div class="answer" id="a3">Provider instructions, a different location of need, stronger stabilization priority, poor fit, new trauma, persistent numbness, worsening function, or an existing product that already solves the need.</div></div></div></div><aside class="sidecol"><div class="block totalcard"><div class="kicker">Solution total</div><div class="total">$40.99</div><div class="totalcopy">$19.99 support + $21.00 wrist wrap. Prototype pricing can change; tax and shipping are not included.</div></div><div class="block"><div class="kicker">What I did not add</div><div class="nosell" style="margin-top:12px"><span class="chip">No extra brace</span><span class="chip">No oral analgesic</span><span class="chip">No supplement</span><span class="chip">No topical</span><span class="chip">No sleep aid</span></div><p class="disclaimer">Those components were not justified by the test intake.</p></div><details class="block disclosure"><summary>Source transparency</summary><div class="inside"><p class="disclaimer" style="font-size:12px">Product facts in this research prototype are based on manufacturer information for the selected support, recovery wrap and comparison products.</p></div></details><div class="block"><button class="buy" id="cartBtn">Put my solution in my cart →</button><button id="cartBtnMobile" style="display:none">Continue</button><p class="disclaimer">Research preview does not make a purchase.</p></div></aside></div></div></section><section id="checkout" class="appshell"><div class="checkout"><div class="kicker">Decision complete</div><h2 class="question">Your solution is ready.</h2><p class="help">A finished Keneflex experience would carry the exact selection into checkout. Purchasing stops here in this research preview.</p><div class="cartrow"><div style="width:70px;height:70px;border-radius:12px;background:#f0f5f2;display:flex;align-items:center;justify-content:center;font-weight:900">1</div><div><div class="cartname">Neo G Airflow Wrist & Thumb Support</div><div class="cartmeta">Medium • Black • Qty 1</div></div><div class="cartprice">$19.99</div></div><div class="cartrow"><div style="width:70px;height:70px;border-radius:12px;background:#e5f1f4;display:flex;align-items:center;justify-content:center;font-weight:900">2</div><div><div class="cartname">Polar Soft Ice Wrist Wrap</div><div class="cartmeta">Universal • Qty 1</div></div><div class="cartprice">$21.00</div></div><div class="cartrow" style="border-bottom:0"><div></div><div class="cartname">Prototype subtotal</div><div class="cartprice">$40.99</div></div><div class="endnote"><strong>Stop here.</strong><br>Please tell the moderator what you would do next if this were a real health-product decision. Do not research the products yet.</div></div></section><script src="app.js?v=041"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Keneflex Prototype 0.4.2</title>
+<meta name="description" content="Keneflex full-solution formative research prototype">
+<link rel="stylesheet" href="styles.css?v=042">
+</head>
+<body>
+<header class="topbar">
+ <div class="wrap nav">
+  <div class="logo">KENEFLEX</div>
+  <div class="navright"><a href="#how">How it works</a><a href="#trust">Our approach</a><span class="navpill">Research preview</span></div>
+ </div>
+</header>
+
+<main id="marketing">
+ <div class="wrap hero">
+  <div>
+   <div class="eyebrow">Consumer health, made easier</div>
+   <h1>Start with what’s bothering you.</h1>
+   <p class="lede">Tell Keneflex what’s going on in your own words. We’ll ask only the questions that can change the decision, then build a product solution around what you told us.</p>
+   <div class="heroactions"><button class="cta" data-start>Tell Keneflex what’s going on →</button><span class="micro">Research prototype • no purchase will be made</span></div>
+   <div class="welcomeMini">
+    <div class="principle"><div class="picon">1</div><h3>Describe it naturally</h3><p>Start with the problem rather than a product category.</p></div>
+    <div class="principle"><div class="picon">2</div><h3>Answer what matters</h3><p>Keneflex narrows only the details that can change the decision.</p></div>
+    <div class="principle"><div class="picon">3</div><h3>Review the solution</h3><p>See the selected products, fit and reasoning before deciding what to do next.</p></div>
+   </div>
+  </div>
+  <div class="visual" aria-hidden="true">
+   <div class="orb one"><div class="homeSignal"><div class="kicker">Start with the problem</div><div class="signalQuote">“Something in my hand has been bothering me and I’m not sure what I need.”</div><div class="signalLine"><span>Keneflex</span><b>Understands → narrows → builds the solution</b></div></div></div>
+   <div class="orb two"><div class="kicker">You don’t need the product name</div><h3 style="font-size:25px;margin:10px 0 8px">Tell us what’s going on.</h3><p class="micro" style="font-size:13px;line-height:1.45">We’ll figure out which details matter before we ever show you a product.</p></div>
+   <div class="orb three"><div class="kicker">The output</div><div class="bigstat">1</div><div class="statlabel">complete solution, not a shelf of choices</div></div>
+  </div>
+ </div>
+</main>
+
+<section id="app" class="appshell">
+ <div class="wrap appgrid">
+  <aside class="rail">
+   <div class="railTitle">Building your solution</div>
+   <div class="railStep active" data-rail="describe"><span class="railDot"></span>Tell us what’s going on</div>
+   <div class="railStep" data-rail="narrow"><span class="railDot"></span>Narrow what matters</div>
+   <div class="railStep" data-rail="fit"><span class="railDot"></span>Confirm fit & constraints</div>
+   <div class="railStep" data-rail="compare"><span class="railDot"></span>Compare contenders</div>
+   <div class="railStep" data-rail="solution"><span class="railDot"></span>Your solution</div>
+  </aside>
+  <div class="panel">
+   <div class="progress"><i id="prog"></i></div>
+
+   <div class="screen active" id="describe">
+    <div class="kicker">Start anywhere</div>
+    <h2 class="question">What’s going on?</h2>
+    <p class="help">Describe it in your own words—like you would explain it to a knowledgeable friend. Include what you’re trying to get back to if that matters.</p>
+    <textarea id="story" class="textbox" placeholder="Example: What’s bothering you? When did it start? What are you trying to do?"></textarea>
+    <div class="bottomrow"><button class="back" data-home>← Home</button><button class="next" id="storyNext" disabled>Help me figure this out →</button></div>
+   </div>
+
+   <div class="screen" id="heard">
+    <div class="kicker">Keneflex is narrowing the problem</div>
+    <h2 class="question">Here’s what I heard.</h2>
+    <div class="quote" id="storyQuote"></div>
+    <div class="heard">
+     <div class="heardCard"><div class="heardLabel">Area</div><div class="heardValue" id="heardArea">—</div></div>
+     <div class="heardCard"><div class="heardLabel">Timing</div><div class="heardValue" id="heardTiming">—</div></div>
+     <div class="heardCard"><div class="heardLabel">Activity that matters</div><div class="heardValue" id="heardActivity">—</div></div>
+     <div class="heardCard"><div class="heardLabel">Priority</div><div class="heardValue" id="heardPriority">—</div></div>
+    </div>
+    <div class="noteBox">If I missed something important, edit your description. Otherwise I’ll continue with only the missing details that can change the product decision or the self-care plan.</div>
+    <div class="bottomrow"><button class="back" data-go="describe">← Edit</button><button class="next" data-go="safety">That’s right →</button></div>
+   </div>
+
+   <div class="screen" id="safety">
+    <div class="kicker">Safety first</div><h2 class="question">Before I recommend anything, I need to rule out reasons not to shop.</h2>
+    <p class="help">Did this begin with a significant fall/direct blow, obvious deformity, inability to move the hand, a new persistent numbness, or an open wound?</p>
+    <div class="choices">
+     <button class="choice" data-go="provider"><span>No, none of those apply<small>Continue building the product solution.</small></span><span class="arr">→</span></button>
+     <button class="choice" data-go="stop"><span>Yes / I’m not sure<small>Keneflex should stop commerce here.</small></span><span class="arr">→</span></button>
+    </div>
+   </div>
+
+   <div class="screen" id="provider">
+    <div class="kicker">Protect provider instructions</div><h2 class="question">Has a healthcare provider told you to use a specific product or specific type of support?</h2>
+    <div class="choices">
+     <button class="choice" data-go="existing"><span>No<small>Keneflex can personalize the product choice.</small></span><span class="arr">→</span></button>
+     <button class="choice" data-go="providerInfo"><span>Yes<small>Those instructions become hard constraints.</small></span><span class="arr">→</span></button>
+    </div>
+   </div>
+
+   <div class="screen" id="providerInfo">
+    <div class="kicker">Provider-directed path</div><h2 class="question">Keneflex would preserve that instruction.</h2>
+    <p class="help">An exact named product would not be substituted. A required type or feature would constrain the comparison set. A broad instruction such as “wrist brace” would allow personalization only inside that boundary.</p>
+    <div class="noteBox">Keneflex would continue only inside the provider constraint rather than substituting around it.</div>
+    <div class="bottomrow"><button class="back" data-go="provider">← Back</button><button class="next" data-go="existing">Continue prototype →</button></div>
+   </div>
+
+   <div class="screen" id="existing">
+    <div class="kicker">Check before buying</div><h2 class="question">Do you already own a wrist/thumb support that might work?</h2>
+    <p class="help">Keneflex should check what you own before adding another product to the cart.</p>
+    <div class="choices">
+     <button class="choice" data-smart="1"><span>No<small>Continue to product matching.</small></span><span class="arr">→</span></button>
+     <button class="choice" data-go="keep"><span>Yes<small>We’d assess type, fit, condition, hygiene and remaining function first.</small></span><span class="arr">→</span></button>
+    </div>
+   </div>
+
+   <div class="screen" id="keep">
+    <div class="kicker">A sale is not always the answer</div><h2 class="question">If the one you own is still appropriate, Keneflex should tell you to keep it.</h2>
+    <div class="noteBox">If the product you already own is still appropriate, Keneflex can finish with KEEP rather than creating a new purchase.</div>
+    <div class="bottomrow"><button class="back" data-go="existing">← Back</button><button class="next" data-smart="1">Continue primary scenario →</button></div>
+   </div>
+
+   <div class="screen" id="location">
+    <div class="kicker">One question because it can change the product</div><h2 class="question">Where do you need the support most?</h2>
+    <div class="choices">
+     <button class="choice" data-set="loc:both" data-smart="1"><span>Both wrist and thumb<small>Use this if both areas matter.</small></span><span class="arr">→</span></button>
+     <button class="choice" data-set="loc:wrist" data-smart="1"><span>Mostly wrist</span><span class="arr">→</span></button>
+     <button class="choice" data-set="loc:thumb" data-smart="1"><span>Mostly thumb</span><span class="arr">→</span></button>
+    </div>
+   </div>
+
+   <div class="screen" id="timing">
+    <div class="kicker">Timing changes the context</div><h2 class="question">How long has this been going on?</h2>
+    <p class="help">I’m asking because a brand-new injury and a problem that has been building for weeks should not automatically get the same plan.</p>
+    <div class="choices">
+     <button class="choice" data-set="timing:fewdays" data-smart="1"><span>A few days or less</span><span class="arr">→</span></button>
+     <button class="choice" data-set="timing:1to2weeks" data-smart="1"><span>About 1–2 weeks</span><span class="arr">→</span></button>
+     <button class="choice" data-set="timing:3weeks" data-smart="1"><span>About 3 weeks</span><span class="arr">→</span></button>
+     <button class="choice" data-set="timing:monthplus" data-smart="1"><span>More than a month</span><span class="arr">→</span></button>
+    </div>
+   </div>
+
+   <div class="screen" id="activity">
+    <div class="kicker">Your real-life goal</div><h2 class="question">What are you trying to keep doing—or get back to?</h2>
+    <p class="help">Type the activity in your own words. I don’t want to assume the answer or force you into a sports category.</p>
+    <input class="measure" id="activityText" type="text" placeholder="For example: gardening, typing, golf, pickleball, lifting my grandchild">
+    <div class="bottomrow"><button class="back" data-go="timing">← Back</button><button class="next" id="activityNext" disabled>Use this activity →</button></div>
+   </div>
+
+   <div class="screen" id="symptoms">
+    <div class="kicker">What the problem feels like</div><h2 class="question">Which description is closest when it bothers you?</h2>
+    <p class="help">This helps me decide whether the solution should emphasize support, comfort/recovery, or whether I should stop the shopping path.</p>
+    <div class="choices">
+     <button class="choice" data-set="symptom:ache" data-smart="1"><span>Aching / soreness with use</span><span class="arr">→</span></button>
+     <button class="choice" data-set="symptom:stiff" data-smart="1"><span>Stiffness or mild swelling</span><span class="arr">→</span></button>
+     <button class="choice" data-set="symptom:sharp" data-smart="1"><span>Sharp pain with certain movements</span><span class="arr">→</span></button>
+     <button class="choice" data-go="stop"><span>Numbness, tingling, marked weakness, or symptoms that concern me<small>That can change whether a self-directed product solution is appropriate.</small></span><span class="arr">→</span></button>
+    </div>
+   </div>
+
+   <div class="screen" id="mobility">
+    <div class="kicker">Tradeoff that changes the winner</div><h2 class="question">Which matters more right now?</h2>
+    <div class="choices">
+     <button class="choice" data-set="stability:flex" data-smart="1"><span>Preserve as much useful movement as practical<small>Support without jumping to maximum restriction.</small></span><span class="arr">→</span></button>
+     <button class="choice" data-set="stability:moderate" data-smart="1"><span>More stabilization, even if I lose some movement</span><span class="arr">→</span></button>
+     <button class="choice" data-set="stability:strong" data-smart="1"><span>Strong motion limitation is the priority</span><span class="arr">→</span></button>
+    </div>
+   </div>
+
+   <div class="screen" id="size">
+    <div class="kicker">Fit is a hard constraint</div><h2 class="question">Measure around your wrist.</h2>
+    <p class="help">A recommendation is not useful if the correct manufacturer size can’t be identified. Enter the measurement taken around your wrist.</p>
+    <input class="measure" id="wrist" type="number" min="4" max="12" step=".1" value="7.0" aria-label="Wrist circumference in inches">
+    <div class="bottomrow"><button class="back" data-go="mobility">← Back</button><button class="next" id="sizeNext">Build my solution →</button></div>
+   </div>
+
+   <div class="screen" id="working">
+    <div class="kicker">Keneflex is doing the decision work</div><h2 class="question">Here’s how your answers are changing the solution.</h2>
+    <p class="help">This is the part that happens before a product earns a place in your solution.</p>
+    <div class="worklist">
+     <div class="workitem"><span class="check">✓</span><div><strong>Safety boundary</strong><div class="micro">No reported trauma/deformity/open wound/persistent numbness that would stop the product path.</div></div></div>
+     <div class="workitem"><span class="check">✓</span><div><strong>Your pattern</strong><div class="micro" id="workPattern">Your location and timing change the type of support/recovery plan that makes sense.</div></div></div>
+     <div class="workitem"><span class="check">✓</span><div><strong>Your life matters to the product choice</strong><div class="micro" id="workActivity">Your activity goal and desire to preserve movement weigh against unnecessary rigid restriction.</div></div></div>
+     <div class="workitem"><span class="check">✓</span><div><strong>Fit is a hard constraint</strong><div class="micro" id="workFit">Your wrist measurement is checked against manufacturer sizing before a recommendation is allowed to win.</div></div></div>
+     <div class="workitem"><span class="check">✓</span><div><strong>Serious contenders lose for a reason</strong><div class="micro">Flexible combined wrist/thumb support is compared against moderate and rigid thumb-stabilization architectures—not just sorted by star rating.</div></div></div>
+     <div class="workitem"><span class="check">✓</span><div><strong>The solution extends beyond the brace</strong><div class="micro">Your symptom pattern supports a recovery wrap, a topical comfort option with label safeguards, and a self-care plan—without automatically adding oral medication, supplements, or another brace.</div></div></div>
+    </div>
+    <div class="thinkingBand"><b>What Keneflex is solving:</b><span id="thinkingSummary">Support the activity, control unnecessary restriction, provide after-activity comfort, and give you a clear plan for what to do next.</span></div>
+    <button class="next" style="width:100%" data-solution>Show me the complete solution →</button>
+   </div>
+
+   <div class="screen" id="stop">
+    <div class="kicker">Safety changed the recommendation</div><h2 class="question">I’d stop the shopping flow here.</h2>
+    <p class="help">This answer can change whether a self-directed product recommendation is appropriate. In the finished experience, Keneflex would explain the appropriate next step rather than forcing a sale.</p>
+    <button class="next" data-go="safety">← Return to test path</button>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="solution" class="appshell">
+ <div class="solutionShell">
+  <div class="solutionHead">
+   <div><div class="eyebrow" style="color:#b6d0c7">Your Keneflex solution • specific to you</div><h1>Here’s what I’d do.</h1><p>Support the activity you want to keep doing, manage comfort after activity, and give you a practical self-care plan—not just a product link.</p></div>
+   <div class="solutionMeta">
+    <div class="meta"><b>Problem pattern</b><span id="solutionPattern">Wrist + thumb • ~3 weeks</span></div>
+    <div class="meta"><b>Priority</b><span id="solutionPriority">Activity + useful movement</span></div>
+    <div class="meta"><b>Fit input</b><span id="solutionFit">7.0-inch wrist</span></div>
+    <div class="meta"><b>Provider constraint</b><span>None in test scenario</span></div>
+   </div>
+  </div>
+  <div class="solutionBody">
+   <div class="maincol">
+    <div class="block">
+     <div class="prodtag">1 · Primary support</div>
+     <div class="product">
+      <div class="pimage"><img src="https://www.neo-g.com/cdn/shop/files/722-13-Box_R_1080x.png?v=1725268865" alt="Neo G Airflow Wrist and Thumb Support package" data-fallback="Neo G Airflow|Wrist & Thumb Support"></div>
+      <div>
+       <div class="prodname">Neo G Airflow Wrist & Thumb Support</div>
+       <div><span class="price">$19.99</span><span class="sizepill">Medium • Black</span></div>
+       <ul class="reasonlist">
+        <li><strong>Movement-first architecture:</strong> slim, lightweight, flexible compression rather than rigid thumb stays.</li>
+        <li><strong>Activity match:</strong> your goal is <span class="activityName">staying active</span>, and the manufacturer specifically positions this support for sporting and occupational activity.</li>
+        <li><strong>Fit match:</strong> your 7.0-inch wrist falls directly inside Medium’s 6.3–7.5-inch stated range.</li>
+       </ul>
+       <div class="fitline"><strong>Why the size matters:</strong> Keneflex is not treating “one size fits most” as equivalent to a measured manufacturer size when a measured option fits the scenario.</div>
+      </div>
+     </div>
+    </div>
+
+    <div class="block">
+     <div class="prodtag">2 · Recovery component</div>
+     <div class="product">
+      <div class="pimage"><img src="https://trkmedicalproducts.com/cdn/shop/products/41_999x.jpg?v=1626891716" alt="Polar Soft Ice wrist wrap and reusable therapy pack" data-fallback="Polar Soft Ice|Wrist Wrap"></div>
+      <div>
+       <div class="prodname">Polar Soft Ice Wrist Wrap</div>
+       <div><span class="price">$21.00</span><span class="sizepill">Universal</span></div>
+       <ul class="reasonlist">
+        <li>Includes a reusable 4.5 × 7-inch Soft Ice pack and insulated wrist wrap.</li>
+        <li>Can be used as a cold or hot therapy pack according to the manufacturer’s product instructions.</li>
+        <li>It addresses the after-activity part of the solution without adding another restrictive support.</li>
+       </ul>
+      </div>
+     </div>
+    </div>
+
+    <div class="block">
+     <div class="prodtag">3 · Targeted comfort component</div>
+     <div class="product">
+      <div class="pimage"><img src="https://biofreeze.com/static/a06132b8965c43644a3e10fc5aae7a80/7b187/en-US-bf_retailgeltubegreen.png" alt="Biofreeze Pain Relief Gel 3 fl oz tube" data-fallback="Biofreeze|Pain Relief Gel"></div>
+      <div>
+       <div class="prodname">Biofreeze Pain Relief Gel</div>
+       <div><span class="price">$11.99</span><span class="sizepill">Menthol 4% • 3 fl oz</span></div>
+       <ul class="reasonlist">
+        <li><strong>Why it belongs:</strong> your reported ache/soreness gives a reason for a localized temporary pain-relief option rather than adding an oral medication by default.</li>
+        <li><strong>What it does not do:</strong> this is for temporary pain relief; it is not being presented as a cure or a substitute for reassessment if symptoms persist or worsen.</li>
+        <li><strong>Compatibility rule:</strong> follow the label, use only on intact skin, and do not use it under a tight brace or with a heating pad/device.</li>
+       </ul>
+       <div class="fitline"><strong>Keneflex guardrail:</strong> in a finished checkout, the topical would be confirmed against label warnings before purchase. For this prototype, the $11.99 price reflects a current Target listing and may change.</div>
+      </div>
+     </div>
+    </div>
+
+    <div class="block careBlock">
+     <div class="prodtag">4 · Self-care is part of the solution</div>
+     <h2>Your recovery plan</h2>
+     <p class="help">Products are only one part of what you do next. Because Keneflex is not diagnosing a specific tissue injury here, the plan stays conservative and avoids aggressive stretching.</p>
+     <div class="careGrid">
+      <div class="careCard"><div class="careNo">01</div><b>Modify the load—not your whole life</b><span>Temporarily reduce gripping, twisting, paddle volume, or other motion that clearly increases symptoms. Keep using the hand for comfortable everyday movement rather than immobilizing it all day.</span></div>
+      <div class="careCard"><div class="careNo">02</div><b>Gentle movement, not forced stretching</b><span>Once or twice a day, move the wrist and thumb gently through comfortable ranges for 5–10 easy repetitions. Stop if movement produces sharp pain, numbness, tingling, or clear worsening.</span></div>
+      <div class="careCard"><div class="careNo">03</div><b>After <span class="activityName">activity</span>: cool + recover</b><span>Use the Polar wrap as a cold therapy tool according to its directions if it feels helpful. Because Biofreeze warns against use with heating devices, heat is not part of this combined prototype plan.</span></div>
+      <div class="careCard"><div class="careNo">04</div><b>Use symptoms to guide the return</b><span>Keep the support comfortable and reassess the plan if function worsens, symptoms keep recurring, or new numbness/weakness, significant swelling, or trauma appears.</span></div>
+     </div>
+     <div class="careCallout"><b>Why this matters:</b> Keneflex is not just telling you what to buy. It is giving the products a role inside a complete, usable plan.</div>
+    </div>
+
+    <details class="block disclosure">
+     <summary>See what I ruled out and why</summary>
+     <div class="inside"><h2>Why this support won</h2>
+     <p class="help" style="margin-bottom:15px">The winner is not “the highest rated brace.” It is the option whose tradeoffs best match this scenario.</p>
+     <div class="rejects">
+      <div class="reject"><img src="https://www.neo-g.com/cdn/shop/files/722-13-Box_R_1080x.png?v=1725268865" alt=""><div><div class="rejectName">✓ Neo G Airflow</div><div class="rejectWhy">Flexible, sport-compatible, measured sizing; aligns with the stated movement priority.</div></div></div>
+      <div class="reject"><img src="https://i5.walmartimages.com/asr/f2040642-c7f9-4f11-bf91-f4142582c6fe.203d36a3da5092b0b01f98a9b53061ee.jpeg" alt=""><div><div class="rejectName">FUTURO Deluxe Thumb Stabilizer</div><div class="rejectWhy">Moderate thumb stabilization with two stays. More thumb-specific stabilization than this movement-first combined wrist/thumb scenario calls for.</div></div></div>
+      <div class="reject"><img src="https://hitechtherapyonline.co.za/images/thumbs/0001772_mueller-reversible-thumb-stabilizer_550.jpeg" alt=""><div><div class="rejectName">Mueller Reversible Thumb Stabilizer</div><div class="rejectWhy">Two rigid stays are designed to limit thumb movement and provide maximum support—more restriction than requested.</div></div></div>
+      <div class="reject"><div style="width:62px;height:72px;border-radius:12px;background:#edf3f0;display:flex;align-items:center;justify-content:center;font-weight:900">+</div><div><div class="rejectName">More product?</div><div class="rejectWhy">Not automatically. An additional brace or extra health products would have to solve a need the intake actually identified.</div></div></div>
+     </div>
+
+     </div>
+    </details>
+
+    <details class="block disclosure">
+     <summary>See evidence confidence & uncertainty</summary>
+     <div class="inside"><h2>Evidence & uncertainty snapshot</h2>
+     <div class="conf">
+      <div class="heardCard"><div class="heardLabel">Fit facts</div><div class="heardValue">High confidence</div><div class="micro" style="margin-top:5px">Your measurement sits inside a defined manufacturer size range.</div></div>
+      <div class="heardCard"><div class="heardLabel">Use-case match</div><div class="heardValue">High confidence</div><div class="micro" style="margin-top:5px">The product architecture and stated sporting use match the scenario priorities.</div></div>
+      <div class="heardCard"><div class="heardLabel">Symptom outcome</div><div class="heardValue">Not known</div><div class="micro" style="margin-top:5px">A product match cannot guarantee that your symptoms will improve.</div></div>
+     </div>
+     <p class="disclaimer">Keneflex should distinguish what is known about a product and its fit from what cannot be promised about an individual outcome.</p>
+
+     </div>
+    </details>
+
+    <div class="block">
+     <h2>Ask Keneflex about this pick</h2>
+     <div class="ask">
+      <button data-answer="a1">Why not a more rigid brace? <span class="arr">+</span></button>
+      <div class="answer" id="a1">Because your stated goal is to keep doing <span class="activityName">your activity</span> while preserving as much useful movement as practical. The more rigid contenders add restriction. Keneflex would move toward them only if stronger stabilization became the dominant need.</div>
+      <button data-answer="a2">Is this just the most popular product? <span class="arr">+</span></button>
+      <div class="answer" id="a2">No. Popularity may be a useful signal, but the recommendation shown here is based on scenario fit: flexible architecture, sporting use, and a manufacturer-defined size that contains your measurement.</div>
+      <button data-answer="a3">What would make you change this recommendation? <span class="arr">+</span></button>
+      <div class="answer" id="a3">A provider instruction, different location of need, a stronger stabilization priority, a fit/comfort problem, significant new trauma, persistent numbness, worsening function, or an existing product that already solves the need.</div>
+     </div>
+    </div>
+   </div>
+
+   <aside class="sidecol">
+    <div class="block totalcard">
+     <div class="kicker">3-product solution</div><div class="total">$52.98</div>
+     <div class="totalcopy">$19.99 support + $21.00 wrist wrap + $11.99 topical. Support/wrap manufacturer prices and topical retailer price were checked for this prototype. Tax and shipping are not included and pricing can change.</div>
+    </div>
+    <div class="block">
+     <div class="kicker">What I did not add</div>
+     <div class="nosell" style="margin-top:12px"><span class="chip">No extra brace</span><span class="chip">No oral analgesic</span><span class="chip">No supplement</span><span class="chip">No sleep aid</span></div>
+     <p class="disclaimer">The intake did not establish a reason to add these components. “Fat box” means a complete solution—not an indiscriminate cart.</p>
+    </div>
+    <details class="block disclosure"><summary>Source transparency</summary><div class="inside"><p class="disclaimer" style="font-size:12px">Primary product facts and sizing: Neo G manufacturer. Recovery-wrap contents and price: Polar Products manufacturer. Topical active ingredient/directions/warnings: Biofreeze manufacturer; prototype retail price: Target. General self-care framing is based on public NHS wrist/hand guidance emphasizing relative rest, cold therapy and gentle movement. Contender architecture: 3M FUTURO and Mueller manufacturer information.</p></div></details>
+    <div class="block">
+     <button class="buy" id="cartBtn">Put my solution in my cart →</button>
+     <p class="disclaimer">Research preview does not make a purchase.</p>
+    </div>
+   </aside>
+  </div>
+ </div>
+</section>
+
+<section id="checkout" class="appshell">
+ <div class="checkout">
+  <div class="kicker">Decision complete</div><h2 class="question">Your solution is ready.</h2>
+  <p class="help">A finished Keneflex experience would carry the exact selection into checkout. Purchasing stops here in this research preview.</p>
+  <div class="cartrow"><img src="https://www.neo-g.com/cdn/shop/files/722-13-Box_R_1080x.png?v=1725268865" alt=""><div><div class="cartname">Neo G Airflow Wrist & Thumb Support</div><div class="cartmeta">Medium • Black • Qty 1</div></div><div class="cartprice">$19.99</div></div>
+  <div class="cartrow"><img src="https://trkmedicalproducts.com/cdn/shop/products/41_999x.jpg?v=1626891716" alt=""><div><div class="cartname">Polar Soft Ice Wrist Wrap</div><div class="cartmeta">Universal • Qty 1</div></div><div class="cartprice">$21.00</div></div>
+  <div class="cartrow"><img src="https://biofreeze.com/static/a06132b8965c43644a3e10fc5aae7a80/7b187/en-US-bf_retailgeltubegreen.png" alt=""><div><div class="cartname">Biofreeze Pain Relief Gel</div><div class="cartmeta">Menthol 4% • 3 fl oz • Qty 1</div></div><div class="cartprice">$11.99</div></div>
+  <div class="cartrow careCart"><div class="careCartIcon">✓</div><div><div class="cartname">Keneflex self-care plan</div><div class="cartmeta">Load modification • gentle mobility • recovery • reassessment triggers</div></div><div class="cartprice">Included</div></div>
+  <div class="cartrow" style="border-bottom:0"><div></div><div class="cartname">Prototype subtotal</div><div class="cartprice">$52.98</div></div>
+  <div class="endnote"><strong>Stop here.</strong><br>Please tell the moderator what you would do next if this were a real health-product decision. Do not research the products yet.</div>
+ </div>
+</section>
+
+<script src="app.js?v=042"></script>
+</body>
+</html>
