@@ -1,8 +1,8 @@
 # Keneflex Prototype 0.4.3 — Pre-P1 QA & Freeze Gate
 
-Status: ACTIVE BUILD GATE — DO NOT START P1 UNTIL ALL MUST-PASS ITEMS ARE GREEN
+Status: STATIC INTEGRATION AUDIT COMPLETE — FINAL BROWSER SMOKE TEST REQUIRED BEFORE P1
 
-Purpose: Convert the thesis acceptance specification into an executable end-to-end QA protocol. This is designed to prevent a technically functional but thesis-incomplete prototype from contaminating the six-person validation.
+Purpose: Protect the six-person validation from technical or thesis-incomplete behavior. This gate distinguishes code/static verification from actual browser interaction; static inspection is not a substitute for clicking the participant path on a real device.
 
 ## 1. Primary-path QA — vague consumer language
 
@@ -10,194 +10,172 @@ Start a clean session with exactly: `My hand has been bothering me.`
 
 MUST PASS:
 - Keneflex does not infer wrist, thumb, pickleball, timing, or movement priority.
-- Area/timing/activity/priority display as unknown until supplied.
-- Safety screen occurs before commerce.
+- Area/timing/activity/priority remain unknown until supplied.
+- Safety occurs before commerce.
 - No product appears before localization and decision-critical facts are gathered.
-- Location can be supplied in plain language; `I'm not sure / several areas` is accepted without forcing a false answer.
+- `I'm not sure / several areas` is accepted without forcing false precision.
 - Activity is supplied by the consumer, not suggested as pickleball.
-- Once a fact is supplied, it is not asked again.
+- Facts already supplied are not asked again.
 
-FAIL if a consumer must know anatomy/diagnosis/product terminology before Keneflex can proceed.
+STATIC STATUS: IMPLEMENTED IN 0.4.3. Browser interaction still required.
 
 ## 2. Rich-input reuse QA
 
 Start a clean session with: `My wrist and thumb have been aching for about three weeks when I use them. I want to keep playing pickleball and don't want a brace that restricts me too much.`
 
-MUST PASS:
-- Keneflex extracts wrist + thumb, ~3 weeks, pickleball, aching/soreness, movement-preservation priority.
-- Those facts are visibly reflected back.
-- Keneflex skips redundant follow-ups and asks only remaining decision-critical questions.
+MUST PASS: extract and visibly reuse wrist/thumb, ~3 weeks, pickleball, aching/soreness, and movement-preservation priority; skip redundant follow-ups.
 
-FAIL if the user is forced to repeat facts already supplied.
+STATIC STATUS: IMPLEMENTED. Browser interaction still required.
 
 ## 3. Safety-stop QA
 
 At safety screen choose `Yes / I'm not sure`.
 
-MUST PASS:
-- Shopping/recommendation stops.
-- No product is pushed through the stop state.
-- Language is calm and plain rather than alarmist.
+MUST PASS: shopping/recommendation stops; no product is pushed; language is calm/plain.
+
+STATIC STATUS: IMPLEMENTED. Browser interaction still required.
 
 ## 4. Provider-constraint QA
 
 Choose that a provider gave a specific instruction.
 
-MUST PASS:
-- Prototype explains that exact product instructions are not substituted.
-- Type/feature instructions constrain the eligible set.
-- Keneflex does not frame itself as overriding the provider.
+MUST PASS: exact product instructions are not substituted; feature/type instructions constrain eligibility; Keneflex does not frame itself as overriding the provider.
+
+STATIC STATUS: IMPLEMENTED. Browser interaction still required.
 
 ## 5. Primary recommendation QA
 
-Use standardized case facts:
-- wrist + thumb
-- about 3 weeks
-- aching/soreness with use
-- pickleball
-- preserve useful movement
-- 7.0-inch wrist
-- no provider constraint
-- no adequate existing support
+Standard case: wrist + thumb; ~3 weeks; aching/soreness with use; pickleball; preserve useful movement; 7.0-inch wrist; no provider constraint; no adequate existing support.
 
 MUST PASS:
-- Visible decision-work screen appears before recommendation.
-- Consumer can see how pattern, activity priority, fit, and contender tradeoffs changed the answer.
-- One primary support wins; no shelf of alternatives is presented.
-- Solution contains primary support + recovery + justified topical + substantial self-care plan.
-- `What I did not add` is visible.
-- Rejected alternatives are optional/on-demand and framed as proof, not choices.
-- Evidence confidence distinguishes product/fit facts from uncertain individual outcome.
-- Consumer can challenge the pick.
+- Visible decision-work screen precedes recommendation.
+- Pattern, activity, fit and tradeoffs visibly affect the answer.
+- One primary support wins; no shelf of alternatives.
+- Complete solution = primary support + recovery + justified topical + substantial self-care.
+- `What I did not add`, rejected alternatives, evidence-confidence boundaries and challenge-the-pick are available.
 
-## 6. Solution Tuning QA — owned recovery item
+STATIC STATUS: IMPLEMENTED. Browser interaction still required.
 
-From the completed solution choose `I already have a cold pack / home remedy`.
+## 6. Solution Tuning — owned recovery item
 
-MUST PASS BEFORE P1:
-- Keneflex evaluates adequacy rather than treating ownership as proof.
-- If adequate, the Polar component is visibly removed/replaced by `Use yours` in the displayed solution.
-- Displayed subtotal changes from $52.98 to $31.98.
-- Checkout reflects the rebuilt solution and does not re-add Polar.
-- Self-care remains included.
-- Consumer is not shown alternative cold products to shop.
+Choose `I already have a cold pack / home remedy`.
 
-CURRENT 0.4.3 LOGIC STATUS: PARTIAL — explanatory re-solve exists; displayed cards/cart/subtotal still need to mutate.
+MUST PASS:
+- Ownership is evaluated for adequacy rather than assumed adequate.
+- If adequate, Polar BUY becomes existing-item KEEP/$0.
+- Displayed subtotal: $52.98 → $31.98.
+- Checkout excludes Polar purchase and preserves self-care.
+- No alternative cold-product shelf appears.
 
-## 7. Solution Tuning QA — no topical
+STATIC STATUS: IMPLEMENTED by the 0.4.3 tuning layer/participant patch, including KEEP/$0 representation and recalculation. Browser interaction + checkout persistence still required.
+
+## 7. Solution Tuning — no topical
 
 Choose `I don't want the topical product`.
 
-MUST PASS BEFORE P1:
-- Keneflex explains that topical is optional in this scenario.
-- Biofreeze visibly disappears from the active solution.
-- Displayed subtotal changes from $52.98 to $40.99.
-- Checkout excludes Biofreeze.
-- Support + recovery + self-care remain coherent.
+MUST PASS: topical is treated as optional in this case; Biofreeze purchase disappears; subtotal $52.98 → $40.99; checkout excludes Biofreeze; support + recovery + self-care remain coherent.
 
-CURRENT 0.4.3 LOGIC STATUS: PARTIAL — explanatory re-solve exists; displayed cards/cart/subtotal still need to mutate.
+STATIC STATUS: IMPLEMENTED. Browser interaction + checkout persistence still required.
 
-## 8. Solution Tuning QA — budget under $30
+## 8. Solution Tuning — budget under $30
 
-Choose `This costs more than I want to spend` and apply the standardized secondary challenge: `I don't want to spend more than $30.`
-
-MUST PASS BEFORE P1:
-- Keneflex preserves $0 self-care.
-- It asks/uses whether an adequate recovery item is already owned before assuming one away.
-- Optional topical is removed before compromising the primary support.
-- A cheaper support may replace the winner only if it clears the same hard requirements.
-- If no coherent solution under $30 can be justified, Keneflex says so rather than pretending the budget can be met.
-- No Bronze/Silver/Gold tiers and no catalog of cheaper products.
-- Displayed solution/cart reflect the answer Keneflex actually gives.
-
-CURRENT 0.4.3 LOGIC STATUS: PARTIAL — decision hierarchy exists; visual/cart state and explicit budget-entry/recalculation remain incomplete.
-
-## 9. Combined-constraint QA
-
-Test at least:
-- owns adequate cold item + declines topical
-- owns adequate cold item + <$30 budget
+Apply `I don't want to spend more than $30.`
 
 MUST PASS:
-- State changes compose correctly rather than overwrite each other.
-- Subtotal and checkout remain internally consistent.
-- Reset restores the original $52.98 three-product solution.
+- Preserve $0 self-care.
+- Remove optional topical before compromising primary support.
+- Use/verify an adequate owned recovery item where applicable rather than assuming it away.
+- A cheaper support may replace the winner only if it clears the same hard requirements.
+- If no coherent solution can honestly meet budget, say so rather than fabricate one.
+- No Bronze/Silver/Gold tiers or cheaper-product catalog.
+- Displayed solution/cart match Keneflex's rebuilt answer.
 
-Expected prototype totals when no substitute support is introduced:
+STATIC STATUS: DECISION HIERARCHY AND REBUILD LOGIC IMPLEMENTED. Browser interaction required to verify the exact <$30 branch and cart state.
+
+## 9. Combined constraints
+
+Test at least:
+- adequate owned cold + declines topical
+- adequate owned cold + <$30 budget
+
+Expected totals without a substitute support:
 - Original: $52.98
 - Own cold only: $31.98
 - No topical only: $40.99
 - Own cold + no topical: $19.99
 
-## 10. Commercial-integrity QA
+MUST PASS: state changes compose rather than overwrite; checkout/subtotal stay consistent; reset restores original state.
 
-MUST PASS BEFORE P1:
-- Near the transaction, consumer can discover plain-language disclosure that Keneflex may earn money from some purchases.
-- Disclosure states that economics cannot determine eligibility/winner.
-- KEEP/$0 and `What I did not add` remain visible integrity signals.
-- Disclosure is not hidden behind legal jargon such as only `affiliate link`.
+STATIC STATUS: COMPONENT/substitution state is designed to compose. Browser verification required.
 
-Suggested prototype language:
-`Keneflex may earn money when you purchase some products we recommend. That cannot determine which product is eligible or which solution wins. If the right answer is something you already own—or no purchase at all—we'll tell you that too.`
-
-CURRENT STATUS: NOT YET VERIFIED IN LIVE EXPERIENCE.
-
-## 11. How it works / Our approach QA
-
-MUST PASS BEFORE P1:
-- Both header controls are populated and functional.
-- They remain optional during primary use.
-- `How it works` communicates: own words → only decision-changing questions → product homework → complete solution → re-solve constraints.
-- `Our approach` communicates: Specific to You; evidence before popularity; only what belongs; recommendation before economics; finish the decision rather than return a list.
-- These pages do not reveal the scripted test answer/product.
-
-CURRENT STATUS: header links exist; full promise content/functionality must be verified before freeze.
-
-## 12. Checkout consistency QA
-
-For every solution state:
-- Product names match the recommendation.
-- Removed/owned components do not reappear.
-- Subtotal equals visible paid components.
-- Self-care is shown as included/$0.
-- No purchase occurs in research mode.
-
-FAIL if the recommendation page says one thing and checkout says another. This would directly undermine trust/Decision Closure.
-
-## 13. Mobile QA
-
-Run the entire primary path plus all three tuning challenges on a phone-width viewport.
+## 10. Commercial integrity
 
 MUST PASS:
-- No clipped CTA or inaccessible controls.
-- No horizontal scrolling required for core content.
-- Solution tuning is obvious without dominating the recommendation.
-- Self-care retains meaningful visual weight.
-- Proof/rejected alternatives remain optional.
+- Near transaction, plain-language disclosure says Keneflex may earn money from some purchases.
+- Economics cannot determine eligibility/winner.
+- KEEP/$0 and `What I did not add` remain visible integrity signals.
+- Disclosure is not buried in affiliate jargon.
 
-## 14. Test freeze criteria
+STATIC STATUS: IMPLEMENTED in 0.4.3. Browser placement/visibility still required.
 
-Freeze Prototype 0.4.3 only when:
-- Sections 1–5 pass end-to-end.
-- Sections 6–8 visibly rebuild solution and checkout, not merely explain what would happen.
-- Combined constraints in Section 9 pass.
-- Commercial disclosure passes Section 10.
-- How it works / Our approach pass Section 11.
-- Checkout consistency and mobile QA pass.
+## 11. How it works / Our approach
 
-After freeze:
-- Record commit SHA used by P1–P6.
-- No ordinary UX changes between participants.
-- Change only for safety, completion-blocking defect, or materially broken branching.
-- Document any unavoidable change and which participants saw each build.
+MUST PASS:
+- Both header controls are populated and functional.
+- Optional during primary use.
+- `How it works`: own words → decision-changing questions → product homework → complete solution → re-solve constraints.
+- `Our approach`: Specific to You; evidence before popularity; only what belongs; recommendation before economics; finish the decision rather than return a list.
+- Neither reveals the scripted test answer/product.
+
+STATIC STATUS: CONTENT IMPLEMENTED in 0.4.3. Browser control behavior still required.
+
+## 12. Participant entry route
+
+The participant card intentionally launches `test.html`, not the raw root page. `test.html` loads the current root prototype with cache bypass and injects the participant-specific 0.4.3 patch. This is the canonical P1–P6 route.
+
+MUST PASS:
+- Participant card opens normally.
+- `Begin the Keneflex test` launches `test.html`.
+- `test.html` resolves to the current 0.4.3 experience rather than a stale cached build.
+- No visible loading/error state remains.
+
+STATIC STATUS: ROUTE VERIFIED IN REPOSITORY. Browser launch required.
+
+## 13. Checkout consistency
+
+For every solution state: product names match; owned/removed components do not reappear as purchases; subtotal equals visible paid components; self-care remains included/$0; no actual purchase occurs in research mode.
+
+STATIC STATUS: REBUILD FUNCTIONS PRESENT. Browser checkout verification required.
+
+## 14. Mobile QA
+
+Run the primary path plus all three tuning challenges at phone width.
+
+MUST PASS: no clipped CTA/inaccessible controls; no core horizontal scroll; tuning obvious without dominating; self-care retains weight; proof/rejected alternatives remain optional.
+
+STATUS: NOT VERIFIED. Requires a real/mobile browser or equivalent interactive browser environment.
+
+## 15. Freeze criteria
+
+Freeze only after one final interactive smoke test passes:
+1. Participant card → test launch.
+2. Vague input → localization → safety → activity/timing/fit → visible reasoning → complete solution.
+3. Owned-cold challenge → KEEP/$0 → $31.98 → checkout persists.
+4. Reset/new session.
+5. No-topical challenge → $40.99 → checkout persists.
+6. Reset/new session.
+7. <$30 challenge → coherent $19.99 primary-support/self-care solution where the scripted assumptions justify removal of optional components → checkout persists.
+8. Safety-stop branch.
+9. Provider-instruction branch.
+10. How it works / Our approach controls.
+11. Repeat primary + one tuning path on phone width.
+
+After PASS:
+- Record the exact commit SHA/build used by P1–P6.
+- Freeze ordinary UX changes through P6.
+- Change only for safety, completion-blocking defects, or materially broken branching.
+- Document any unavoidable version change and which participants saw it.
 
 ## Current critical path
 
-1. Make Solution Tuning mutate product cards, totals, and checkout state.
-2. Add/verify commercial-integrity disclosure near transaction.
-3. Populate/verify How it works and Our approach.
-4. Run this QA protocol on desktop + mobile.
-5. Freeze exact commit SHA.
-6. Begin P1–P6.
-
-No additional roadmap features should enter the build before this gate is green.
+The thesis-critical implementation is now present. The only remaining pre-P1 gate is **interactive browser smoke testing of the canonical participant route, state mutation/checkout persistence, and mobile behavior**. Do not add roadmap features before this is green.
