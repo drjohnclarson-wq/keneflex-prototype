@@ -22,6 +22,8 @@ function activityContext(){
   if(s.includes('pickleball'))bits.push('pickleball');
   return bits.length?[...new Set(bits)].join(' and '):(state.triggerSummary||'using your hand');
 }
+function cleanConsumerPhrase(v){return (v||'').trim().replace(/[.?!]+$/,'');}
+function knownSymptomPhrase(v){return /ache|aching|sore|soreness|hurt|hurting|pain|stiff|swell|numb|tingl|pins|needles|weak|rash|itch|red|wound|cut|burn|color|temperature|warm|hot/i.test(v||'');}
 
 askDetail=function(){
   setProgress(17);
@@ -44,14 +46,47 @@ askDetail=function(){
   });
 };
 
+/* “Something else” must be resolved, but a familiar symptom such as soreness should
+   be translated into the known symptom model rather than echoed as an unexplained extra. */
+clarifyOther=function(){
+  setProgress(33);
+  addAI(`What else are you noticing? Just describe it normally.`);
+  textComposer('For example: soreness, clicking, cramping, tenderness, a lump, warmth…','Continue →',v=>{
+    const before=new Set(state.features);
+    parseDetail(v);
+    if(!knownSymptomPhrase(v) || state.features.size===before.size) state.otherDetail=v;
+    else state.otherDetail='';
+    const sx=symptomSummary();
+    addAI(sx?`Got it — ${sx}. Let’s pin down where you feel it most.`:`Got it. Let’s pin down where you feel it most.`);
+    askLocation(false);
+  });
+};
+
 askUseMechanism=function(){
   setProgress(66);
   addAI(`When it comes on during ${activityContext()}, what are you usually doing with that hand right before you notice it?`);
   textComposer('For example: holding the phone, scrolling/texting, typing, using the mouse, resting my wrist on the desk…','Continue →',v=>{
     state.triggerDetail=v;
     parseDetail(v);
-    askUseLatency();
+    const detail=cleanConsumerPhrase(v);
+    addAI(`That helps${detail?` — especially ${detail}`:''}. About how long are you usually doing that before you notice the hand bothering you?`);
+    askUseLatency(false);
   });
+};
+
+/* Allow the preceding answer to carry directly into timing instead of generating
+   another detached Keneflex bubble. */
+const _askUseLatency=askUseLatency;
+askUseLatency=function(announce=true){
+  setProgress(69);
+  if(announce)addAI(`About how long are you usually doing that before you notice the hand bothering you?`);
+  oneSelect('When does it start?','An estimate is enough.',[
+    {value:'quick',label:'Pretty quickly / within a few minutes'},
+    {value:'10-30',label:'Usually after about 10–30 minutes'},
+    {value:'30-60',label:'Usually after 30–60 minutes'},
+    {value:'longer',label:'Usually after an hour or more'},
+    {value:'unsure',label:'I’m not sure'}
+  ],v=>{state.triggerLatency=v;askOtherTimes()});
 };
 
 showEnough=function(){
