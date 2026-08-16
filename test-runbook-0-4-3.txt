@@ -1,0 +1,73 @@
+KENEFLEX SIX-PERSON FORMATIVE PILOT — 0.4.3 FINAL PRE-P1 FLOW
+
+PURPOSE
+Test whether a credible representation of Keneflex creates Decision Closure, feels Specific to You, removes meaningful decision work, remains trustworthy when the solution is adjusted, and provides value beyond a strong ChatGPT response.
+
+PARTICIPANTS
+P1–P6. Adults with little/no prior Keneflex exposure. One-on-one, not a focus group.
+
+PRIMARY SCENARIO
+Use the same participant scenario card for all six. For consistency, the participant begins the prototype by entering only: “My hand has been bothering me.” They answer later questions from the scenario facts only when asked.
+
+MODERATOR RULES
+- Do not pitch, rescue, explain, or defend Keneflex during the primary experience.
+- Encourage think-aloud behavior, but do not tell participants what they should notice.
+- If asked “What should I pick?” respond: “What would you do if I weren’t here?”
+- If asked “What does this mean?” respond: “Tell me what you think it means first.”
+- If asked “Is this trustworthy?” respond: “What would you need to know to decide that?”
+- Record verbatim phrases whenever possible.
+- Do not ask participants to open How It Works or Our Approach before the clean Keneflex-only debrief is locked.
+
+PRIMARY EXPERIENCE
+1. Participant opens the Keneflex prototype.
+2. Participant uses the standardized scenario card.
+3. Observe whether vague “hand” language is narrowed naturally.
+4. Observe whether the subject sees enough reasoning for the recommendation to feel earned.
+5. Participant reviews the full solution.
+6. Ask the participant to use “Adjust my solution.” Rotate the secondary constraint:
+   - P1/P2: “Imagine you already have a reusable cold pack that works well.”
+   - P3/P4: “Imagine you do not want to spend more than $30.”
+   - P5/P6: “Imagine you do not like topical pain-relief products.”
+7. Observe whether Keneflex re-solves the problem or makes the participant feel they are shopping again.
+8. Participant reaches the research stopping point. Do not let them independently research products yet.
+
+DEBRIEF ORDER — DO NOT CHANGE
+A. Keneflex-only debrief. Lock it.
+B. Moderator observation coding.
+C. Show the strong ChatGPT comparator; ask comparison questions.
+D. Ask participant to review How It Works + Our Approach; conduct promise-vs-experience audit.
+E. Read the Founder-Intent reveal neutrally; collect gap/improvement feedback.
+F. Final ratings and close.
+
+CORE SIGNALS
+- Decision Closure: intended next action is to act without more product-selection research.
+- Specific to You: participant independently says their facts materially changed the solution.
+- Decision Work Removed: participant spontaneously identifies research/comparison/sizing/assembly/constraint-handling work Keneflex did.
+- Vague-to-structured success: “my hand has been bothering me” is narrowed without requiring clinical vocabulary.
+- Solution ownership after tuning: budget/existing-product/preference changes cause Keneflex to re-solve rather than return shopping work to the user.
+- Complete solution: participant perceives products + self-care + boundaries as one coherent answer.
+- Diligence without re-shopping: rejected alternatives build confidence without triggering comparison shopping.
+- Commercial trust: checkout feels like the natural conclusion of judgment, not the reason for the judgment.
+- ChatGPT differentiation: participant independently articulates substantive value beyond a strong general-AI answer.
+- Promise-to-experience gap: what Keneflex claims in How It Works/Our Approach that subjects did or did not actually experience.
+
+DIRECTIONAL GATE AFTER P6
+This is formative, not statistical proof. Strong directional evidence would be:
+- 5/6 genuine or near-genuine Decision Closure.
+- 5/6 Specific to You.
+- Most participants describe meaningful Decision Work Removed.
+- Most say solution tuning preserved Keneflex ownership rather than making them shop.
+- No more than 1/6 feels compelled to resume product-selection research before acting.
+- Most understand why the winner won.
+- Rejected alternatives generally do not reopen shopping.
+- Participants can articulate a meaningful Keneflex advantage over the strong ChatGPT comparator.
+- Founder-intent reveal produces refinements, not a reaction of “that is a completely different product from what I experienced.”
+
+BETWEEN-SESSION RULE
+Do not change the prototype for ordinary feedback between P1 and P6. Change only for a safety issue, a technical defect that prevents completion, or materially broken branching. Record any unavoidable version change.
+
+AFTER EACH SESSION
+Complete the debrief immediately. Preserve raw recording/transcript if consented. Save by participant ID only.
+
+AFTER P6
+Stop testing and synthesize all six together. Do not optimize from a single participant’s preference.
