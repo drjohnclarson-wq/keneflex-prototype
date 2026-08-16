@@ -1,0 +1,1 @@
+0.4.4b uses prototype-044-core.js plus prototype-044b-patch.js via a small loader in prototype-044.js.
