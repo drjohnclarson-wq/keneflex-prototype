@@ -1,0 +1,75 @@
+{
+  "version": "0.1",
+  "purpose": "Reconcile two or more plausible conservative-care patterns into one coherent Keneflex plan before product selection.",
+  "principles": [
+    "Do not add condition-specific treatment lists together mechanically.",
+    "Identify common conservative measures first.",
+    "Preserve unique treatment requirements for each surviving pattern.",
+    "Check whether any intervention, product, timing instruction, or restriction for one pattern conflicts with another.",
+    "Use one product only when it genuinely satisfies every required role; otherwise use separate products or separate time-of-use strategies.",
+    "Avoid redundant products when one item adequately covers multiple roles.",
+    "If evidence is incomplete or the combination materially raises uncertainty, lower recommendation confidence or escalate rather than pretending certainty.",
+    "Product-level eligibility and safety checks occur after treatment reconciliation, not before it."
+  ],
+  "resolver_cycle": [
+    "collect surviving plausible patterns",
+    "retrieve first-line conservative-care recommendations for each pattern",
+    "normalize recommendations into treatment roles",
+    "compute shared/common roles",
+    "identify unique roles",
+    "identify conflicts or incompatible use instructions",
+    "resolve timing and sequencing",
+    "define minimum complete combined plan",
+    "send treatment requirements to product intelligence",
+    "cross-check selected products against all active patterns and warnings",
+    "define follow-up and failure criteria for each pattern"
+  ],
+  "hand_wrist_thumb_example": {
+    "median_nerve_pattern_plus_radial_thumb_tendon_pattern": {
+      "shared": [
+        "reduce or modify provoking repetitive load",
+        "ergonomic/device setup changes when relevant",
+        "monitor response and function"
+      ],
+      "median_nerve_unique": [
+        "maintain a neutral wrist during sleep when clinically appropriate",
+        "avoid prolonged wrist positions that reproduce nerve-type symptoms"
+      ],
+      "radial_thumb_tendon_unique": [
+        "reduce painful repetitive thumb motion and combined thumb/wrist loading",
+        "consider wrist-plus-thumb stabilization when appropriate"
+      ],
+      "reconciliation_rule": "Do not assume a daytime wrist/thumb support is also the correct night neutral-wrist support. Product intelligence must verify that one product satisfies both roles; otherwise recommend separate day/activity and night strategies.",
+      "follow_up": "Track nerve-type symptoms and thumb-side pain separately because one may improve while the other persists."
+    },
+    "median_nerve_pattern_plus_thumb_base_joint_pattern": {
+      "shared": [
+        "modify aggravating load",
+        "reduce sustained/repetitive hand positions",
+        "adaptive setup or tools where relevant"
+      ],
+      "median_nerve_unique": [
+        "neutral wrist strategy, especially during sleep when appropriate"
+      ],
+      "thumb_base_joint_unique": [
+        "reduce high-load pinch/grip",
+        "thumb-base support or adaptive grip strategy when appropriate"
+      ],
+      "reconciliation_rule": "Preserve neutral-wrist requirements without unnecessarily immobilizing the thumb all day; add thumb-specific support only where the thumb pattern requires it.",
+      "follow_up": "Track nocturnal/nerve symptoms separately from pinch/grip thumb-base pain."
+    }
+  },
+  "product_engine_contract": {
+    "inputs": [
+      "required treatment roles",
+      "time-of-use requirements",
+      "motion that must be preserved",
+      "motion that should be limited",
+      "fit/size/side",
+      "skin/material constraints",
+      "product-product warning constraints",
+      "consumer preferences and budget after adequacy"
+    ],
+    "output_rule": "A product is eligible only if it satisfies every treatment-role requirement assigned to it and does not conflict with the other components of the combined plan."
+  }
+}
