@@ -24,6 +24,21 @@ function kfxAskMechanismClarification(first,done){
   });
 }
 
+/* The conversation director originally emitted its own latency question. This
+   optional announce flag lets the mechanism answer and the next question live in
+   one conversational turn rather than producing two stacked Keneflex bubbles. */
+askUseLatency=function(announce=true){
+  setProgress(69);
+  if(announce)addAI(`Does it usually start pretty quickly, or only after you’ve been doing that for a while?`);
+  oneSelect('When does it start?','An estimate is enough.',[
+    {value:'quick',label:'Pretty quickly / within a few minutes'},
+    {value:'10-30',label:'Usually after about 10–30 minutes'},
+    {value:'30-60',label:'Usually after 30–60 minutes'},
+    {value:'longer',label:'Usually after an hour or more'},
+    {value:'unsure',label:'I’m not sure'}
+  ],v=>{state.triggerLatency=v;askOtherTimes()});
+};
+
 askUseMechanism=function(){
   setProgress(66);
   addAI(`When it comes on during ${activityContext()}, what are you usually doing with that hand right before you notice it?`);
