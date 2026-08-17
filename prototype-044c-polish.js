@@ -9,6 +9,7 @@ parseDetail=function(t){
     const parts=[...prior.split(' and '),...latest.split(' and ')].map(x=>x.trim()).filter(Boolean);
     state.triggerSummary=[...new Set(parts)].join(' and ');
   }
+  if(/\b(drop|dropping|dropped)\b.*\b(thing|things|object|objects|stuff|phone|cup|cups)\b|\b(thing|things|object|objects|stuff)\b.*\b(drop|dropping|dropped)\b/i.test(t||'')) state.spontaneousDropping=true;
 };
 
 function activityContext(){
@@ -25,6 +26,26 @@ function activityContext(){
 function cleanConsumerPhrase(v){return (v||'').trim().replace(/[.?!]+$/,'');}
 function knownSymptomPhrase(v){return /ache|aching|sore|soreness|hurt|hurting|pain|stiff|swell|numb|tingl|pins|needles|weak|rash|itch|red|wound|cut|burn|color|temperature|warm|hot/i.test(v||'');}
 
+/* A vague functional clue should trigger curiosity, not an automatic safety stop. */
+function clarifySpontaneousDropping(next){
+  if(!state.spontaneousDropping || state.gripConcern){next();return;}
+  setProgress(35);
+  addAI(`You mentioned dropping things sometimes. I want to understand what you mean before I make anything of that.`);
+  oneSelect('Which is closest?','',[
+    {value:'casual',label:'It happens occasionally, but my hand does not feel weaker or numb and it is not getting worse'},
+    {value:'changing',label:'It is happening more often, or my hand really does feel weaker, numb, or less reliable'},
+    {value:'unsure',label:'I’m not sure — I’ve just noticed that I sometimes drop things'}
+  ],v=>{
+    state.gripConcern=v==='casual'?'low':v;
+    if(v==='casual') addAI(`Okay. That by itself doesn’t make me stop here.`);
+    else if(v==='changing') addAI(`That matters. I’ll keep it in the safety check before I suggest anything.`);
+    else addAI(`Okay. I won’t treat that alone as a red flag, but I’ll keep it in mind.`);
+    next();
+  });
+}
+
+function continueAfterSymptoms(){clarifySpontaneousDropping(()=>afterSymptomDescription());}
+
 askDetail=function(){
   setProgress(17);
   if(openingHasUsefulDetail()){
@@ -33,16 +54,16 @@ askDetail=function(){
     textComposer('For example: sore and stiff, swollen, sharp, tingling, weak, itchy — or just describe it your way.','Continue →',v=>{
       const before=knownFeatureCount();
       parseDetail(v);addOtherIfNovel(v);
-      if(knownFeatureCount()===before && !state.otherDetail && v.length<12){askSymptomPrompt();return;}
-      afterSymptomDescription();
+      if(knownFeatureCount()===before && !state.otherDetail && !state.spontaneousDropping && v.length<12){askSymptomPrompt();return;}
+      continueAfterSymptoms();
     });
     return;
   }
   addAI(`Tell me a little more. What does it feel like, and when do you tend to notice it?`);
   textComposer('Just describe it normally — for example: sore after typing, tingles at night, itchy and red…','Continue →',v=>{
     state.detail=v;parseDetail(v);addOtherIfNovel(v);
-    if(!state.features.size && !state.otherDetail){askSymptomPrompt();return;}
-    afterSymptomDescription();
+    if(!state.features.size && !state.otherDetail && !state.spontaneousDropping){askSymptomPrompt();return;}
+    continueAfterSymptoms();
   });
 };
 
@@ -56,9 +77,11 @@ clarifyOther=function(){
     parseDetail(v);
     if(!knownSymptomPhrase(v) || state.features.size===before.size) state.otherDetail=v;
     else state.otherDetail='';
-    const sx=symptomSummary();
-    addAI(sx?`Got it — ${sx}. Let’s pin down where you feel it most.`:`Got it. Let’s pin down where you feel it most.`);
-    askLocation(false);
+    clarifySpontaneousDropping(()=>{
+      const sx=symptomSummary();
+      addAI(sx?`Got it — ${sx}. Let’s pin down where you feel it most.`:`Got it. Let’s pin down where you feel it most.`);
+      askLocation(false);
+    });
   });
 };
 
@@ -87,6 +110,19 @@ askUseLatency=function(announce=true){
     {value:'longer',label:'Usually after an hour or more'},
     {value:'unsure',label:'I’m not sure'}
   ],v=>{state.triggerLatency=v;askOtherTimes()});
+};
+
+/* If the consumer already disclosed a meaningful change in grip reliability, do not
+   make them rediscover that fact in a later checklist. Resolve it at the safety gate. */
+const _askSafetyBroadPolish=askSafetyBroad;
+askSafetyBroad=function(){
+  if(state.gripConcern==='changing'){
+    setProgress(90);
+    addAI(`Earlier you said the dropping is new or the hand feels weaker, numb, or less reliable. Before I recommend a product, I need one more check on how much function has changed.`);
+    clarifyGripFunction('changing');
+    return;
+  }
+  _askSafetyBroadPolish();
 };
 
 showEnough=function(){
