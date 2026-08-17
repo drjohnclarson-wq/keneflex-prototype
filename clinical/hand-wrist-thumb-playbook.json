@@ -1,0 +1,110 @@
+{
+  "version": "0.1",
+  "region": "hand-wrist-thumb",
+  "purpose": "Structured regional reasoning support for Keneflex. This file is not a diagnosis engine. It ensures the system considers clinically meaningful competing patterns before mapping a consumer to self-care or products.",
+  "principles": [
+    "Consumer language first; clinical structure stays backstage.",
+    "Multiple patterns can coexist and should not be forced into one explanation.",
+    "Ask only questions that can change safety, likely pattern, treatment role, product requirements, or escalation.",
+    "A product recommendation is not allowed while a materially different unresolved pattern could require a different product or level of care.",
+    "Provider-specific instructions override Keneflex product choices.",
+    "Safety and product-label constraints are eligibility rules, not after-the-fact disclaimers."
+  ],
+  "sources": [
+    "AAOS 2024 Clinical Practice Guideline on Management of Carpal Tunnel Syndrome",
+    "AAOS OrthoInfo: Carpal Tunnel Syndrome",
+    "American Society for Surgery of the Hand (ASSH) HandCare and Handthology resources",
+    "ACR Appropriateness Criteria: Chronic Hand and Wrist Pain"
+  ],
+  "patterns": [
+    {
+      "id": "median-nerve-carpal-tunnel-pattern",
+      "consider_when": ["wrist/hand symptoms", "numbness/tingling/burning", "night symptoms", "phone/driving/prolonged wrist positioning", "clumsiness/dropping", "thumb/index/middle/radial ring distribution"],
+      "discriminators": ["exact sensory distribution", "night waking", "relief with shaking/flicking", "grip/thumb weakness or fine-motor change", "palm sensation versus finger symptoms", "proximal neck/arm symptoms"],
+      "solution_implications": ["do not assume thumb-spica treatment", "if mild self-care remains appropriate, neutral-position wrist support/night use may be a different role than thumb support", "activity/setup modification may be relevant", "persistent/progressive sensory or motor loss changes escalation"],
+      "hard_stops": ["sudden neurologic deficit", "progressive meaningful motor loss", "inability to reliably hold ordinary objects"]
+    },
+    {
+      "id": "ulnar-nerve-pattern",
+      "consider_when": ["pinky/ring-finger sensory symptoms", "ulnar-sided hand symptoms", "symptoms with elbow flexion or pressure", "grip/intrinsic weakness"],
+      "discriminators": ["pinky versus median-finger distribution", "elbow/forearm symptoms", "night position", "pressure at elbow or wrist"],
+      "solution_implications": ["do not map automatically to a median-nerve or thumb-support solution", "consider proximal versus wrist-level source before product selection"]
+    },
+    {
+      "id": "proximal-neural-referred-pattern",
+      "consider_when": ["neck/shoulder/arm symptoms with hand symptoms", "radiating pain", "sensory change not fitting one distal nerve", "position-dependent arm symptoms"],
+      "discriminators": ["neck motion relation", "arm distribution", "proximal weakness", "bilateral or widespread symptoms"],
+      "solution_implications": ["a local wrist/thumb product may not address the driver", "consider professional evaluation when neurologic findings are persistent/progressive"]
+    },
+    {
+      "id": "de-quervain-radial-thumb-tendon-pattern",
+      "consider_when": ["thumb-side wrist pain", "pain/swelling with thumb motion", "repetitive thumb or radial-ulnar wrist use", "lifting/carrying aggravation"],
+      "discriminators": ["thumb-side wrist versus thumb-base joint", "thumb movement/lifting provocation", "localized swelling/tenderness", "trauma absence/presence"],
+      "solution_implications": ["support role may require thumb-spica style stabilization rather than wrist-only support", "activity/load modification is part of the plan", "avoid unnecessary restriction if pattern does not support it"]
+    },
+    {
+      "id": "thumb-cmc-joint-pattern",
+      "consider_when": ["pain at base of thumb", "pinching/gripping/opening jars/turning keys aggravates", "chronic gradual course", "intermittent swelling or reduced pinch strength"],
+      "discriminators": ["base-of-thumb location", "pinch/grasp provocation", "joint stiffness", "other hand joints", "coexisting CTS/de Quervain clues"],
+      "solution_implications": ["thumb-base support should match the joint role while preserving useful motion", "adaptive equipment/load reduction may be part of total solution", "coexisting nerve/tendon patterns may require separate handling"]
+    },
+    {
+      "id": "trigger-thumb-or-flexor-tendon-pattern",
+      "consider_when": ["clicking/catching/locking", "pain at volar thumb/finger base", "difficulty smoothly flexing/extending"],
+      "discriminators": ["locking/catching", "palpable tender nodule", "morning stiffness", "specific digit"],
+      "solution_implications": ["ordinary wrist/thumb brace may not address the primary mechanism", "persistent locking may warrant clinician/hand evaluation"]
+    },
+    {
+      "id": "other-extensor-tendinopathy-intersection-pattern",
+      "consider_when": ["dorsal/radial wrist pain", "crepitus", "swelling with repetitive wrist motion", "sport/exercise/repetitive load"],
+      "discriminators": ["exact dorsal location", "crepitus", "wrist-motion provocation", "recent repetitive-load increase"],
+      "solution_implications": ["activity modulation and appropriately targeted splinting may differ from thumb-joint or nerve plans"]
+    },
+    {
+      "id": "ulnar-sided-wrist-tfcc-or-structural-pattern",
+      "consider_when": ["pinky-side wrist pain", "rotation/loading aggravates", "clicking or instability", "fall/twist history"],
+      "discriminators": ["ulnar-sided location", "forearm rotation", "weight-bearing through hand", "clicking/instability", "trauma"],
+      "solution_implications": ["do not substitute a thumb-focused support", "trauma/instability/persistent mechanical symptoms may change evaluation threshold"]
+    },
+    {
+      "id": "ganglion-or-mass-pattern",
+      "consider_when": ["visible or palpable lump", "position-dependent wrist discomfort", "localized pressure symptoms"],
+      "discriminators": ["location/size", "change with wrist position", "sensory symptoms", "redness/warmth", "rapid growth"],
+      "solution_implications": ["a generic brace is not automatically the primary answer", "rapid change, neurologic effect, or atypical features warrant evaluation"]
+    },
+    {
+      "id": "inflammatory-crystal-infectious-joint-pattern",
+      "consider_when": ["hot/red/swollen joint", "prolonged morning stiffness", "multiple joints", "systemic symptoms", "history of inflammatory disease/gout/psoriasis"],
+      "discriminators": ["temperature/redness", "sudden versus gradual swelling", "fever/unwell", "multiple-joint involvement", "morning stiffness duration"],
+      "solution_implications": ["do not reduce to an ordinary overuse product problem", "acute hot/red/swollen or systemic illness can require prompt evaluation"]
+    },
+    {
+      "id": "trauma-fracture-ligament-pattern",
+      "consider_when": ["fall/direct blow/twist", "acute swelling/bruising", "focal bony tenderness", "deformity", "loss of motion/function"],
+      "discriminators": ["mechanism", "exact tenderness", "swelling/bruising", "ability to move/hold objects", "snuffbox/thumb-base/ulnar-ligament location"],
+      "solution_implications": ["red-flag or fracture/instability suspicion supersedes commerce", "do not mask an unresolved traumatic structural problem with a retail support"]
+    },
+    {
+      "id": "nonspecific-repetitive-overuse-pattern",
+      "consider_when": ["gradual use-related pain/stiffness", "no stronger nerve/joint/trauma pattern", "symptoms tied to repeated task", "improves with load change/rest"],
+      "discriminators": ["task mechanics", "latency to symptoms", "rest response", "setup/posture", "recent volume/intensity change"],
+      "solution_implications": ["total plan may combine targeted support, recovery, setup/activity changes, and comfortable movement", "ergonomic aids are considered only when they solve the identified load/setup problem"]
+    },
+    {
+      "id": "persistent-atypical-structural-pattern",
+      "consider_when": ["persistent central/dorsal wrist pain", "unexplained stiffness/swelling", "failure of reasonable conservative care", "atypical course"],
+      "discriminators": ["duration/progression", "focal location", "rest/night pain", "loss of motion", "response to prior care"],
+      "solution_implications": ["failure of a reasonable first plan should reopen the differential rather than trigger automatic product escalation", "professional evaluation may be more appropriate than cycling through retail supports"]
+    }
+  ],
+  "pre_recommendation_gate": {
+    "questions": [
+      "Have all plausible pattern categories that could materially change the product role or level of care been considered?",
+      "Is there any unresolved nerve, trauma, inflammatory/infectious, or structural pattern that would make the current retail plan inappropriate?",
+      "If multiple symptom locations behave differently, are they being carried as separate patterns?",
+      "Does the selected support type match the role required by the surviving pattern(s)?",
+      "Would a reasonable clinician looking at this history ask a materially important question Keneflex has not yet asked?"
+    ],
+    "rule": "If any answer is yes/uncertain in a way that could change the recommendation, continue the work-up before presenting a product plan."
+  }
+}
