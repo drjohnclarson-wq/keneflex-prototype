@@ -130,7 +130,7 @@ kfxHOpenHomePlan=function(){
 
 /* ---- Plan first; deeper work becomes clear, optional links ---- */
 function kfxKFindMainBlock(prefix){
-  return [...document.querySelectorAll('#solutionView .main > .block')].find(b=>b.querySelector(':scope > h2')?.textContent.trim().startsWith(prefix));
+  return [...document.querySelectorAll('#solutionView .main > .block')].find(b=>b.querySelector('h2')?.textContent.trim().startsWith(prefix));
 }
 function kfxKFindSideBlock(cls){return document.querySelector(`#solutionView .side > .block.${cls}`)}
 
@@ -168,7 +168,7 @@ function kfxKRestructureSolution(){
   if(total&&plan)plan.insertAdjacentElement('afterend',total);
   if(home&&total)total.insertAdjacentElement('afterend',home);
 
-  const nav=document.createElement('section');nav.className='block kfxKNext';nav.innerHTML=`<h2>Want the details?</h2><p class="help">Your plan is above. Open only what is useful to you.</p><div class="kfxKLinks"><button data-open="why">Why this plan fits me</button><button data-open="research">See Keneflex’s research</button><button data-open="adjust">Adjust my plan</button><button data-open="doctor">Share with my healthcare professional</button></div>`;
+  const nav=document.createElement('section');nav.className='block kfxKNext';nav.innerHTML=`<h2>Want the details?</h2><p class="help">Your plan is above. Open only what is useful to you.</p><div class="kfxKLinks"><button data-open="home">Open my at-home plan</button><button data-open="why">Why this plan fits me</button><button data-open="research">See Keneflex’s research</button><button data-open="adjust">Adjust my plan</button><button data-open="doctor">Share with my healthcare professional</button></div>`;
   const anchor=home||total||plan; if(anchor)anchor.insertAdjacentElement('afterend',nav); else main.prepend(nav);
 
   function makeDisclosure(block,label,key){
@@ -176,6 +176,7 @@ function kfxKRestructureSolution(){
     block.classList.add('kfxKDisclosure');block.dataset.disclosure=key;block.style.display='none';
     const h=block.querySelector(':scope > h2');if(h)h.textContent=label;
   }
+  if(home){home.style.display='none';}
   makeDisclosure(why,'Why this plan fits you','why');
   if(research){research.innerHTML=kfxKResearchHTML();makeDisclosure(research,'See how Keneflex researched the whole plan','research');}
   if(tune){tune.classList.add('kfxKDisclosure');tune.dataset.disclosure='adjust';tune.style.display='none';main.appendChild(tune);}
@@ -186,8 +187,10 @@ function kfxKRestructureSolution(){
   if(cart)main.appendChild(cart);
 
   nav.querySelector('[data-open="doctor"]').onclick=kfxKOpenDoctorSummary;
+  nav.querySelector('[data-open="home"]').onclick=kfxHOpenHomePlan;
+  const homeBtn=document.getElementById('kfxHomePlanBtn');if(homeBtn)homeBtn.onclick=kfxHOpenHomePlan;
   nav.querySelectorAll('[data-open]').forEach(btn=>{
-    const key=btn.dataset.open;if(key==='doctor')return;
+    const key=btn.dataset.open;if(key==='doctor'||key==='home')return;
     btn.onclick=()=>{
       const b=main.querySelector(`[data-disclosure="${key}"]`);if(!b)return;
       const open=b.style.display==='none';b.style.display=open?'block':'none';
