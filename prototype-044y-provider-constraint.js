@@ -7,6 +7,10 @@
   const priorShowSolution=typeof showSolution==='function'?showSolution:null;
   if(!priorShowSolution)return;
 
+  document.title='Keneflex Prototype 0.4.4Y';
+  const buildEyebrow=document.querySelector('#intro .hero .eyebrow');
+  if(buildEyebrow)buildEyebrow.textContent='Prototype 0.4.4Y • P0 readiness';
+
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
   function providerText(){return state&&state.providerInstruction&&state.providerInstruction.present?String(state.providerInstruction.text||'').trim():'';}
   function exactProductNamed(text){
