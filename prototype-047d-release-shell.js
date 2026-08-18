@@ -1,6 +1,7 @@
 /* Keneflex 0.4.7D — release shell owner.
    Final startup guard for participant-facing P0. Keeps the opening interaction visibly usable,
-   prevents accidental modal/overlay obstruction before intake begins, and improves mobile modal fit. */
+   prevents accidental modal/overlay obstruction before intake begins, improves mobile modal fit,
+   and guarantees the exact visible opening story reaches the canonical 0.4.6 store before routing. */
 (function(root){'use strict';if(typeof document==='undefined')return;
 const style=document.createElement('style');style.id='kfx047d-release-shell';style.textContent=`
 body:not(.kfxStarted) #intro{display:block!important;visibility:visible!important;opacity:1!important}
@@ -13,9 +14,15 @@ body:not(.kfxStarted) #modal:not(.kfxUserOpened){display:none!important}
 const intro=document.getElementById('intro'),opening=document.getElementById('opening'),btn=document.getElementById('openingBtn'),modal=document.getElementById('modal');
 if(intro)intro.classList.remove('hidden');if(modal){modal.classList.add('hidden');modal.classList.remove('kfxUserOpened');}
 if(opening){opening.disabled=false;opening.readOnly=false;opening.setAttribute('aria-label','Tell Keneflex what is bothering you');}
-if(btn){btn.setAttribute('aria-label','Tell Keneflex');btn.addEventListener('click',()=>document.body.classList.add('kfxStarted'),true);}
+function primeCanonicalOpening(){
+  if(!opening||!root.KFX046||typeof state==='undefined'||!state.kfx046)return;
+  const v=(opening.value||'').trim();if(!v)return;
+  const store=state.kfx046,last=store.events&&store.events.length?store.events[store.events.length-1].text:'';
+  if(last!==v)root.KFX046.ingest(store,v);
+}
+if(btn){btn.setAttribute('aria-label','Tell Keneflex');btn.addEventListener('click',()=>{primeCanonicalOpening();document.body.classList.add('kfxStarted');},true);}
 document.querySelectorAll('[data-modal]').forEach(x=>x.addEventListener('click',()=>{if(modal)modal.classList.add('kfxUserOpened');},true));
 const close=document.getElementById('closeModal');if(close)close.addEventListener('click',()=>{if(modal)modal.classList.remove('kfxUserOpened');},true);
-function audit(){const r=opening&&opening.getBoundingClientRect(),b=btn&&btn.getBoundingClientRect();const cs=opening&&getComputedStyle(opening),bs=btn&&getComputedStyle(btn);return{build:'0.4.7D',openingPresent:!!opening,openingVisible:!!(r&&r.width&&r.height&&cs.display!=='none'&&cs.visibility!=='hidden'),openingEditable:!!(opening&&!opening.disabled&&!opening.readOnly),buttonPresent:!!btn,buttonVisible:!!(b&&b.width&&b.height&&bs.display!=='none'&&bs.visibility!=='hidden'),modalClosed:!!(!modal||modal.classList.contains('hidden')||getComputedStyle(modal).display==='none'),pass:!!(opening&&btn&&r&&r.width&&r.height&&!opening.disabled&&!opening.readOnly&&b&&b.width&&b.height)};}
-root.KFX047DReleaseAudit=audit;root.KFX047D={build:'0.4.7D',audit};
+function audit(){const r=opening&&opening.getBoundingClientRect(),b=btn&&btn.getBoundingClientRect();const cs=opening&&getComputedStyle(opening),bs=btn&&getComputedStyle(btn);return{build:'0.4.7D',openingPresent:!!opening,openingVisible:!!(r&&r.width&&r.height&&cs.display!=='none'&&cs.visibility!=='hidden'),openingEditable:!!(opening&&!opening.disabled&&!opening.readOnly),buttonPresent:!!btn,buttonVisible:!!(b&&b.width&&b.height&&bs.display!=='none'&&bs.visibility!=='hidden'),modalClosed:!!(!modal||modal.classList.contains('hidden')||getComputedStyle(modal).display==='none'),canonicalOpeningPrimed:!!(typeof state!=='undefined'&&state.kfx046),pass:!!(opening&&btn&&r&&r.width&&r.height&&!opening.disabled&&!opening.readOnly&&b&&b.width&&b.height)};}
+root.KFX047DReleaseAudit=audit;root.KFX047D={build:'0.4.7D',audit,primeCanonicalOpening};
 })(typeof window!=='undefined'?window:globalThis);
