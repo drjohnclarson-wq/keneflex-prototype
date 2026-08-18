@@ -12,7 +12,8 @@ const consumer=fs.readFileSync('prototype-047-consumer-experience.js','utf8');
 const firewall=fs.readFileSync('prototype-047b-consumer-firewall.js','utf8');
 const stability=fs.readFileSync('prototype-047c-interaction-stability.js','utf8');
 const shell=fs.readFileSync('prototype-047d-release-shell.js','utf8');
-const v='?v=047d';
+const storyGate=fs.readFileSync('prototype-047e-story-gate.js','utf8');
+const v='?v=047e';
 ok(loader.includes('prototype-045c-release-integrity.js'+v),'atomic render guard remains loaded');
 ok(loader.includes('prototype-046-conversation-engine.js'+v),'0.4.6 single-owner conversation engine remains loaded');
 ok(loader.includes('prototype-046b-critical-state.js'+v),'0.4.6B critical canonical-state hardening is loaded');
@@ -22,6 +23,7 @@ ok(loader.includes('prototype-047-consumer-experience.js'+v),'0.4.7 consumer exp
 ok(loader.includes('prototype-047b-consumer-firewall.js'+v),'0.4.7B visible-language firewall is loaded');
 ok(loader.includes('prototype-047c-interaction-stability.js'+v),'0.4.7C interaction stability owner is loaded');
 ok(loader.includes('prototype-047d-release-shell.js'+v),'0.4.7D final startup shell is loaded');
+ok(loader.includes('prototype-047e-story-gate.js'+v),'0.4.7E final story-first gate is loaded');
 ok(loader.lastIndexOf('prototype-046-conversation-engine.js')>loader.lastIndexOf('prototype-045c-release-integrity.js'),'conversation engine loads after atomic render guard');
 ok(loader.lastIndexOf('prototype-046b-critical-state.js')>loader.lastIndexOf('prototype-046-conversation-engine.js'),'critical-state hardening loads after conversation engine');
 ok(loader.lastIndexOf('prototype-047a-dom-idempotence.js')>loader.lastIndexOf('prototype-046b-critical-state.js'),'presentation idempotence guard loads after state engine');
@@ -29,7 +31,8 @@ ok(loader.lastIndexOf('prototype-047aa-observer-scope.js')>loader.lastIndexOf('p
 ok(loader.lastIndexOf('prototype-047-consumer-experience.js')>loader.lastIndexOf('prototype-047aa-observer-scope.js'),'consumer experience loads after observer scope');
 ok(loader.lastIndexOf('prototype-047b-consumer-firewall.js')>loader.lastIndexOf('prototype-047-consumer-experience.js'),'visible-language firewall loads after consumer experience');
 ok(loader.lastIndexOf('prototype-047c-interaction-stability.js')>loader.lastIndexOf('prototype-047b-consumer-firewall.js'),'interaction stability loads after language firewall');
-ok(loader.lastIndexOf('prototype-047d-release-shell.js')>loader.lastIndexOf('prototype-047c-interaction-stability.js'),'release shell loads last');
+ok(loader.lastIndexOf('prototype-047d-release-shell.js')>loader.lastIndexOf('prototype-047c-interaction-stability.js'),'release shell loads after interaction stability');
+ok(loader.lastIndexOf('prototype-047e-story-gate.js')>loader.lastIndexOf('prototype-047d-release-shell.js'),'story-first question gate loads last');
 ok(route.includes('Keneflex Test 0.4.7'),'participant route identifies 0.4.7');
 ok(route.includes("searchParams.set('participant','047')"),'participant route requests 0.4.7');
 ok(route.includes("searchParams.set('build',String(stamp))")&&route.includes("searchParams.set('cache','no-store')"),'participant route uses a unique no-store URL');
@@ -40,7 +43,7 @@ ok(guard.includes('KFXReleaseAudit'),'runtime render-integrity audit remains exp
 ok(controller.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"),'hand/wrist/thumb/finger share one canonical problem family');
 ok(controller.includes('function candidates(s)'),'single-owner next-question candidate gate exists');
 ok(controller.includes("if(!known(t,c))a.push"),'known facts are excluded before question rendering');
-ok(controller.includes('askDetail=function()'),'0.4.6 owns the ordinary conversation entry point');
+ok(controller.includes('askDetail=function()'),'0.4.6 owns the base ordinary conversation entry point');
 ok(controller.includes('KFX046Audit'),'runtime story/question audit is exposed');
 ok(critical.includes('collectProvider'),'provider instructions are retained in canonical state');
 ok(critical.includes('collectOwned'),'owned items are retained in canonical state');
@@ -56,4 +59,8 @@ ok(stability.includes('#openingBtn'),'opening control stability is explicitly ow
 ok(shell.includes('KFX047DReleaseAudit'),'startup shell exposes a release audit');
 ok(shell.includes('body:not(.kfxStarted) #intro'),'startup shell guarantees visible intro before intake');
 ok(shell.includes('body:not(.kfxStarted) #modal:not(.kfxUserOpened)'),'startup shell prevents accidental modal obstruction');
+ok(storyGate.includes('complaintDuration'),'story gate distinguishes complaint duration from relief duration');
+ok(storyGate.includes('if(E.known(t,q.concept))'),'final question permission invariant blocks known facts');
+ok(storyGate.includes('askDetail=function(){renderCanonical();}'),'0.4.7E owns the final opening-story handoff');
+ok(storyGate.includes('KFX047E'),'story-first runtime audit is exposed');
 console.log(`\n${total-fail}/${total} release-contract assertions passed`);process.exit(fail?1:0);
