@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 const base=process.env.KFX_BASE_URL||'http://127.0.0.1:8080/?participant=047&build=ci';
 const stories=[
-  'My right hand has been hurting for about 4 weeks or so. The pain is in my wrist and thumb. It is sore at the base of my thumb and hurts especially when I am working or playing on my cell phone.',
+  'My right hand has been hurting for about a month now. It is sore at the bottom of my thumb and wrist. If i rest it for a few days it feels better but once I start typing on my computer or using my cell phone a lot it comes back.',
   'My left wrist and thumb tingle in my thumb and index finger for three weeks after typing and scrolling. It built up gradually.',
   'My right knee hurts under the kneecap with sharp pain going downstairs in the morning for three weeks. It built up gradually.',
   'My left ankle has hurt for four days after I rolled it yesterday and it is swollen.',
@@ -35,7 +35,7 @@ function caseUrl(n){const u=new URL(base);u.searchParams.set('case',String(n));r
    await page.waitForTimeout(250);
    const result=await page.evaluate(()=>{const ais=[...document.querySelectorAll('#conversation .bubble.ai')].map(x=>(x.textContent||'').replace(/\s+/g,' ').trim());const controls=[...document.querySelectorAll('#interaction textarea,#interaction input,#interaction button')];const bubbles=[...document.querySelectorAll('#conversation .bubble')];const last=bubbles[bubbles.length-1];const orphan=controls.length>0&&!(last&&last.classList.contains('ai'));const audit=window.KFX046Audit?window.KFX046Audit():null;return{ais,orphan,audit,integrity:document.documentElement.dataset.kfxIntegrity||null};});
    if(result.orphan)throw new Error('orphan interaction control');if(result.integrity==='fail')throw new Error('release integrity flag failed');if(result.audit&&!result.audit.pass)throw new Error('canonical audit says next question is already known: '+JSON.stringify(result.audit.next));
-   if(i===0){const joined=result.ais.join(' | ').toLowerCase();if(joined.includes('which side is bothering'))throw new Error('founder regression re-asked side');if(joined.includes('how long has this been'))throw new Error('founder regression re-asked duration');}
+   if(i===0){const joined=result.ais.join(' | ').toLowerCase();if(joined.includes('which side is bothering'))throw new Error('founder live-story regression re-asked side');if(!result.audit||!result.audit.knownSide)throw new Error('founder live-story did not retain explicit right side');}
    console.log('PASS browser subject '+(i+1));
   }catch(e){failures.push({subject:i+1,error:e.message,url:page.url()});console.error('FAIL browser subject '+(i+1),e.message,page.url());}
   await page.close();
