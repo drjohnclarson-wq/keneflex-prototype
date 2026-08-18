@@ -10,6 +10,7 @@ function translateKnownLegacy(){
  document.title='Keneflex';
  const eb=document.querySelector('#intro .hero .eyebrow');text(eb,'Personalized health & product guidance');
  const supportCopy=document.querySelector('#supportItem .planCopy');if(supportCopy&&/prototype/i.test(supportCopy.textContent||''))text(supportCopy,'Supports both the wrist and thumb while preserving more usable movement than a rigid immobilizer. Your wrist measurement falls within the selected manufacturer size range.');
+ const tune=document.querySelector('#solutionView .tune');if(tune){text(tune.querySelector('h2'),"Something about this plan doesn't work for me");text(tune.querySelector('.help'),"Tell Keneflex what doesn't fit your real life. Keneflex will rework the plan without handing the shopping decision back to you.");}
  const packet=document.getElementById('kfxVPacketValue');if(packet){
    packet.classList.add('kfx047simple');const e=packet.querySelector('.eyebrow');text(e,'YOUR KENEFLEX PLAN');
    text(packet.querySelector('h3'),'Your Keneflex Plan');
