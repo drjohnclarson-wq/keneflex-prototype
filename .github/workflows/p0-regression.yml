@@ -22,6 +22,8 @@ jobs:
         run: node tests/prototype-046-50-subjects.js
       - name: Run 0.4.6 second 50-subject one-variable mutation regression
         run: node tests/prototype-046-50-mutations.js
+      - name: Run P0 critical provider, owned-item, correction and multi-problem regressions
+        run: node tests/prototype-046-p0-critical.js
 
   browser-smoke-gate:
     runs-on: ubuntu-latest
