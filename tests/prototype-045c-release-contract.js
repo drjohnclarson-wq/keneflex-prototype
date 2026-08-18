@@ -7,6 +7,7 @@ const guard=fs.readFileSync('prototype-045c-release-integrity.js','utf8');
 const controller=fs.readFileSync('prototype-046-conversation-engine.js','utf8');
 const critical=fs.readFileSync('prototype-046b-critical-state.js','utf8');
 const idempotence=fs.readFileSync('prototype-047a-dom-idempotence.js','utf8');
+const observerScope=fs.readFileSync('prototype-047aa-observer-scope.js','utf8');
 const consumer=fs.readFileSync('prototype-047-consumer-experience.js','utf8');
 const firewall=fs.readFileSync('prototype-047b-consumer-firewall.js','utf8');
 const stability=fs.readFileSync('prototype-047c-interaction-stability.js','utf8');
@@ -16,6 +17,7 @@ ok(loader.includes('prototype-045c-release-integrity.js'+v),'atomic render guard
 ok(loader.includes('prototype-046-conversation-engine.js'+v),'0.4.6 single-owner conversation engine remains loaded');
 ok(loader.includes('prototype-046b-critical-state.js'+v),'0.4.6B critical canonical-state hardening is loaded');
 ok(loader.includes('prototype-047a-dom-idempotence.js'+v),'presentation idempotence guard is loaded');
+ok(loader.includes('prototype-047aa-observer-scope.js'+v),'legacy presentation observer is scoped');
 ok(loader.includes('prototype-047-consumer-experience.js'+v),'0.4.7 consumer experience owner is loaded');
 ok(loader.includes('prototype-047b-consumer-firewall.js'+v),'0.4.7B visible-language firewall is loaded');
 ok(loader.includes('prototype-047c-interaction-stability.js'+v),'0.4.7C interaction stability owner is loaded');
@@ -23,7 +25,8 @@ ok(loader.includes('prototype-047d-release-shell.js'+v),'0.4.7D final startup sh
 ok(loader.lastIndexOf('prototype-046-conversation-engine.js')>loader.lastIndexOf('prototype-045c-release-integrity.js'),'conversation engine loads after atomic render guard');
 ok(loader.lastIndexOf('prototype-046b-critical-state.js')>loader.lastIndexOf('prototype-046-conversation-engine.js'),'critical-state hardening loads after conversation engine');
 ok(loader.lastIndexOf('prototype-047a-dom-idempotence.js')>loader.lastIndexOf('prototype-046b-critical-state.js'),'presentation idempotence guard loads after state engine');
-ok(loader.lastIndexOf('prototype-047-consumer-experience.js')>loader.lastIndexOf('prototype-047a-dom-idempotence.js'),'consumer experience loads after idempotence guard');
+ok(loader.lastIndexOf('prototype-047aa-observer-scope.js')>loader.lastIndexOf('prototype-047a-dom-idempotence.js'),'observer scope loads after idempotence guard');
+ok(loader.lastIndexOf('prototype-047-consumer-experience.js')>loader.lastIndexOf('prototype-047aa-observer-scope.js'),'consumer experience loads after observer scope');
 ok(loader.lastIndexOf('prototype-047b-consumer-firewall.js')>loader.lastIndexOf('prototype-047-consumer-experience.js'),'visible-language firewall loads after consumer experience');
 ok(loader.lastIndexOf('prototype-047c-interaction-stability.js')>loader.lastIndexOf('prototype-047b-consumer-firewall.js'),'interaction stability loads after language firewall');
 ok(loader.lastIndexOf('prototype-047d-release-shell.js')>loader.lastIndexOf('prototype-047c-interaction-stability.js'),'release shell loads last');
@@ -44,6 +47,7 @@ ok(critical.includes('collectOwned'),'owned items are retained in canonical stat
 ok(critical.includes('correctionSide'),'laterality corrections have explicit supersession handling');
 ok(critical.includes('threads.every(threadAdequate)'),'multi-problem handoff requires every surviving thread to be adequate');
 ok(idempotence.includes('__kfxIdempotentTextContent'),'presentation rewrites are idempotent rather than recursively mutating');
+ok(observerScope.includes('suppressesNextPresentationObserver'),'obsolete full-DOM observer is intentionally suppressed');
 ok(consumer.includes('Your Keneflex Plan'),'consumer plan owner renders Keneflex Plan');
 ok(consumer.includes("Something about this plan doesn't work for me"),'consumer plan gives a clear adjustment CTA');
 ok(firewall.includes('KFX047VisibleAudit'),'visible-language audit is exposed');
