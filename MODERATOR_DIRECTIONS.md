@@ -1,17 +1,23 @@
 # Keneflex — Canonical Moderator Directions
 
-**Protocol:** 0.4.3-R1  
-**Use:** P0 dry run, then P1–P6 after freeze.
+**Protocol:** 0.4.4Y-P0  
+**Use:** one P0 dry run, then P1–P6 after freeze.
+
+## Canonical participant route
+
+Always start at `participant-card.html` and use its **Begin the Keneflex test** button. That opens `test.html`, which loads the current integrated 0.4.4Y build with cache bypass.
+
+Do **not** launch an old prototype manually and do not inject `prototype-043-patch.js`. If the canonical route fails, stop and record a technical failure rather than switching the participant to another build.
 
 ## What this test is trying to learn
 
-Do not help Keneflex succeed. Observe whether it can take a vague consumer complaint, ask for the information it needs, build an earned person-specific solution, and leave the participant feeling that product selection is finished rather than needing to resume shopping/research.
+Do not help Keneflex succeed. Observe whether it can take a vague consumer complaint, ask for the information it genuinely needs, build an earned person-specific solution, and leave the participant feeling that product selection is finished rather than needing to resume shopping/research.
 
 The participant begins with only:
 
 > **“My hand has been bothering me.”**
 
-Do **not** give the full backstory before the test. The moderator privately holds the standardized facts below and supplies a fact only when Keneflex asks for information needed to answer its question. If Keneflex never asks for an important fact, do not rescue it; record the omission.
+Do not give the full backstory before the test. The moderator privately holds the standardized facts below and supplies a fact only when Keneflex asks for information needed to answer its question. If Keneflex never asks for an important fact, do not rescue it; record the omission.
 
 ## Private standardized scenario facts
 
@@ -43,10 +49,34 @@ Say:
 - Do not rescue Keneflex if it misses an important question.
 - Do not praise positive comments or defend negative comments.
 - Do not ask the participant to read **How It Works** or **Our Approach** during the initial experience.
-- Do not explain the founder intention until the final reveal.
+- Do not explain founder intention until the final reveal.
 - If asked “What should I choose?” say: **“What would you do if I weren’t here?”**
 - If asked “What does this mean?” say: **“Tell me what you think it means first.”**
 - If asked “Is this trustworthy?” say: **“What would you need to know to decide that?”**
+
+## P0-specific checks before P1 freeze
+
+P0 does not count among the six. In addition to the normal standardized scenario, use P0 to verify the technical/logic gates below.
+
+### Story comprehension
+
+At least once, restart and enter a rich story that contains positive and negative facts, for example:
+
+> “My right wrist has hurt on the thumb side for about three weeks after pickleball. No numbness or swelling. I don’t remember one particular injury.”
+
+Confirm that Keneflex carries those facts forward instead of reversing or redundantly re-asking them. Use `STORY_ENGINE_P0_QA.md` for the complete regression set.
+
+### Provider constraint
+
+At least once, restart and enter:
+
+> “My doctor told me to use a wrist brace at night.”
+
+Confirm that the provider instruction is carried forward and the standard prototype support cannot silently substitute for or compete with it. A hold/need-more-information answer is acceptable; an unsupported substitute is not.
+
+### Participant route
+
+Confirm that `participant-card.html` → `test.html` opens the current build and does not load the obsolete 0.4.3 participant patch.
 
 ## Phase A — Initial Keneflex experience
 
@@ -61,8 +91,7 @@ Say:
 
 Use the live Moderator Debrief and capture the initial solution reaction before introducing any new constraint.
 
-The primary questions are:
-
+Primary questions:
 - What would you do next?
 - Before acting, would you check anywhere else? What exactly, and would it make you reconsider which product to choose?
 - In your own words, what did Keneflex do for you?
@@ -71,7 +100,7 @@ The primary questions are:
 - Confidence to act (1–7).
 - Ease from vague problem to usable answer (1–7).
 
-Then **lock the initial-solution answers**.
+Then lock the initial-solution answers.
 
 ### Decision-state coding
 
@@ -84,16 +113,15 @@ Then **lock the initial-solution answers**.
 After the initial answers are locked, introduce only the assigned secondary constraint:
 
 - **P1/P2:** “Now imagine you already own a reusable cold pack that works well.”
-- **P3/P4:** “Now imagine you do not want to spend more than $30.”
+- **P3/P4:** “Now imagine you need to spend less.”
 - **P5/P6:** “Now imagine you do not like topical pain-relief products.”
 - **P0:** use any one of the three.
 
 Have the participant use **Adjust My Solution**.
 
-Observe whether Keneflex re-solves the solution, recognizes adequate owned items as KEEP/$0, removes optional components appropriately, preserves the primary strategy when possible, and continues to own the decision rather than becoming a cart editor.
+Observe whether Keneflex re-solves the solution, recognizes an adequate owned item as KEEP/no duplicate purchase, removes optional components appropriately, preserves the primary strategy when possible, and continues to own the decision rather than becoming a cart editor.
 
 Ask:
-
 - What changed?
 - What would you do next now?
 - Did this still feel like Keneflex was solving the problem, or did you feel like you were shopping? Why?
@@ -113,21 +141,19 @@ Supply the same private scenario facts only as needed. Do not improve the partic
 Record how much prompting the participant performs, what ChatGPT asks or misses, whether a specific product/fit/complete solution emerges, and whether the participant still wants outside product research.
 
 Then ask:
-
 - Which experience leaves you more ready to act, and why?
 - Which required more work from you? What work?
 - What did Keneflex do better, if anything?
 - What did ChatGPT do better, if anything?
 - Which would you choose first next time, or would it depend?
 
-Treat this comparison as **directional**, not controlled proof of superiority, because Keneflex is intentionally experienced first to preserve its unprimed primary measurement.
+Treat this comparison as directional, not controlled proof of superiority, because Keneflex is intentionally experienced first to preserve its unprimed primary measurement.
 
 ## Phase D — Promise vs. experience
 
 Only now ask the participant to read **How It Works** and **Our Approach**.
 
 Ask:
-
 - Where does this description match what you experienced?
 - Where does it claim or imply something you did not actually experience?
 - What important part of the experience is missing from the explanation?
@@ -139,14 +165,13 @@ Only at the end, read neutrally:
 > “What we’re trying to build is not just a site that recommends products. The goal is for someone to come in with a confusing over-the-counter health problem, use their own words, and have Keneflex do the work of narrowing what matters, comparing relevant options, building the right level of solution, explaining the reasoning, adapting to things they already have, home remedies, preferences or budget, and helping them feel the decision is finished rather than needing to keep researching.”
 
 Ask:
-
 - Where did the experience deliver that?
 - Where did it miss that intention?
 - What single change would most improve the gap?
 
 ## What success is — and is not
 
-Success is **not** “I liked the website.” Look for spontaneous evidence that Keneflex understood the vague problem, asked the right questions, removed meaningful research/selection work, made its recommendation understandable and person-specific, re-solved when constraints changed, and ended product selection.
+Success is not “I liked the website.” Look for spontaneous evidence that Keneflex understood the vague problem, asked the right questions, removed meaningful research/selection work, made its recommendation understandable and person-specific, re-solved when constraints changed, and ended product selection.
 
 A quick confirmation check is not automatically failure. **REOPENED product selection is the important failure condition.**
 
@@ -154,17 +179,17 @@ Also observe the affiliate disclosure. Ask whether learning that Keneflex may ma
 
 ## P0 and freeze rule
 
-Run **one P0 dry run** first. P0 does not count among the six. After P0, fix only confusing instructions, broken branching, technical defects, or clearly invalid/leading research questions exposed by the dry run.
+Run one P0 dry run first. After P0, fix only confusing instructions, broken branching, technical defects, safety issues, or clearly invalid/leading research questions exposed by the dry run.
 
 Then freeze the prototype and protocol for P1–P6. Once P1 begins, change only for a safety issue, completion-blocking technical failure, or materially broken branch. Ordinary criticism becomes data; do not redesign between participants.
 
 ## After each session
 
 1. Complete the Moderator Debrief.
-2. Click **Download session file**.
+2. Click **Download session file** if available.
 3. Save using participant ID.
 4. Preserve transcript/recording if consented.
-5. Upload the JSON session file and any transcript/notes to ChatGPT for synthesis.
+5. Upload the session file and any transcript/notes to ChatGPT for synthesis.
 6. Do not redesign from one participant’s feedback.
 
 After P6, stop and synthesize all six together before changing the product.
