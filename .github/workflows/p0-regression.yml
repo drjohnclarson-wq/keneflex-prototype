@@ -18,5 +18,7 @@ jobs:
         run: node tests/prototype-045b-regression.js
       - name: Run release-integrity contract regression
         run: node tests/prototype-045c-release-contract.js
-      - name: Run 0.4.6 50-subject adversarial regression
+      - name: Run 0.4.6 first 50-subject adversarial regression
         run: node tests/prototype-046-50-subjects.js
+      - name: Run 0.4.6 second 50-subject one-variable mutation regression
+        run: node tests/prototype-046-50-mutations.js
