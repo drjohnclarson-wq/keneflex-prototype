@@ -1,4 +1,5 @@
 require('../prototype-046-conversation-engine.js');
+require('../prototype-046b-critical-state.js');
 require('../prototype-047-consumer-experience.js');
 const E=globalThis.KFX046,V=globalThis.KFX047;
 const stories=[];
@@ -25,6 +26,5 @@ stories.forEach((story,i)=>{
  if(digital&&!pages.some(p=>p.id==='setup'))failures.push({subject:i+1,reason:'missing setup page'});
  for(const p of pages){if(p.visuals<1)failures.push({subject:i+1,reason:'page lacks explanatory visual '+p.id});if(V.hasBanned(p.title+' '+p.copy))failures.push({subject:i+1,reason:'internal language in page model '+p.id});if(/\$0|care packet/i.test(p.title+' '+p.copy))failures.push({subject:i+1,reason:'devalues plan or uses packet language '+p.id});}
 });
-// Founder exact regression: side, duration, area, trigger and precise location are already known.
 {const s=E.createStore();const story='My right hand has been hurting for about 4 weeks or so. The pain is in my wrist and thumb. It is sore at the base of my thumb and hurts especially when I am working or playing on my cell phone.';E.ingest(s,story);const t=E.activeThread(s),q=E.nextQuestion(s);if(!(t.side==='right'&&t.duration&&t.duration.value===4&&t.locations.includes('base of thumb')&&t.triggers.includes('phone')&&q&&q.concept==='start'))failures.push({subject:'founder-exact',reason:'known-fact regression',summary:E.summary(s),q});}
 console.log(JSON.stringify({subjects:stories.length,pageAudits:pageCount,failures:failures.length,details:failures},null,2));if(failures.length)process.exit(1);
