@@ -22,3 +22,20 @@ jobs:
         run: node tests/prototype-046-50-subjects.js
       - name: Run 0.4.6 second 50-subject one-variable mutation regression
         run: node tests/prototype-046-50-mutations.js
+
+  browser-smoke-gate:
+    runs-on: ubuntu-latest
+    needs: story-and-mutation-gate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start prototype server
+        run: python3 -m http.server 8080 >/tmp/keneflex-http.log 2>&1 &
+      - name: Run 10-story headless browser smoke suite
+        run: node tests/prototype-046-browser-smoke.js
