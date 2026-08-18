@@ -16,3 +16,5 @@ jobs:
           node-version: '20'
       - name: Run canonical story regression
         run: node tests/prototype-045b-regression.js
+      - name: Run release-integrity contract regression
+        run: node tests/prototype-045c-release-contract.js
