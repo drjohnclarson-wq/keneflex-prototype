@@ -2,7 +2,7 @@ name: Keneflex P0 Regression
 
 on:
   push:
-    branches: [ main, prototype-045-clean ]
+    branches: [ main, prototype-045-clean, p0-visual-behavior-audit ]
   pull_request:
     branches: [ main ]
 
@@ -22,6 +22,8 @@ jobs:
         run: node tests/prototype-046-50-subjects.js
       - name: Run 0.4.6 second 50-subject one-variable mutation regression
         run: node tests/prototype-046-50-mutations.js
+      - name: Run 0.4.7 fifty-subject visual and behavioral gate
+        run: node tests/prototype-047-50-visual-behavior.js
 
   browser-smoke-gate:
     runs-on: ubuntu-latest
@@ -39,3 +41,5 @@ jobs:
         run: python3 -m http.server 8080 >/tmp/keneflex-http.log 2>&1 &
       - name: Run 10-story headless browser smoke suite
         run: node tests/prototype-046-browser-smoke.js
+      - name: Run 0.4.7 full-page visual and language browser gate
+        run: node tests/prototype-047-full-page-browser.js
