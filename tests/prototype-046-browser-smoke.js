@@ -19,23 +19,26 @@ function caseUrl(n){const u=new URL(base);u.searchParams.set('case',String(n));r
   const page=await browser.newPage({viewport:{width:390,height:844}});
   try{
    await page.goto(caseUrl(i+1),{waitUntil:'domcontentloaded',timeout:15000});
-   await page.waitForFunction(()=>window.KFX047DReleaseAudit&&document.querySelector('#opening')&&document.querySelector('#openingBtn'),null,{timeout:8000});
+   await page.waitForFunction(()=>window.KFX047DReleaseAudit&&window.KFX047E&&document.querySelector('#opening')&&document.querySelector('#openingBtn'),null,{timeout:8000});
    const start=await page.evaluate((story)=>{
-     const audit=window.KFX047DReleaseAudit();
-     if(!audit.pass)return {audit,started:false};
-     const opening=document.querySelector('#opening'),btn=document.querySelector('#openingBtn');
-     opening.value=story;opening.dispatchEvent(new Event('input',{bubbles:true}));opening.dispatchEvent(new Event('change',{bubbles:true}));
-     const after={disabled:btn.disabled,openingValue:opening.value,buttonRect:btn.getBoundingClientRect().toJSON?btn.getBoundingClientRect().toJSON():{width:btn.getBoundingClientRect().width,height:btn.getBoundingClientRect().height}};
-     btn.click();return {audit,after,started:true};
+     const audit=window.KFX047DReleaseAudit();if(!audit.pass)return{audit,started:false};
+     const opening=document.querySelector('#opening'),btn=document.querySelector('#openingBtn');opening.value=story;opening.dispatchEvent(new Event('input',{bubbles:true}));opening.dispatchEvent(new Event('change',{bubbles:true}));
+     const r=btn.getBoundingClientRect(),after={disabled:btn.disabled,openingValue:opening.value,buttonRect:{width:r.width,height:r.height}};btn.click();return{audit,after,started:true};
    },stories[i]);
-   if(!start.audit||!start.audit.pass)throw new Error('release shell audit failed '+JSON.stringify(start.audit));
-   if(!start.started||start.after.disabled)throw new Error('opening interaction did not become enabled '+JSON.stringify(start));
-   if(!start.after.buttonRect.width||!start.after.buttonRect.height)throw new Error('opening button has no rendered size');
-   await page.waitForSelector('#conversation .bubble.user',{timeout:5000});
-   await page.waitForTimeout(250);
-   const result=await page.evaluate(()=>{const ais=[...document.querySelectorAll('#conversation .bubble.ai')].map(x=>(x.textContent||'').replace(/\s+/g,' ').trim());const controls=[...document.querySelectorAll('#interaction textarea,#interaction input,#interaction button')];const bubbles=[...document.querySelectorAll('#conversation .bubble')];const last=bubbles[bubbles.length-1];const orphan=controls.length>0&&!(last&&last.classList.contains('ai'));const audit=window.KFX046Audit?window.KFX046Audit():null;return{ais,orphan,audit,integrity:document.documentElement.dataset.kfxIntegrity||null};});
-   if(result.orphan)throw new Error('orphan interaction control');if(result.integrity==='fail')throw new Error('release integrity flag failed');if(result.audit&&!result.audit.pass)throw new Error('canonical audit says next question is already known: '+JSON.stringify(result.audit.next));
-   if(i===0){const joined=result.ais.join(' | ').toLowerCase();if(joined.includes('which side is bothering'))throw new Error('founder live-story regression re-asked side');if(!result.audit||!result.audit.knownSide)throw new Error('founder live-story did not retain explicit right side');}
+   if(!start.audit||!start.audit.pass)throw new Error('release shell audit failed '+JSON.stringify(start.audit));if(!start.started||start.after.disabled)throw new Error('opening interaction did not become enabled '+JSON.stringify(start));if(!start.after.buttonRect.width||!start.after.buttonRect.height)throw new Error('opening button has no rendered size');
+   await page.waitForSelector('#conversation .bubble.user',{timeout:5000});await page.waitForTimeout(350);
+   const result=await page.evaluate(()=>{const ais=[...document.querySelectorAll('#conversation .bubble.ai')].map(x=>(x.textContent||'').replace(/\s+/g,' ').trim());const controls=[...document.querySelectorAll('#interaction textarea,#interaction input,#interaction button')];const bubbles=[...document.querySelectorAll('#conversation .bubble')];const last=bubbles[bubbles.length-1];const orphan=controls.length>0&&!(last&&last.classList.contains('ai'));const audit=window.KFX046Audit?window.KFX046Audit():null;const storyAudit=window.KFX047E?window.KFX047E.audit():null;return{ais,orphan,audit,storyAudit,integrity:document.documentElement.dataset.kfxIntegrity||null};});
+   if(result.orphan)throw new Error('orphan interaction control');if(result.integrity==='fail')throw new Error('release integrity flag failed');if(result.audit&&!result.audit.pass)throw new Error('canonical audit says next question is already known: '+JSON.stringify(result.audit.next));if(result.storyAudit&&!result.storyAudit.pass)throw new Error('0.4.7E question permission gate failed '+JSON.stringify(result.storyAudit.next));
+   if(i===0){
+     const joined=result.ais.join(' | ').toLowerCase(),s=result.storyAudit&&result.storyAudit.summary&&result.storyAudit.summary[0];
+     if(joined.includes('which side is bothering'))throw new Error('founder live-story regression re-asked side');
+     if(joined.includes('what are you noticing there'))throw new Error('founder live-story regression used generic symptom question');
+     if(!s||s.side!=='right')throw new Error('founder story did not retain right side '+JSON.stringify(s));
+     if(!s.duration||s.duration.unit!=='month'||s.duration.value!==1)throw new Error('problem duration was confused with relief duration '+JSON.stringify(s&&s.duration));
+     if(!(s.symptoms||[]).includes('pain'))throw new Error('soreness/pain was not retained');
+     if(!(s.triggers||[]).includes('computer')||!(s.triggers||[]).includes('phone'))throw new Error('computer/phone triggers were not retained '+JSON.stringify(s&&s.triggers));
+     if(!(s.relievers||[]).includes('reducing provoking activity'))throw new Error('rest/improvement relationship was not retained '+JSON.stringify(s&&s.relievers));
+   }
    console.log('PASS browser subject '+(i+1));
   }catch(e){failures.push({subject:i+1,error:e.message,url:page.url()});console.error('FAIL browser subject '+(i+1),e.message,page.url());}
   await page.close();
