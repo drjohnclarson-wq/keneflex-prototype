@@ -21,8 +21,9 @@ ok(loader.lastIndexOf('prototype-047a-dom-idempotence.js')>loader.lastIndexOf('p
 ok(loader.lastIndexOf('prototype-047-consumer-experience.js')>loader.lastIndexOf('prototype-047a-dom-idempotence.js'),'consumer experience loads after idempotence guard');
 ok(loader.lastIndexOf('prototype-047b-consumer-firewall.js')>loader.lastIndexOf('prototype-047-consumer-experience.js'),'visible-language firewall loads last');
 ok(route.includes('Keneflex Test 0.4.7'),'participant route identifies 0.4.7');
-ok(route.includes('participant=047'),'participant route requests 0.4.7');
-ok(route.includes("cache:'no-store'"),'participant route disables cache');
+ok(route.includes("searchParams.set('participant','047')"),'participant route requests 0.4.7');
+ok(route.includes("searchParams.set('build',String(stamp))")&&route.includes("searchParams.set('cache','no-store')"),'participant route uses a unique no-store URL');
+ok(route.includes('location.replace(u.href)'),'participant route uses deterministic top-level navigation');
 ok(guard.includes('addAI=rawAddAI'),'historical addAI suppression wrappers are bypassed');
 ok(guard.includes('ensurePromptForControl'),'structured controls cannot render without an AI prompt');
 ok(guard.includes('KFXReleaseAudit'),'runtime render-integrity audit remains exposed');
