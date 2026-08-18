@@ -2,7 +2,7 @@ name: Keneflex P0 Regression
 
 on:
   push:
-    branches: [ main, prototype-045-clean ]
+    branches: [ main, prototype-045-clean, p0-047-release ]
   pull_request:
     branches: [ main ]
 
@@ -24,6 +24,8 @@ jobs:
         run: node tests/prototype-046-50-mutations.js
       - name: Run P0 critical provider, owned-item, correction and multi-problem regressions
         run: node tests/prototype-046-p0-critical.js
+      - name: Run 0.4.7 fifty-subject visual and behavioral gate
+        run: node tests/prototype-047-50-visual-behavior.js
 
   browser-smoke-gate:
     runs-on: ubuntu-latest
@@ -33,11 +35,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install Playwright Chromium
-        run: |
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
+      - name: Install Playwright library
+        run: npm install --no-save playwright
+      - name: Verify system Chrome
+        run: google-chrome --version
       - name: Start prototype server
         run: python3 -m http.server 8080 >/tmp/keneflex-http.log 2>&1 &
       - name: Run 10-story headless browser smoke suite
         run: node tests/prototype-046-browser-smoke.js
+      - name: Run 0.4.7 full-page visual and language browser gate
+        run: node tests/prototype-047-full-page-browser.js

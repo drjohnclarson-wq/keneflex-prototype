@@ -1,4 +1,5 @@
 require('../prototype-046-conversation-engine.js');
+require('../prototype-046b-critical-state.js');
 const E=globalThis.KFX046;
 let total=0, failures=[];
 function assert(cond,name,detail){total++;if(!cond)failures.push({name,detail});else console.log('PASS',name);}
@@ -47,11 +48,16 @@ function assert(cond,name,detail){total++;if(!cond)failures.push({name,detail});
   E.ingest(s,'My left wrist hurts after typing for three weeks. My right knee hurts going downstairs for two weeks and it came on gradually.');
   const sum=E.summary(s);
   assert(sum.length>=2,'multi-problem story retains separate problem threads',{summary:sum});
-  if(typeof E.adequate==='function'){
-    assert(E.adequate(s)===false,'multi-problem handoff waits for unresolved earlier thread',{summary:sum,active:E.activeThread(s)});
-  } else {
-    assert(false,'canonical engine exposes adequacy gate for multi-problem release testing',{exports:Object.keys(E)});
-  }
+  assert(E.adequate(s)===false,'multi-problem handoff waits for unresolved earlier thread',{summary:sum,active:E.activeThread(s)});
+}
+
+// 6) A later explicit positive correction must supersede a previously denied symptom.
+{
+  const s=E.createStore();
+  E.ingest(s,'My right wrist hurts after typing for three weeks. No numbness. No injury.');
+  E.ingest(s,'Actually, I do get numbness sometimes.');
+  const t=E.activeThread(s);
+  assert(t.symptoms.includes('numbness')&&!t.negatives.includes('numbness'),'positive symptom correction supersedes stale negative',{thread:t});
 }
 
 console.log(`\n${total-failures.length}/${total} P0 critical assertions passed`);
