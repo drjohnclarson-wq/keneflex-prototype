@@ -21,7 +21,7 @@ async function stableButton(page){
  await page.evaluate(()=>document.querySelector('#openingBtn').click());
 }
 (async()=>{
- const browser=await chromium.launch({headless:true});const failures=[];
+ const browser=await chromium.launch({headless:true,channel:'chrome'});const failures=[];
  for(let i=0;i<stories.length;i++){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   try{
