@@ -11,10 +11,10 @@ ok(route.includes('Keneflex Test 0.4.5C'),'participant route identifies 0.4.5C')
 ok(route.includes('participant=045c'),'participant route requests 0.4.5C');
 ok(route.includes("cache:'no-store'"),'participant route disables cache');
 ok(guard.includes('addAI=rawAddAI'),'historical addAI suppression wrappers are bypassed');
-ok(guard.includes('textComposer=renderText'),'text composer has one release owner');
 ok(guard.includes('oneSelect=function'),'single-select rendering has release owner');
 ok(guard.includes('multiselect=function'),'multi-select rendering has release owner');
-ok(guard.includes('ensurePromptForControl'),'controls cannot render without an AI prompt');
+ok(guard.includes('ensurePromptForControl'),'structured controls cannot render without an AI prompt');
+ok(!guard.includes('textComposer='),'0.4.5C does not duplicate the canonical text-ingestion owner');
 ok(guard.includes('KFXReleaseAudit'),'runtime integrity audit is exposed');
 ok(guard.includes("dataset.kfxIntegrity=a.pass?'pass':'fail'"),'runtime mutation audit publishes integrity state');
 ok(controller.includes('Engine.nextQuestion(store)'),'canonical controller selects next question from Story State');
