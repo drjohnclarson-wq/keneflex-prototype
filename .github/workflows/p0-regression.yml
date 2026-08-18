@@ -35,10 +35,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install Playwright Chromium
-        run: |
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
+      - name: Install Playwright library
+        run: npm install --no-save playwright
+      - name: Verify system Chrome
+        run: google-chrome --version
       - name: Start prototype server
         run: python3 -m http.server 8080 >/tmp/keneflex-http.log 2>&1 &
       - name: Run 10-story headless browser smoke suite
