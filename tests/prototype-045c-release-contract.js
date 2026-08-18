@@ -1,0 +1,22 @@
+const fs=require('fs');
+let total=0,fail=0;
+function ok(cond,msg){total++;if(!cond){fail++;console.error('FAIL',msg);}else console.log('PASS',msg)}
+const loader=fs.readFileSync('prototype-044.js','utf8');
+const route=fs.readFileSync('test.html','utf8');
+const guard=fs.readFileSync('prototype-045c-release-integrity.js','utf8');
+const controller=fs.readFileSync('prototype-045b-clean-controller.js','utf8');
+ok(loader.includes('prototype-045c-release-integrity.js?v=045c'),'0.4.5C release-integrity module is loaded');
+ok(loader.lastIndexOf('prototype-045c-release-integrity.js')>loader.lastIndexOf('prototype-045b-clean-controller.js'),'release-integrity module loads after canonical controller');
+ok(route.includes('Keneflex Test 0.4.5C'),'participant route identifies 0.4.5C');
+ok(route.includes('participant=045c'),'participant route requests 0.4.5C');
+ok(route.includes("cache:'no-store'"),'participant route disables cache');
+ok(guard.includes('addAI=rawAddAI'),'historical addAI suppression wrappers are bypassed');
+ok(guard.includes('textComposer=renderText'),'text composer has one release owner');
+ok(guard.includes('oneSelect=function'),'single-select rendering has release owner');
+ok(guard.includes('multiselect=function'),'multi-select rendering has release owner');
+ok(guard.includes('ensurePromptForControl'),'controls cannot render without an AI prompt');
+ok(guard.includes('KFXReleaseAudit'),'runtime integrity audit is exposed');
+ok(guard.includes("dataset.kfxIntegrity=a.pass?'pass':'fail'"),'runtime mutation audit publishes integrity state');
+ok(controller.includes('Engine.nextQuestion(store)'),'canonical controller selects next question from Story State');
+ok(controller.includes('Engine.adequateForHandoff(store)'),'canonical controller owns handoff sufficiency');
+console.log(`\n${total-fail}/${total} release-contract assertions passed`);process.exit(fail?1:0);
