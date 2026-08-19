@@ -33,8 +33,8 @@ ok(loader.lastIndexOf('prototype-047b-consumer-firewall.js')>loader.lastIndexOf(
 ok(loader.lastIndexOf('prototype-047c-interaction-stability.js')>loader.lastIndexOf('prototype-047b-consumer-firewall.js'),'interaction stability loads after language firewall');
 ok(loader.lastIndexOf('prototype-047d-release-shell.js')>loader.lastIndexOf('prototype-047c-interaction-stability.js'),'release shell loads after interaction stability');
 ok(loader.lastIndexOf('prototype-047e-story-gate.js')>loader.lastIndexOf('prototype-047d-release-shell.js'),'story-first question gate loads last');
-ok(route.includes('Keneflex Test 0.4.8'),'participant route identifies 0.4.8');
-ok(route.includes("searchParams.set('participant','048')"),'participant route requests 0.4.8');
+ok(route.includes('<title>Keneflex</title>'),'participant route uses consumer-facing title');
+ok(route.includes("searchParams.set('participant','049')"),'participant route requests 0.4.9');
 ok(route.includes("searchParams.set('build',String(stamp))")&&route.includes("searchParams.set('cache','no-store')"),'participant route uses a unique no-store URL');
 ok(route.includes('location.replace(u.href)'),'participant route uses deterministic top-level navigation');
 ok(guard.includes('addAI=rawAddAI'),'historical addAI suppression wrappers are bypassed');
