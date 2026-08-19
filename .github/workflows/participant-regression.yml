@@ -1,0 +1,31 @@
+name: Participant regression
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  participant:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test runtime
+        run: |
+          npm init -y
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run model and release contracts
+        run: |
+          node tests/participant-060-release-contract.js
+          node tests/prototype-046-50-subjects.js
+          node tests/prototype-046-50-mutations.js
+          node tests/prototype-046-p0-critical.js
+      - name: Start participant server
+        run: python3 -m http.server 8080 > /tmp/keneflex-http.log 2>&1 &
+      - name: Run participant browser journeys
+        run: node tests/participant-060-browser.js
