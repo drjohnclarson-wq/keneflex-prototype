@@ -2,7 +2,7 @@ name: Keneflex P0 Regression
 
 on:
   push:
-    branches: [ main, prototype-045-clean, p0-047-release ]
+    branches: [ main, p0-500-subject-audit ]
   pull_request:
     branches: [ main ]
 
@@ -14,20 +14,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Run legacy canonical story regression
-        run: node tests/prototype-045b-regression.js
-      - name: Run release-integrity contract regression
-        run: node tests/prototype-045c-release-contract.js
-      - name: Run 0.4.6 first 50-subject adversarial regression
-        run: node tests/prototype-046-50-subjects.js
-      - name: Run 0.4.6 second 50-subject one-variable mutation regression
-        run: node tests/prototype-046-50-mutations.js
-      - name: Run P0 critical provider, owned-item, correction and multi-problem regressions
-        run: node tests/prototype-046-p0-critical.js
-      - name: Run 0.4.7 fifty-subject visual and behavioral gate
-        run: node tests/prototype-047-50-visual-behavior.js
+      - run: node tests/prototype-045b-regression.js
+      - run: node tests/prototype-045c-release-contract.js
+      - run: node tests/prototype-046-50-subjects.js
+      - run: node tests/prototype-046-50-mutations.js
+      - run: node tests/prototype-046-p0-critical.js
+      - run: node tests/prototype-047-50-visual-behavior.js
+      - name: Run 500-subject story-engine gate
+        run: node tests/prototype-050-500-subjects.js
 
-  browser-smoke-gate:
+  browser-gate:
     runs-on: ubuntu-latest
     needs: story-and-mutation-gate
     steps:
@@ -35,13 +31,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install Playwright library
-        run: npm install --no-save playwright
-      - name: Verify system Chrome
-        run: google-chrome --version
-      - name: Start prototype server
-        run: python3 -m http.server 8080 >/tmp/keneflex-http.log 2>&1 &
-      - name: Run 10-story headless browser smoke suite
-        run: node tests/prototype-046-browser-smoke.js
-      - name: Run 0.4.7 full-page visual and language browser gate
-        run: node tests/prototype-047-full-page-browser.js
+      - run: npm install --no-save playwright
+      - run: google-chrome --version
+      - run: python3 -m http.server 8080 >/tmp/keneflex-http.log 2>&1 &
+      - run: node tests/prototype-046-browser-smoke.js
+      - run: node tests/prototype-047-full-page-browser.js
+      - name: Run 500 recommendation-to-final-cart journeys
+        run: node tests/prototype-050-500-cart-browser.js
