@@ -29,7 +29,7 @@ function renderCanonical(){
  const store=ingestOpening();if(!store)return;const t=E.activeThread(store);if(typeof setProgress==='function')setProgress(Math.min(72,18+(store.events||[]).length*8));
  if(E.adequate(store)){
    if(typeof addAI==='function')addAI('<b>Keneflex has enough of your story to move forward.</b> It will use what you already told it instead of asking you to repeat it.');
-   if(!t||t.family!=='hand'){if(typeof addAI==='function')addAI('Keneflex understands the story, but this prototype is not yet configured to make a product recommendation for this body area.');if(typeof interaction!=='undefined')interaction.innerHTML='';return;}
+   if(!t||t.family!=='hand'){if(typeof addAI==='function')addAI('Keneflex understands the story, but it is not ready to recommend products for this body area yet.');if(typeof interaction!=='undefined')interaction.innerHTML='';return;}
    if(typeof askSafetyBroad==='function'){askSafetyBroad();return;}if(typeof askSafety==='function'){askSafety();return;}return;
  }
  const q=E.nextQuestion(store);if(!q)return;if(E.known(t,q.concept)){setTimeout(renderCanonical,0);return;}
@@ -43,3 +43,4 @@ if(openingBtnEl)openingBtnEl.addEventListener('click',startFromVisibleStory,true
 askDetail=function(){renderCanonical();};
 root.KFX047E={build:'0.4.7E',sanitizeStory,ingestOpening,resetAndIngestOpening,complaintDuration,renderCanonical,startFromVisibleStory,audit:function(){const store=ingestOpening(),t=store&&E.activeThread(store),q=store&&E.nextQuestion(store);return{summary:store?E.summary(store):[],next:q,pass:!!store&&!(q&&E.known(t,q.concept))};}};
 })(typeof window!=='undefined'?window:globalThis);
+(function(){if(typeof document==='undefined'||document.querySelector('script[data-kfx048]'))return;const s=document.createElement('script');s.src='prototype-048-consumer-surface.js?v=048a';s.dataset.kfx048='1';s.defer=true;document.head.appendChild(s);})();
