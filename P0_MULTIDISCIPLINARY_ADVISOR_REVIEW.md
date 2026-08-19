@@ -76,6 +76,12 @@ PASS CONDITIONS
 - Recommendation includes person-specific reasoning, investigated product fit, complete next actions and transaction follow-through.
 - Consumer is not sent back to Google/Amazon/ChatGPT to redo product selection.
 
+## Final punch-list corrections applied
+- Buy CTA is now explicitly synchronized to the displayed total after plan subtraction/removal state changes.
+- How It Works / Our Approach text is sanitized so internal “Keneflex should…” construction does not reach consumers.
+- Keneflex Plan launch is explicitly owned by the final consumer surface and always renders the premium stock-image plan rather than intermittently falling through to a legacy plan renderer.
+- These corrections are release-blocking and require the full automated gate to rerun before founder review.
+
 ## Release decision
 P0 candidate may be presented to the founder only when:
 1. 500-subject story gate is green.
@@ -85,4 +91,4 @@ P0 candidate may be presented to the founder only when:
 5. This multidisciplinary review has no open Critical or High issue.
 6. Any change made after review reruns the complete affected critical journey.
 
-Current disposition: PENDING automated release run and final qualitative walkthrough.
+Current disposition: PENDING final automated rerun after punch-list corrections.
