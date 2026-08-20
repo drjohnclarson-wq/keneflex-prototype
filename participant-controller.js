@@ -11,7 +11,7 @@
   const money = value => '$' + Number(value || 0).toFixed(2);
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
   const PRODUCTS = Object.freeze({
-    support: { id: 'support', name: 'Neo G Airflow Wrist & Thumb Support — Medium', price: 19.99 },
+    support: { id: 'support', name: 'Neo G Airflow Wrist & Thumb Support', price: 19.99 },
     cold: { id: 'cold', name: 'Polar Soft Ice Wrist Wrap', price: 21.00 },
     topical: { id: 'topical', name: 'Biofreeze Pain Relief Gel, menthol 4%', price: 11.99 }
   });
@@ -24,6 +24,7 @@
     answers: [],
     safetyCleared: false,
     recommendation: null,
+    fit: { wristInches: null, supportSize: null, supportSku: null },
     cart: {
       support: { disposition: 'BUY' },
       cold: { disposition: 'BUY' },
@@ -32,10 +33,14 @@
   };
 
   function activeProblem() { return Engine.activeThread(model.story); }
+  function storyThreads() { return model.story.order.map(key => model.story.threads[key]).filter(Boolean); }
+  function threadKey(thread) { return model.story.order.find(key => model.story.threads[key] === thread); }
+  function hasUnsupportedRegion() { return storyThreads().some(thread => thread.family !== 'hand'); }
   function productLine(id) {
     const product = PRODUCTS[id];
     const disposition = model.cart[id].disposition;
-    return { ...product, disposition, charged: disposition === 'BUY' ? product.price : 0 };
+    const name = id === 'support' && model.fit.supportSize ? product.name + ' — ' + model.fit.supportSize : product.name;
+    return { ...product, name, sku: id === 'support' ? model.fit.supportSku : null, disposition, charged: disposition === 'BUY' ? product.price : 0 };
   }
   function lines() { return Object.keys(PRODUCTS).map(productLine); }
   function total() { return lines().reduce((sum, line) => sum + line.charged, 0); }
@@ -85,9 +90,9 @@
   }
 
   function advance() {
-    const thread = activeProblem();
+    let thread = activeProblem();
     if (Engine.adequate(model.story)) {
-      if (!thread || thread.family !== 'hand') {
+      if (!thread || hasUnsupportedRegion()) {
         addBubble('ai', '<p><b>I have enough of the story to understand the concern.</b></p><p>This participant build currently completes product recommendations only for the hand, wrist, and thumb pathway. I will not substitute a hand product for a ' + (thread?.family || 'different') + ' problem.</p>', true);
         $('#interaction').innerHTML = '';
         return;
@@ -95,8 +100,16 @@
       safetyGate();
       return;
     }
-    const question = Engine.nextQuestion(model.story);
-    if (!question) return safetyGate();
+    let question = Engine.nextQuestion(model.story);
+    if (!question) {
+      const unresolved = storyThreads().find(candidate => !Engine.threadAdequate(candidate));
+      if (unresolved) {
+        model.story.active = threadKey(unresolved);
+        thread = unresolved;
+        question = Engine.nextQuestion(model.story);
+      }
+    }
+    if (!question) return advance();
     addBubble('ai', '<p>' + regionalMessage(thread) + '</p><p><b>' + question.text + '</b></p>', true);
     composer(question);
   }
@@ -114,8 +127,29 @@
         return;
       }
       model.safetyCleared = true;
-      revealRecommendation();
+      fitGate();
     }));
+  }
+
+  function fitGate() {
+    const interaction = $('#interaction');
+    addBubble('ai', '<p><b>One fit detail before I select a support:</b> measure around your wrist at the wrist crease. What is the circumference in inches?</p>', true);
+    interaction.innerHTML = '<input id="wristMeasure" inputmode="decimal" aria-label="Wrist circumference in inches" placeholder="For example, 7.0"><div class="row"><button id="fitContinue" class="primary">Continue →</button></div><p id="fitError" class="micro"></p>';
+    $('#fitContinue').addEventListener('click', () => {
+      const value = Number(String($('#wristMeasure').value).replace(/[^0-9.]/g, ''));
+      if (!Number.isFinite(value) || value < 4 || value > 12) {
+        $('#fitError').textContent = 'Enter a wrist measurement between 4 and 12 inches.';
+        return;
+      }
+      model.fit.wristInches = value;
+      if (value >= 6.5 && value <= 7.5) {
+        model.fit.supportSize = 'Medium';
+        model.fit.supportSku = 'NEOG-AIRFLOW-WT-M';
+      }
+      addBubble('user', value.toFixed(1) + ' inches');
+      interaction.innerHTML = '';
+      revealRecommendation();
+    });
   }
 
   function recommendationFor(thread) {
@@ -142,9 +176,17 @@
   function revealRecommendation() {
     const thread = activeProblem();
     model.recommendation = recommendationFor(thread);
-    if (!model.recommendation.eligible) model.cart.support.disposition = 'REVIEW';
+    if (!model.recommendation.eligible || !model.fit.supportSku || model.recommendation.provider) model.cart.support.disposition = 'REVIEW';
+    applyOwnedProductHolds(model.recommendation.owned);
     renderSolution();
     showStage('solution');
+  }
+
+  function applyOwnedProductHolds(ownedText) {
+    const owned = String(ownedText || '');
+    if (/brace|support|splint|wrap/i.test(owned)) model.cart.support.disposition = 'REVIEW';
+    if (/ice pack|cold pack/i.test(owned)) model.cart.cold.disposition = 'REVIEW';
+    if (/cream|gel/i.test(owned)) model.cart.topical.disposition = 'REVIEW';
   }
 
   function statusText(disposition) {
@@ -160,6 +202,10 @@
     state.textContent = statusText(line.disposition);
     state.className = 'planState ' + (line.disposition === 'BUY' ? 'buy' : line.disposition === 'REMOVE' ? 'remove' : 'keep');
     $('#' + id + 'Price').textContent = line.disposition === 'BUY' ? money(line.price) : '$0';
+    if (id === 'support') {
+      $('.planName', item).textContent = line.name;
+      if (!model.fit.supportSku) $('.planCopy', item).textContent = 'The available support size is not verified for your measurement, so this item remains under review and cannot be purchased yet.';
+    }
   }
 
   function renderSolution() {
@@ -205,9 +251,10 @@
   }
 
   function resetAdjustments() {
-    model.cart.support.disposition = model.recommendation?.eligible ? 'BUY' : 'REVIEW';
+    model.cart.support.disposition = model.recommendation?.eligible && model.fit.supportSku && !model.recommendation?.provider ? 'BUY' : 'REVIEW';
     model.cart.cold.disposition = 'BUY';
     model.cart.topical.disposition = 'BUY';
+    applyOwnedProductHolds(model.recommendation?.owned);
     $('#tuneResult').classList.add('hidden');
     $('#resetTune').classList.add('hidden');
     renderSolution();
@@ -222,9 +269,10 @@
       buy.addEventListener('click', checkout);
       totalBlock.appendChild(buy);
     }
-    buy.disabled = paidLines().length === 0 || model.cart.support.disposition === 'REVIEW';
-    buy.textContent = model.cart.support.disposition === 'REVIEW'
-      ? 'Support review needed before checkout'
+    const hasReview = lines().some(line => line.disposition === 'REVIEW');
+    buy.disabled = paidLines().length === 0 || hasReview;
+    buy.textContent = hasReview
+      ? 'Review needed before checkout'
       : 'Buy selected items — ' + money(total());
     $('#cartPreviewBtn')?.closest('.cartPreview')?.classList.add('hidden');
     let plan = $('#kfxPlanBtn');
@@ -243,7 +291,10 @@
     const selected = paidLines();
     const overlay = document.createElement('div');
     overlay.className = 'kfxCheckoutOverlay';
-    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your selected products</h2><div>' +
+    const combinationWarning = model.cart.support.disposition === 'BUY' && model.cart.topical.disposition === 'BUY'
+      ? '<div class="kfxSafetyNotice"><b>Use separately.</b> Do not wear the support over Biofreeze, gels, or creams. Apply topical products only as directed, and put the support on clean, dry skin.</div>'
+      : '';
+    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your selected products</h2>' + combinationWarning + '<div>' +
       selected.map(line => '<div class="rowx"><span>' + line.name + '</span><b>' + money(line.price) + '</b></div>').join('') +
       '</div><div class="totalx"><span>Total</span><span>' + money(total()) + '</span></div><div class="actions"><button class="primary" data-checkout-complete>Continue →</button><button class="secondary" data-checkout-close>Go back</button></div><p class="micro">This test will not place an order or charge you.</p></section>';
     document.body.appendChild(overlay);
