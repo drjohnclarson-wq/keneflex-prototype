@@ -1,9 +1,68 @@
-const fs=require('fs');
-let total=0,fail=0;function ok(c,m){total++;if(!c){fail++;console.error('FAIL',m)}else console.log('PASS',m)}
-const loader=fs.readFileSync('prototype-044.js','utf8'),route=fs.readFileSync('test.html','utf8'),guard=fs.readFileSync('prototype-045c-release-integrity.js','utf8'),controller=fs.readFileSync('prototype-046-conversation-engine.js','utf8'),critical=fs.readFileSync('prototype-046b-critical-state.js','utf8'),idempotence=fs.readFileSync('prototype-047a-dom-idempotence.js','utf8'),observerScope=fs.readFileSync('prototype-047aa-observer-scope.js','utf8'),consumer=fs.readFileSync('prototype-047-consumer-experience.js','utf8'),firewall=fs.readFileSync('prototype-047b-consumer-firewall.js','utf8'),stability=fs.readFileSync('prototype-047c-interaction-stability.js','utf8'),shell=fs.readFileSync('prototype-047d-release-shell.js','utf8'),storyGate=fs.readFileSync('prototype-047e-story-gate.js','utf8'),surface=fs.readFileSync('prototype-048-consumer-surface.js','utf8'),finalRelease=fs.readFileSync('prototype-050-final-release.js','utf8');
-const v='?v=051';
-for(const [f,m] of [['prototype-045c-release-integrity.js','atomic render guard'],['prototype-046-conversation-engine.js','conversation engine'],['prototype-046b-critical-state.js','critical state'],['prototype-047a-dom-idempotence.js','idempotence guard'],['prototype-047aa-observer-scope.js','observer scope'],['prototype-047-consumer-experience.js','consumer experience'],['prototype-047b-consumer-firewall.js','language firewall'],['prototype-047c-interaction-stability.js','interaction stability'],['prototype-047d-release-shell.js','startup shell'],['prototype-047e-story-gate.js','story gate'],['prototype-048-consumer-surface.js','final consumer surface'],['prototype-050-final-release.js','final release firewall']])ok(loader.includes(f+v),m+' is loaded');
-ok(loader.lastIndexOf('prototype-046-conversation-engine.js')>loader.lastIndexOf('prototype-045c-release-integrity.js'),'conversation engine loads after integrity guard');ok(loader.lastIndexOf('prototype-047e-story-gate.js')>loader.lastIndexOf('prototype-047d-release-shell.js'),'story gate loads after startup shell');ok(loader.lastIndexOf('prototype-048-consumer-surface.js')>loader.lastIndexOf('prototype-047e-story-gate.js'),'final consumer surface loads after story gate');ok(loader.lastIndexOf('prototype-050-final-release.js')>loader.lastIndexOf('prototype-048-consumer-surface.js'),'final firewall loads after final consumer surface');
-ok(route.includes('<title>Keneflex</title>'),'participant route uses consumer-facing title');ok(route.includes("searchParams.set('participant','051')"),'participant route requests 0.5.1');ok(route.includes("searchParams.set('build',String(stamp))")&&route.includes("searchParams.set('cache','no-store')"),'participant route uses unique no-store URL');ok(route.includes('location.replace(u.href)'),'participant route uses deterministic top-level navigation');
-ok(guard.includes('addAI=rawAddAI'),'historical addAI suppression wrappers are bypassed');ok(guard.includes('ensurePromptForControl'),'structured controls require an AI prompt');ok(guard.includes('KFXReleaseAudit'),'render-integrity audit exposed');ok(controller.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"),'hand family canonicalization retained');ok(controller.includes('function candidates(s)'),'single-owner next-question gate exists');ok(controller.includes("if(!known(t,c))a.push"),'known facts excluded before question rendering');ok(critical.includes('collectProvider'),'provider instructions retained');ok(critical.includes('collectOwned'),'owned items retained');ok(critical.includes('correctionSide'),'laterality corrections supported');ok(critical.includes('threads.every(threadAdequate)'),'multi-problem adequacy retained');ok(idempotence.includes('__kfxIdempotentTextContent'),'presentation rewrites remain idempotent');ok(observerScope.includes('suppressesNextPresentationObserver'),'obsolete observer remains suppressed');ok(consumer.includes('Your Keneflex Plan'),'consumer plan owner retained');ok(surface.includes('images.pexels.com'),'premium stock-image plan renderer is present');ok(surface.includes('Buy selected items'),'consumer surface owns visible purchase CTA');ok(firewall.includes('KFX047VisibleAudit'),'visible-language audit exposed');ok(stability.includes('#openingBtn'),'opening control stability owned');ok(shell.includes('KFX047DReleaseAudit'),'startup audit exposed');ok(storyGate.includes('complaintDuration'),'complaint vs relief duration separated');ok(storyGate.includes('if(E.known(t,q.concept))'),'known-fact permission invariant retained');ok(finalRelease.includes('Keneflex should')&&finalRelease.includes('sync'),'final firewall owns internal-language cleanup and purchase synchronization');
-console.log(`\n${total-fail}/${total} release-contract assertions passed`);process.exit(fail?1:0);
+const fs = require('fs');
+
+let total = 0;
+let failed = 0;
+function check(condition, message) {
+  total++;
+  if (condition) console.log('PASS', message);
+  else { failed++; console.error('FAIL', message); }
+}
+
+const loader = fs.readFileSync('prototype-044.js', 'utf8');
+const route = fs.readFileSync('test.html', 'utf8');
+const html = fs.readFileSync('index.html', 'utf8');
+const engine = fs.readFileSync('prototype-046-conversation-engine.js', 'utf8');
+const critical = fs.readFileSync('prototype-046b-critical-state.js', 'utf8');
+const participant = fs.readFileSync('participant-controller.js', 'utf8');
+
+const loadedScripts = [...loader.matchAll(/src="([^"]+)/g)]
+  .map(match => match[1].split('?')[0]);
+const legacyPatch = /prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/;
+
+// This P0 contract follows the production participant architecture. Historical
+// patch files remain useful references, but loading them would duplicate runtime
+// ownership and make this regression test validate the architecture it replaced.
+check(loadedScripts.length === 3, 'only the three consolidated runtime scripts are loaded');
+check(loadedScripts[0] === 'prototype-046-conversation-engine.js', 'conversation engine loads first');
+check(loadedScripts[1] === 'prototype-046b-critical-state.js', 'critical state loads second');
+check(loadedScripts[2] === 'participant-controller.js', 'participant controller loads last');
+check((loader.match(/<script defer/g) || []).length === 3, 'runtime scripts use one deterministic deferred phase');
+check(!legacyPatch.test(loader), 'legacy patch stack is absent from the production loader');
+check(!loader.includes('MutationObserver'), 'loader has no observer repair logic');
+check(!loader.includes('setTimeout('), 'loader has no timing repair logic');
+
+check(route.includes('<title>Keneflex</title>'), 'participant route uses consumer-facing title');
+check(route.includes("searchParams.set('participant','060')"), 'participant route requests consolidated release 0.6.0');
+check(route.includes("searchParams.set('build',String(stamp))") && route.includes("searchParams.set('cache','no-store')"), 'participant route uses unique no-store URL');
+check(route.includes('location.replace(u.href)'), 'participant route uses deterministic top-level navigation');
+check(html.includes('participant-consolidated.css?v=060'), 'participant route loads consolidated styles');
+check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'duplicated inline commerce runtime is absent');
+
+check(engine.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"), 'hand family canonicalization retained');
+check(engine.includes('function candidates(s)'), 'single-owner next-question gate exists');
+check(engine.includes("if(!known(t,c))a.push"), 'known facts excluded before question rendering');
+check(critical.includes('collectProvider'), 'provider instructions retained');
+check(critical.includes('collectOwned'), 'owned items retained');
+check(critical.includes('correctionSide'), 'laterality corrections supported');
+check(critical.includes('threads.every(threadAdequate)'), 'multi-problem adequacy retained');
+
+check(participant.includes('const model ='), 'one authoritative participant model exists');
+check(participant.includes("release: '0.6.0'"), 'participant model identifies consolidated release');
+check(participant.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
+check(participant.includes('function safetyGate()'), 'safety gate has one controller owner');
+check(participant.includes("model.cart.support.disposition = 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
+check(participant.includes('Provider direction protected'), 'provider direction appears in recommendation reasoning');
+check(participant.includes('fit, condition, cleanliness, and function'), 'owned items retain suitability checks');
+check(participant.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
+check(participant.includes("disposition === 'BUY' ? product.price : 0"), 'only BUY items contribute to total');
+check(participant.includes('function adjust(kind)'), 'solution adjustment has one controller owner');
+check(participant.includes('function checkout()'), 'checkout has one controller owner');
+check(participant.includes('function openPlan()'), 'plan page has one controller owner');
+check(participant.includes('function applyConsumerCopy()'), 'consumer copy has one controller owner');
+check(participant.includes('Buy selected items'), 'controller owns the visible purchase CTA');
+check(participant.includes('Your Keneflex Plan'), 'controller owns the consumer plan page');
+check(!participant.includes('MutationObserver'), 'controller does not repair itself with DOM observers');
+check(!participant.includes('setTimeout('), 'controller does not use timing patches');
+
+console.log(`\n${total - failed}/${total} release-contract assertions passed`);
+process.exit(failed ? 1 : 0);
