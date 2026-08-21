@@ -80,6 +80,25 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(await page.locator('#solutionView.hidden').count());
   });
 
+  const mediumBoundaries = [
+    ['below-medium-boundary', '6.29', false],
+    ['medium-lower-boundary', '6.30', true],
+    ['medium-lower-interior', '6.49', true],
+    ['medium-mid-boundary', '6.50', true],
+    ['medium-upper-boundary', '7.50', true]
+  ];
+  for (const [name, measurement, eligible] of mediumBoundaries) {
+    await scenario(name, 'My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
+      await clearSafetyAndMeasure(measurement);
+      assert.equal(!(await page.locator('.kfxBuy').isDisabled()), eligible);
+      if (eligible) {
+        assert((await page.locator('#supportItem .planName').innerText()).includes('Medium'));
+      } else {
+        assert((await page.locator('#supportState').innerText()).includes('review'));
+      }
+    });
+  }
+
   await scenario('unsupported-size-hold', 'My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
     await clearSafetyAndMeasure('8.5');
     assert(await page.locator('.kfxBuy').isDisabled());
@@ -107,6 +126,6 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 7, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 12, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
