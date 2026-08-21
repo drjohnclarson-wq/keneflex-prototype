@@ -142,7 +142,7 @@
         return;
       }
       model.fit.wristInches = value;
-      if (value >= 6.5 && value <= 7.5) {
+      if (value >= 6.3 && value <= 7.5) {
         model.fit.supportSize = 'Medium';
         model.fit.supportSku = 'NEOG-AIRFLOW-WT-M';
       }
