@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.6.2
+/* Keneflex participant runtime 0.6.3
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -17,7 +17,7 @@
   });
 
   const model = {
-    release: '0.6.2',
+    release: '0.6.3',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
@@ -230,7 +230,7 @@
       .map(value => value.trim())
       .filter(value => rx.test(value))
       .join(' ');
-    const inadequate = /old|stretched|worn|torn|broken|damaged|expired|dirty|doesn['’]?t (?:fit|support|cover|work)|does not (?:fit|support|cover|work)|too (?:small|large|loose|tight)|missing/i;
+    const inadequate = /\b(?:old|stretched|worn|torn|broken|damaged|expired|dirty|missing)\b|doesn['’]?t (?:fit|support|cover|work)|does not (?:fit|support|cover|work)|too (?:small|large|loose|tight)/i;
     if (inadequate.test(segment)) return 'inadequate';
     const adequate = /good condition|fits? (?:me )?well|clean and (?:intact|works)|covers? (?:both )?(?:the )?(?:wrist|thumb)|still works|works well/i;
     if (adequate.test(segment)) {
