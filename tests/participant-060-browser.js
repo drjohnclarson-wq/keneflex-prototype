@@ -117,6 +117,39 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert((await page.locator('#supportState').innerText()).includes('review'));
   });
 
+  await scenario('rich-owned-brace-replacement', "My right wrist and thumb have been hurting for about three weeks after playing pickleball. Gripping the paddle and twisting jars make it worse. There was no fall or direct injury. I don't have numbness, major swelling, or weakness. I own an old wrist brace, but it is stretched out and doesn't support my thumb.", async () => {
+    assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
+    const before = await page.locator('#conversation').innerText();
+    assert(!/which side|how long|make it worse/i.test(before), 'known story facts were asked again');
+    await page.fill('#reply', 'It is centered at the base of my thumb and thumb side of my wrist.');
+    await page.click('#send');
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(!/major recent injury|swelling|loss of feeling|weakness/i.test(safety), 'known safety negatives were asked again');
+    assert(/visible deformity|open wound/i.test(safety));
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
+    assert.equal(await page.locator('#supportPrice').innerText(), '$19.99');
+    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert(!(await page.locator('.kfxBuy').isDisabled()));
+    const solution = await page.locator('#solutionView').innerText();
+    assert(solution.includes('already inadequate'));
+    assert(!solution.includes('movement-preserving support requirement'));
+    const popupPromise = page.waitForEvent('popup');
+    await page.click('#kfxPlanBtn');
+    const popup = await popupPromise;
+    await popup.waitForLoadState('domcontentloaded');
+    assert.equal(await popup.locator('.line').first().locator('b').innerText(), '$19.99');
+    await popup.close();
+  });
+
+  await scenario('ipad-single-column', 'My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
+    await page.setViewportSize({ width: 834, height: 1112 });
+    await clearSafetyAndMeasure();
+    const columns = await page.locator('#solutionView .grid').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
+    assert.equal(columns, 1, 'iPad layout must use one primary reading column');
+    await page.setViewportSize({ width: 390, height: 844 });
+  });
+
   await scenario('combination-warning', 'My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
     await clearSafetyAndMeasure();
     await page.click('.kfxBuy');
@@ -126,6 +159,6 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 12, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 14, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
