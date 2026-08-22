@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.6.1
+/* Keneflex participant runtime 0.6.2
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -17,7 +17,7 @@
   });
 
   const model = {
-    release: '0.6.1',
+    release: '0.6.2',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
@@ -171,7 +171,7 @@
     const neuro = thread.symptoms.some(value => value === 'numbness' || value === 'tingling');
     const locations = thread.locations.join(', ') || thread.areas.join(', ') || 'hand/wrist area';
     const provider = (thread.provider || []).join(' ');
-    const owned = (thread.owned || []).join(' ');
+    const owned = (thread.owned || []).join('. ');
     const activities = (thread.triggers || []).join(', ');
     const combinedArea = (thread.areas || []).includes('wrist') && (thread.areas || []).includes('thumb');
     const supportReason = combinedArea
