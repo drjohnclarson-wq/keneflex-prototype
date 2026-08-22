@@ -154,6 +154,30 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.setViewportSize({ width: 390, height: 844 });
   });
 
+  await scenario('gradual-does-not-clear-later-injury', 'My right wrist has hurt for four weeks and built up gradually. Yesterday I had a major injury to it. Typing makes it worse.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('major recent injury'));
+  });
+
+  await scenario('mixed-owned-products-are-independent', 'I have an old right wrist brace that is stretched out. I have a cold pack that works well. My wrist has hurt for four weeks, built up gradually, and typing makes it worse.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
+    assert.equal(await page.locator('#coldState').innerText(), 'Use yours');
+    assert.equal(await page.locator('#total').innerText(), '$31.98');
+  });
+
+  await scenario('wrist-only-brace-cannot-cover-combined-role', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and gripping makes it worse. My wrist brace is in good condition and fits well.', async () => {
+    await clearSafetyAndMeasure();
+    assert(await page.locator('.kfxBuy').isDisabled());
+    assert((await page.locator('#supportState').innerText()).includes('review'));
+  });
+
+  await scenario('phone-explanations-single-column', 'My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
+    await clearSafetyAndMeasure();
+    const columns = await page.locator('#whyRows .why').first().evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
+    assert.equal(columns, 1, 'phone explanation rows must use one column');
+  });
+
   await scenario('combination-warning', 'My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
     await clearSafetyAndMeasure();
     await page.click('.kfxBuy');
@@ -163,6 +187,6 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 14, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 18, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
