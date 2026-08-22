@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.6.0
+/* Keneflex participant runtime 0.6.2
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -17,7 +17,7 @@
   });
 
   const model = {
-    release: '0.6.0',
+    release: '0.6.2',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
@@ -117,7 +117,22 @@
   function safetyGate() {
     if (model.safetyCleared) return revealRecommendation();
     const interaction = $('#interaction');
-    addBubble('ai', '<p><b>Before I build the plan:</b> have you had a major recent injury, visible deformity, an open wound, rapidly increasing swelling, loss of feeling, or marked new weakness?</p>', true);
+    const thread = activeProblem();
+    const negative = new Set(thread?.negatives || []);
+    const unresolved = [];
+    const storyText = model.story.events.map(event => event.text).join(' ');
+    const injuryDenied = /\b(?:no|without|have not had|haven't had)\b[^.!?;]{0,45}\b(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b/i.test(storyText);
+    if (!injuryDenied) unresolved.push('a major recent injury');
+    if (!negative.has('wound')) unresolved.push('an open wound');
+    if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
+    if (!negative.has('numbness') && !negative.has('tingling')) unresolved.push('loss of feeling');
+    if (!negative.has('weakness')) unresolved.push('marked new weakness');
+    // Deformity is intentionally separate from the ordinary symptom parser.
+    unresolved.splice(Math.min(1, unresolved.length), 0, 'visible deformity');
+    const list = unresolved.length === 1
+      ? unresolved[0]
+      : unresolved.slice(0, -1).join(', ') + ', or ' + unresolved[unresolved.length - 1];
+    addBubble('ai', '<p><b>One safety check before I build the plan:</b> have you noticed ' + escapeHtml(list) + '?</p>', true);
     interaction.innerHTML = '<div class="options"><button class="opt" data-safety="clear">No</button><button class="opt" data-safety="stop">Yes / I am not sure</button></div>';
     $$('[data-safety]', interaction).forEach(button => button.addEventListener('click', () => {
       addBubble('user', button.textContent.trim());
@@ -156,17 +171,23 @@
     const neuro = thread.symptoms.some(value => value === 'numbness' || value === 'tingling');
     const locations = thread.locations.join(', ') || thread.areas.join(', ') || 'hand/wrist area';
     const provider = (thread.provider || []).join(' ');
-    const owned = (thread.owned || []).join(' ');
+    const owned = (thread.owned || []).join('. ');
+    const activities = (thread.triggers || []).join(', ');
+    const combinedArea = (thread.areas || []).includes('wrist') && (thread.areas || []).includes('thumb');
+    const supportReason = combinedArea
+      ? 'Because your symptoms involve both the wrist and thumb' + (activities ? ' and are aggravated by ' + activities : '') + ', a flexible combined support covers the required areas without jumping to a rigid immobilizer.'
+      : 'The flexible support matches the area and activity pattern you described without jumping to a rigid immobilizer.';
     return {
       region: thread.family,
       neuro,
       locations,
       provider,
       owned,
+      ownedResolution: classifyOwnedProduct(owned, 'support', thread.areas),
       eligible: !neuro,
       supportReason: neuro
         ? 'The altered-feeling pattern needs a separate positioning and nerve-safety requirement. A combined wrist/thumb support is not automatically eligible simply because it covers both areas.'
-        : 'The flexible combined wrist/thumb design matches the current movement-preserving support requirement better than a rigid immobilizer.',
+        : supportReason,
       lead: neuro
         ? 'Keneflex found an altered-feeling pattern as well as pain. The plan must satisfy both requirements before a support can be treated as selected.'
         : 'A conservative plan built around the location, activity pattern, and safety information you provided.'
@@ -184,9 +205,41 @@
 
   function applyOwnedProductHolds(ownedText) {
     const owned = String(ownedText || '');
-    if (/brace|support|splint|wrap/i.test(owned)) model.cart.support.disposition = 'REVIEW';
-    if (/ice pack|cold pack/i.test(owned)) model.cart.cold.disposition = 'REVIEW';
-    if (/cream|gel/i.test(owned)) model.cart.topical.disposition = 'REVIEW';
+    const support = classifyOwnedProduct(owned, 'support', activeProblem()?.areas);
+    const cold = classifyOwnedProduct(owned, 'cold');
+    const topical = classifyOwnedProduct(owned, 'topical');
+    if (support === 'adequate') model.cart.support.disposition = 'KEEP';
+    else if (support === 'unknown') model.cart.support.disposition = 'REVIEW';
+    // An item already proven inadequate is replaced, so the recommended BUY remains.
+    if (cold === 'adequate') model.cart.cold.disposition = 'KEEP';
+    else if (cold === 'unknown') model.cart.cold.disposition = 'REVIEW';
+    if (topical === 'adequate') model.cart.topical.disposition = 'KEEP';
+    else if (topical === 'unknown') model.cart.topical.disposition = 'REVIEW';
+  }
+
+  function classifyOwnedProduct(ownedText, kind, requiredAreas = []) {
+    const owned = String(ownedText || '');
+    const rx = {
+      support: /brace|support|splint|wrist wrap/i,
+      cold: /ice pack|cold pack/i,
+      topical: /cream|gel/i
+    }[kind];
+    if (!rx.test(owned)) return 'none';
+    const segment = owned
+      .split(/[.!?;]|\band\b(?=[^.!?;]{0,35}\b(?:brace|support|splint|wrist wrap|ice pack|cold pack|cream|gel)\b)/i)
+      .map(value => value.trim())
+      .filter(value => rx.test(value))
+      .join(' ');
+    const inadequate = /old|stretched|worn|torn|broken|damaged|expired|dirty|doesn['’]?t (?:fit|support|cover|work)|does not (?:fit|support|cover|work)|too (?:small|large|loose|tight)|missing/i;
+    if (inadequate.test(segment)) return 'inadequate';
+    const adequate = /good condition|fits? (?:me )?well|clean and (?:intact|works)|covers? (?:both )?(?:the )?(?:wrist|thumb)|still works|works well/i;
+    if (adequate.test(segment)) {
+      const needsCombinedCoverage = kind === 'support' && requiredAreas.includes('wrist') && requiredAreas.includes('thumb');
+      const confirmsCombinedCoverage = /(?:wrist[^.!?]{0,35}thumb|thumb[^.!?]{0,35}wrist|both areas|combined)/i.test(segment);
+      if (needsCombinedCoverage && !confirmsCombinedCoverage) return 'unknown';
+      return 'adequate';
+    }
+    return 'unknown';
   }
 
   function statusText(disposition) {
@@ -221,11 +274,17 @@
       ['Pattern considered', rec.neuro ? 'Pain plus altered feeling' : 'Use-related pain without an identified altered-feeling pattern'],
       ['What changed the product decision', rec.supportReason],
       ...(rec.provider ? [['Provider direction protected', rec.provider + ' Keneflex will not recommend a conflicting use pattern.']] : []),
-      ...(rec.owned ? [['What you already own', rec.owned + ' It must pass fit, condition, cleanliness, and function checks before BUY changes to KEEP.']] : [])
+      ...(rec.owned ? [['What you already own', ownedDecisionCopy(rec)]] : [])
     ].map(([title, copy]) => '<div class="why"><b>' + escapeHtml(title) + '</b><span>' + escapeHtml(copy) + '</span></div>').join('');
     Object.keys(PRODUCTS).forEach(renderLine);
     $('#total').textContent = money(total());
     ensureCommerceControls();
+  }
+
+  function ownedDecisionCopy(rec) {
+    if (rec.ownedResolution === 'inadequate') return rec.owned + ' It is already inadequate because the story identifies a condition or function failure, so the plan replaces it.';
+    if (rec.ownedResolution === 'adequate') return rec.owned + ' It appears to cover the required role, so the plan uses yours instead of adding a duplicate.';
+    return rec.owned + ' Keneflex still needs fit, condition, cleanliness, coverage, and function details before deciding KEEP versus BUY.';
   }
 
   function setDisposition(id, disposition, message) {

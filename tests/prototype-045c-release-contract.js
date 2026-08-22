@@ -32,10 +32,10 @@ check(!loader.includes('MutationObserver'), 'loader has no observer repair logic
 check(!loader.includes('setTimeout('), 'loader has no timing repair logic');
 
 check(route.includes('<title>Keneflex</title>'), 'participant route uses consumer-facing title');
-check(route.includes("searchParams.set('participant','060')"), 'participant route requests consolidated release 0.6.0');
+check(route.includes("searchParams.set('participant','062')"), 'participant route requests consolidated release 0.6.2');
 check(route.includes("searchParams.set('build',String(stamp))") && route.includes("searchParams.set('cache','no-store')"), 'participant route uses unique no-store URL');
 check(route.includes('location.replace(u.href)'), 'participant route uses deterministic top-level navigation');
-check(html.includes('participant-consolidated.css?v=060'), 'participant route loads consolidated styles');
+check(html.includes('participant-consolidated.css?v=062'), 'participant route loads consolidated styles');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'duplicated inline commerce runtime is absent');
 
 check(engine.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"), 'hand family canonicalization retained');
@@ -47,12 +47,12 @@ check(critical.includes('correctionSide'), 'laterality corrections supported');
 check(critical.includes('threads.every(threadAdequate)'), 'multi-problem adequacy retained');
 
 check(participant.includes('const model ='), 'one authoritative participant model exists');
-check(participant.includes("release: '0.6.0'"), 'participant model identifies consolidated release');
+check(participant.includes("release: '0.6.2'"), 'participant model identifies consolidated release');
 check(participant.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
 check(participant.includes('function safetyGate()'), 'safety gate has one controller owner');
 check(participant.includes("model.cart.support.disposition = 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
 check(participant.includes('Provider direction protected'), 'provider direction appears in recommendation reasoning');
-check(participant.includes('fit, condition, cleanliness, and function'), 'owned items retain suitability checks');
+check(participant.includes('function classifyOwnedProduct(') && participant.includes('fit, condition, cleanliness, coverage, and function'), 'owned items retain suitability checks and explicit resolution');
 check(participant.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
 check(participant.includes("disposition === 'BUY' ? product.price : 0"), 'only BUY items contribute to total');
 check(participant.includes('function adjust(kind)'), 'solution adjustment has one controller owner');
