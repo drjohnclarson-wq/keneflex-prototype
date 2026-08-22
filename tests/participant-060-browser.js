@@ -27,6 +27,10 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   }
 
   async function clearSafetyAndMeasure(value = '7.0') {
+    if (await page.locator('#interaction[data-concept="preciseLocation"] #reply').count()) {
+      await page.fill('#reply', 'It is centered at the base of my thumb and thumb side of my wrist.');
+      await page.click('#send');
+    }
     await page.click('[data-safety="clear"]');
     await page.fill('#wristMeasure', value);
     await page.click('#fitContinue');
@@ -119,7 +123,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('rich-owned-brace-replacement', "My right wrist and thumb have been hurting for about three weeks after playing pickleball. Gripping the paddle and twisting jars make it worse. There was no fall or direct injury. I don't have numbness, major swelling, or weakness. I own an old wrist brace, but it is stretched out and doesn't support my thumb.", async () => {
     assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
-    const before = await page.locator('#conversation').innerText();
+    const before = await page.locator('#conversation .bubble.ai').allInnerTexts().then(items => items.join(' '));
     assert(!/which side|how long|make it worse/i.test(before), 'known story facts were asked again');
     await page.fill('#reply', 'It is centered at the base of my thumb and thumb side of my wrist.');
     await page.click('#send');
