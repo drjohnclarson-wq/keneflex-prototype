@@ -120,7 +120,9 @@
     const thread = activeProblem();
     const negative = new Set(thread?.negatives || []);
     const unresolved = [];
-    if (thread?.onset !== 'gradual') unresolved.push('a major recent injury');
+    const storyText = model.story.events.map(event => event.text).join(' ');
+    const injuryDenied = /\b(?:no|without|have not had|haven't had)\b[^.!?;]{0,45}\b(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b/i.test(storyText);
+    if (!injuryDenied) unresolved.push('a major recent injury');
     if (!negative.has('wound')) unresolved.push('an open wound');
     if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
     if (!negative.has('numbness') && !negative.has('tingling')) unresolved.push('loss of feeling');
@@ -181,7 +183,7 @@
       locations,
       provider,
       owned,
-      ownedResolution: classifyOwnedProduct(owned, 'support'),
+      ownedResolution: classifyOwnedProduct(owned, 'support', thread.areas),
       eligible: !neuro,
       supportReason: neuro
         ? 'The altered-feeling pattern needs a separate positioning and nerve-safety requirement. A combined wrist/thumb support is not automatically eligible simply because it covers both areas.'
@@ -203,7 +205,7 @@
 
   function applyOwnedProductHolds(ownedText) {
     const owned = String(ownedText || '');
-    const support = classifyOwnedProduct(owned, 'support');
+    const support = classifyOwnedProduct(owned, 'support', activeProblem()?.areas);
     const cold = classifyOwnedProduct(owned, 'cold');
     const topical = classifyOwnedProduct(owned, 'topical');
     if (support === 'adequate') model.cart.support.disposition = 'KEEP';
@@ -215,7 +217,7 @@
     else if (topical === 'unknown') model.cart.topical.disposition = 'REVIEW';
   }
 
-  function classifyOwnedProduct(ownedText, kind) {
+  function classifyOwnedProduct(ownedText, kind, requiredAreas = []) {
     const owned = String(ownedText || '');
     const rx = {
       support: /brace|support|splint|wrist wrap/i,
@@ -223,10 +225,20 @@
       topical: /cream|gel/i
     }[kind];
     if (!rx.test(owned)) return 'none';
+    const segment = owned
+      .split(/[.!?;]|\band\b(?=[^.!?;]{0,35}\b(?:brace|support|splint|wrist wrap|ice pack|cold pack|cream|gel)\b)/i)
+      .map(value => value.trim())
+      .filter(value => rx.test(value))
+      .join(' ');
     const inadequate = /old|stretched|worn|torn|broken|damaged|expired|dirty|doesn['’]?t (?:fit|support|cover|work)|does not (?:fit|support|cover|work)|too (?:small|large|loose|tight)|missing/i;
-    if (inadequate.test(owned)) return 'inadequate';
+    if (inadequate.test(segment)) return 'inadequate';
     const adequate = /good condition|fits? (?:me )?well|clean and (?:intact|works)|covers? (?:both )?(?:the )?(?:wrist|thumb)|still works|works well/i;
-    if (adequate.test(owned)) return 'adequate';
+    if (adequate.test(segment)) {
+      const needsCombinedCoverage = kind === 'support' && requiredAreas.includes('wrist') && requiredAreas.includes('thumb');
+      const confirmsCombinedCoverage = /(?:wrist[^.!?]{0,35}thumb|thumb[^.!?]{0,35}wrist|both areas|combined)/i.test(segment);
+      if (needsCombinedCoverage && !confirmsCombinedCoverage) return 'unknown';
+      return 'adequate';
+    }
     return 'unknown';
   }
 
