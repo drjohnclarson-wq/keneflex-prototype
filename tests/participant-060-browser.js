@@ -273,7 +273,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(safety.includes('rapidly increasing swelling'));
   });
 
-  await scenario('thumb-wrap-is-owned-support', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and gripping makes it worse. My thumb wrap fits well and covers both wrist and thumb.', async () => {
+  await scenario('thumb-wrap-is-owned-support', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and gripping makes it worse. My thumb wrap fits well, is clean and in good condition, still works, and covers both wrist and thumb.', async () => {
     await clearSafetyAndMeasure();
     assert.equal(await page.locator('#supportState').innerText(), 'Use yours');
     assert.equal(await page.locator('#total').innerText(), '$32.99');
@@ -319,7 +319,23 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#total').innerText(), '$31.98');
   });
 
+  await scenario('uncertain-numbness-remains-in-safety-check', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I am not sure whether my fingers are numb.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('loss of feeling'));
+  });
+
+  await scenario('wound-dressing-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no wound dressing on the cut.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('open wound'));
+  });
+
+  await scenario('partial-support-assessment-requires-review', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My wrist brace fits well.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Needs review before buying');
+    assert(await page.locator('.kfxBuy').isDisabled());
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 39, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 42, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
