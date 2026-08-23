@@ -241,7 +241,13 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(explanation.includes('plan uses yours'));
   });
 
+  await scenario('conflicting-owned-condition-requires-review', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My old wrist brace fits well and still works.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Needs review before buying');
+    assert(await page.locator('.kfxBuy').isDisabled());
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 27, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 28, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
