@@ -335,7 +335,14 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(await page.locator('.kfxBuy').isDisabled());
   });
 
+  await scenario('ice-wrist-wrap-is-cold-product', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I already have a Polar Soft Ice Wrist Wrap that works well.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
+    assert.equal(await page.locator('#coldState').innerText(), 'Use yours');
+    assert.equal(await page.locator('#total').innerText(), '$31.98');
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 42, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 43, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
