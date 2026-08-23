@@ -351,7 +351,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(message.includes('Self-care should pause here'));
   });
 
-  await scenario('cut-short-idiom-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and I cut my wrist exercises short because they hurt.', async () => {
+  await scenario('cut-short-idiom-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I cut my wrist exercises short because they hurt.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
