@@ -1,2 +1,2 @@
-/* Keneflex participant loader — 0.6.3 consolidated runtime. */
-document.write('<script defer src="prototype-046-conversation-engine.js?v=063"><\/script><script defer src="prototype-046b-critical-state.js?v=063"><\/script><script defer src="participant-controller.js?v=063"><\/script>');
+/* Keneflex participant loader — 0.6.4 consolidated runtime. */
+document.write('<script defer src="prototype-046-conversation-engine.js?v=064"><\/script><script defer src="prototype-046b-critical-state.js?v=064"><\/script><script defer src="participant-controller.js?v=064"><\/script>');
