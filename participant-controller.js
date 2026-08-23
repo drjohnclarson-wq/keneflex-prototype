@@ -175,8 +175,8 @@
 
   function latestOpenWoundStatus() {
     let status = 'unknown';
-    const denied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?(?:open wound|wound|open skin)\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?(?:open wound|wound|open skin)\b/i;
-    const reported = /\b(?:open wound|open skin|skin is open)\b/i;
+    const denied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?(?:open wound|wound\b(?!\s+(?:dressing|care|cover|bandage))|open skin)\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?(?:open wound|wound\b(?!\s+(?:dressing|care|cover|bandage))|open skin)\b/i;
+    const reported = /\b(?:open wound|open skin|skin is open|cut)\b/i;
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
       const evidence = [];
       const collect = (rx, value) => { const global = new RegExp(rx.source, 'ig'); let match; while ((match = global.exec(clause))) evidence.push({ index: match.index, value }); };
@@ -283,6 +283,13 @@
     if (inadequateEvidence && adequateEvidence) return 'unknown';
     if (inadequateEvidence) return 'inadequate';
     if (adequateEvidence) {
+      if (kind === 'support') {
+        const fitKnown = /fits? (?:me )?well/i.test(segment);
+        const conditionKnown = /good condition|\bintact\b|\bnew\b/i.test(segment);
+        const cleanlinessKnown = /\bclean\b/i.test(segment);
+        const functionKnown = /still works|works well|supports?\b|covers?\b/i.test(segment);
+        if (!fitKnown || !conditionKnown || !cleanlinessKnown || !functionKnown) return 'unknown';
+      }
       const needsCombinedCoverage = kind === 'support' && requiredAreas.includes('wrist') && requiredAreas.includes('thumb');
       const confirmsCombinedCoverage = /(?:wrist[^.!?]{0,35}thumb|thumb[^.!?]{0,35}wrist|both areas|combined)/i.test(segment);
       if (needsCombinedCoverage && !confirmsCombinedCoverage) return 'unknown';
