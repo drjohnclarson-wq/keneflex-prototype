@@ -80,7 +80,10 @@
       }
       if (question.concept === 'preciseLocation') {
         const thread = activeProblem();
+        const parsedValue = value.replace(/\bback\s+of\s+(?=(?:my|the)\s+(?:wrist|hand|thumb))/ig, 'posterior side of ');
+        Engine.ingest(model.story, parsedValue);
         if (thread && !Engine.known(thread, 'preciseLocation')) thread.locations.push(value);
+        if (thread) model.story.active = threadKey(thread);
       } else {
         Engine.ingest(model.story, value);
       }
