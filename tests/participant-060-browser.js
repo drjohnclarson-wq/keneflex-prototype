@@ -420,6 +420,20 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(message.includes('Self-care should pause here'));
   });
 
+  await scenario('posterior-wrist-location-stays-on-hand-thread', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+    await page.fill('#reply', 'It is on the back of my wrist near the thumb.');
+    await page.click('#send');
+    assert(await page.locator('[data-safety="clear"]').count());
+    const summary = await page.evaluate(() => window.KeneflexParticipant.model.story.order.map(key => window.KeneflexParticipant.model.story.threads[key].family));
+    assert.deepEqual(summary, ['hand']);
+  });
+
+  await scenario('relative-clause-healed-cut-does-not-stop', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have a wrist cut that has healed.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('safety check'));
+    assert(!safety.includes('You reported an open wound'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
