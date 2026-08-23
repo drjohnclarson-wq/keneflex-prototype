@@ -210,7 +210,25 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#total').innerText(), '$52.98');
   });
 
+  await scenario('owned-support-cannot-clear-neuro-review', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and typing makes it worse. My thumb and index finger tingle. My wrist and thumb brace is in good condition, fits well, and covers both areas.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Needs review before buying');
+    assert(await page.locator('.kfxBuy').isDisabled());
+  });
+
+  await scenario('later-fall-overrides-earlier-denial', 'My right wrist has hurt for four weeks. There was no fall. Yesterday I fell and hurt it. Typing makes it worse.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('major recent injury'));
+  });
+
+  await scenario('support-verb-is-not-owned-support', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have a cold pack that supports my wrist and works well.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
+    assert.equal(await page.locator('#coldState').innerText(), 'Use yours');
+    assert.equal(await page.locator('#total').innerText(), '$31.98');
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 22, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 25, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
