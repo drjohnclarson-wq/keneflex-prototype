@@ -256,6 +256,11 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(safety.includes('rapidly increasing swelling'));
   });
 
+  await scenario('with-modifiers-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness with new rapidly increasing swelling.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('rapidly increasing swelling'));
+  });
+
   await scenario('same-clause-later-injury-wins', 'My right wrist has hurt for four weeks. There was no fall, but yesterday I had a direct injury. Typing makes it worse.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('major recent injury'));
@@ -280,9 +285,20 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
   });
 
+  await scenario('uncertainty-with-location-is-accepted', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+    await page.fill('#reply', 'I have no idea what the spot is called, but it is on the palm side near my thumb knuckle.');
+    await page.click('#send');
+    assert(await page.locator('[data-safety="clear"]').count());
+  });
+
   await scenario('explicit-open-wound-denial-stays-denied', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no open wound.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(!safety.includes('open wound'));
+  });
+
+  await scenario('wound-pain-denial-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My open cut has no wound pain.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('open wound'));
   });
 
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
