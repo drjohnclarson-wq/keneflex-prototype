@@ -268,7 +268,7 @@
     const rx = {
       support: /\b(?:brace|braces|support|splint|splints|(?:wrist|thumb|hand) wrap)\b/i,
       cold: /ice pack|cold pack/i,
-      topical: /cream|gel/i
+      topical: /\b(?:cream|ointment|biofreeze)\b|\bpain relief gel\b|\bgel\b(?!\s+(?:(?:cold|ice)\s+)?pack\b)/i
     }[kind];
     if (!rx.test(owned)) return 'none';
     const segment = owned
