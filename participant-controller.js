@@ -124,8 +124,7 @@
     const thread = activeProblem();
     const negative = new Set(thread?.negatives || []);
     const unresolved = [];
-    const storyText = model.story.events.map(event => event.text).join(' ');
-    const injuryDenied = /\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:did not|didn't)\s+(?:fall|have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma))\b/i.test(storyText);
+    const injuryDenied = latestInjuryStatus() === 'denied';
     if (!injuryDenied) unresolved.push('a major recent injury');
     if (!negative.has('wound')) unresolved.push('an open wound');
     if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
@@ -148,6 +147,17 @@
       model.safetyCleared = true;
       fitGate();
     }));
+  }
+
+  function latestInjuryStatus() {
+    let status = 'unknown';
+    const denied = /\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:did not|didn't)\s+(?:fall|have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma))\b/i;
+    const reported = /\b(?:fell|had\s+(?:(?:a|the)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)|(?:after|following)\s+(?:(?:a|the)\s+)?(?:fall|injury|trauma))\b/i;
+    model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
+      if (denied.test(clause)) status = 'denied';
+      else if (reported.test(clause)) status = 'reported';
+    }));
+    return status;
   }
 
   function fitGate() {
@@ -212,7 +222,7 @@
     const support = classifyOwnedProduct(owned, 'support', activeProblem()?.areas);
     const cold = classifyOwnedProduct(owned, 'cold');
     const topical = classifyOwnedProduct(owned, 'topical');
-    if (support === 'adequate') model.cart.support.disposition = 'KEEP';
+    if (support === 'adequate' && model.cart.support.disposition !== 'REVIEW') model.cart.support.disposition = 'KEEP';
     else if (support === 'unknown') model.cart.support.disposition = 'REVIEW';
     // An item already proven inadequate is replaced, so the recommended BUY remains.
     if (cold === 'adequate') model.cart.cold.disposition = 'KEEP';
@@ -224,7 +234,7 @@
   function classifyOwnedProduct(ownedText, kind, requiredAreas = []) {
     const owned = String(ownedText || '');
     const rx = {
-      support: /brace|support|splint|wrist wrap/i,
+      support: /\b(?:brace|braces|support|splint|splints|wrist wrap)\b/i,
       cold: /ice pack|cold pack/i,
       topical: /cream|gel/i
     }[kind];
