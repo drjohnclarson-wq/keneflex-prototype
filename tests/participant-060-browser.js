@@ -204,7 +204,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(safety.includes('loss of feeling'));
   });
 
-  await scenario('neighbors-product-is-not-owned', 'My neighbor has a cold pack that works well. My right wrist hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
+  await scenario('neighbors-product-is-not-owned', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My neighbor has a cold pack that works well.', async () => {
     await clearSafetyAndMeasure();
     assert.equal(await page.locator('#coldState').innerText(), 'Recommended');
     assert.equal(await page.locator('#total').innerText(), '$52.98');
