@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.6.3
+/* Keneflex participant runtime 0.6.4
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -17,7 +17,7 @@
   });
 
   const model = {
-    release: '0.6.3',
+    release: '0.6.4',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
@@ -71,6 +71,10 @@
       addBubble('user', value);
       model.answers.push(value);
       Engine.ingest(model.story, value);
+      if (question.concept === 'preciseLocation') {
+        const thread = activeProblem();
+        if (thread && !Engine.known(thread, 'preciseLocation')) thread.locations.push(value);
+      }
       interaction.innerHTML = '';
       advance();
     };
@@ -121,11 +125,11 @@
     const negative = new Set(thread?.negatives || []);
     const unresolved = [];
     const storyText = model.story.events.map(event => event.text).join(' ');
-    const injuryDenied = /\b(?:no|without|have not had|haven't had)\b[^.!?;]{0,45}\b(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b/i.test(storyText);
+    const injuryDenied = /\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:did not|didn't)\s+(?:fall|have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma))\b/i.test(storyText);
     if (!injuryDenied) unresolved.push('a major recent injury');
     if (!negative.has('wound')) unresolved.push('an open wound');
     if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
-    if (!negative.has('numbness') && !negative.has('tingling')) unresolved.push('loss of feeling');
+    if (!negative.has('numbness')) unresolved.push('loss of feeling');
     if (!negative.has('weakness')) unresolved.push('marked new weakness');
     // Deformity is intentionally separate from the ordinary symptom parser.
     unresolved.splice(Math.min(1, unresolved.length), 0, 'visible deformity');
