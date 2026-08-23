@@ -308,6 +308,19 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(await page.locator('[data-safety="clear"]').count());
   });
 
+  await scenario('cutting-back-is-not-another-body-region', 'My right wrist hurts for four weeks. It built up gradually and I have been cutting back on typing because of the wrist pain.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('safety check'));
+    assert(await page.locator('[data-safety="clear"]').count());
+  });
+
+  await scenario('explicit-cut-denial-does-not-stop-intake', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I do not have a cut.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('safety check'));
+    assert(!safety.includes('You reported an open wound'));
+    assert(!safety.includes('an open wound'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
