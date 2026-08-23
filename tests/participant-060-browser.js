@@ -298,7 +298,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('wound-pain-denial-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My open cut has no wound pain.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
-    assert(safety.includes('open wound'));
+    assert(safety.includes('Self-care should pause here'));
+    assert(safety.includes('may need professional evaluation'));
   });
 
   await scenario('cut-back-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and I cut back on typing because of the wrist pain.', async () => {
@@ -324,7 +325,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('transitive-cut-report-stops-intake', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. Yesterday I cut my wrist.', async () => {
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
-    assert(message.includes('open wound or cut'));
+    assert(message.includes('may need professional evaluation'));
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
   });
 
@@ -343,7 +344,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('indefinite-transitive-cut-stops-intake', 'My right wrist hurts for four weeks. Typing makes it worse. Yesterday I cut a finger.', async () => {
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
-    assert(message.includes('open wound or cut'));
+    assert(message.includes('may need professional evaluation'));
   });
 
   await scenario('quantified-plural-cut-stops-intake', 'My right wrist hurts for four weeks. Typing makes it worse. Yesterday I cut two fingers.', async () => {
@@ -439,7 +440,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.click('#send');
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
-    assert(message.includes('open wound or cut'));
+    assert(message.includes('may need professional evaluation'));
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
   });
 
@@ -517,7 +518,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('burn-denial-does-not-clear-open-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no burn.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
-    assert(safety.includes('open wound'));
+    assert(safety.includes('deep or gaping wound'));
   });
 
   await scenario('multi-region-symptoms-stay-with-source-thread', 'My right wrist tingles. My left knee hurts.', async () => {
@@ -544,7 +545,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('wound-dressing-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no wound dressing on the cut.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
-    assert(safety.includes('open wound'));
+    assert(safety.includes('deep or gaping wound'));
   });
 
   await scenario('partial-support-assessment-requires-review', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My wrist brace fits well.', async () => {
@@ -593,7 +594,65 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!state.knee.symptoms.includes('pain'));
   });
 
+
+  await scenario('list-style-open-wound-denial-continues', 'My right wrist and thumb have been hurting for about three weeks after playing pickleball. Gripping the paddle and twisting jars make it worse. There was no fall or direct injury. I don’t have numbness, major swelling, weakness, deformity, or an open wound. I own an old wrist brace, but it is stretched out and doesn’t support my thumb.', async () => {
+    assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
+    assert(!(await page.locator('#conversation .bubble.ai').last().innerText()).includes('Self-care should pause here'));
+    await page.fill('#reply', 'At the base of my thumb and along the thumb side of my wrist.');
+    await page.click('#send');
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('safety check'));
+    assert(!safety.includes('open wound'));
+    await page.click('[data-safety="clear"]');
+    await page.fill('#wristMeasure', '7');
+    await page.click('#fitContinue');
+    await page.waitForSelector('#solutionView:not(.hidden)');
+    assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
+    assert.equal(await page.locator('#supportPrice').innerText(), '$19.99');
+    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert(!(await page.locator('.kfxBuy').isDisabled()));
+  });
+
+  await scenario('minor-superficial-scrape-continues-with-protection', 'My right wrist hurts for four weeks after typing. It built up gradually. There was no fall or direct injury. I have a small superficial scrape on my hand. The bleeding stopped, and I washed and covered it. I do not have numbness, major swelling, weakness, or deformity.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('minor scrape does not automatically require medical care'));
+    assert(safety.includes('Do not place a brace or topical pain product directly over unprotected broken skin'));
+    assert(!safety.includes('Self-care should pause here'));
+    await page.click('[data-safety="clear"]');
+    await page.fill('#wristMeasure', '7');
+    await page.click('#fitContinue');
+    await page.waitForSelector('#solutionView:not(.hidden)');
+    const solution = await page.locator('#solutionView').innerText();
+    assert(solution.includes('Skin protection'));
+    assert(solution.includes('Do not place a brace or topical pain product directly over unprotected broken skin'));
+    await page.click('.kfxBuy');
+    const checkout = await page.locator('.kfxCheckout').innerText();
+    assert(checkout.includes('Protect the scrape'));
+    assert(checkout.includes('unprotected broken skin'));
+  });
+
+  await scenario('deep-gaping-cut-pauses-self-care', 'My right wrist hurts after a fall. I have a deep gaping cut on my wrist that is still bleeding.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert(message.includes('may need professional evaluation'));
+    assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
+  });
+
+
+  await scenario('affirmative-scrape-after-denial-remains-reported', 'My right wrist hurts for four weeks after typing. It built up gradually. I don’t have numbness or weakness, and I do have a small superficial scrape on my wrist. The bleeding stopped, and I washed and covered it.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('minor scrape does not automatically require medical care'));
+    assert(safety.includes('unprotected broken skin'));
+    assert(!safety.includes('Self-care should pause here'));
+  });
+
+  await scenario('persistent-bleeding-cut-pauses-self-care', 'My right wrist hurts after a fall. I have a small cut that keeps bleeding despite pressure.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert(message.includes('may need professional evaluation'));
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 46, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 51, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();

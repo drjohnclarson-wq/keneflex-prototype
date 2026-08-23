@@ -22,9 +22,9 @@ check(loadedScripts[1] === 'prototype-046b-critical-state.js', 'critical provide
 check(loadedScripts[2] === 'participant-controller.js', 'single participant controller loads last');
 check((loader.match(/<script defer/g) || []).length === 3, 'consolidated runtime starts after the legacy inline parser phase');
 check(!/prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/.test(loader), 'legacy patch stack is absent from production loader');
-check(route.includes("searchParams.set('participant','066')"), 'participant route matches consolidated release');
+check(route.includes("searchParams.set('participant','067')"), 'participant route matches consolidated release');
 check(route.includes("searchParams.set('build',String(stamp))"), 'participant route cache-busts each launch');
-check(html.includes('participant-consolidated.css?v=066'), 'consolidated stylesheet is loaded');
+check(html.includes('participant-consolidated.css?v=067'), 'consolidated stylesheet is loaded');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'legacy inline commerce runtime is removed');
 check(controller.includes('const model ='), 'one authoritative participant model exists');
 check(controller.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
