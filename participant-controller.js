@@ -198,6 +198,11 @@
       provider,
       owned,
       ownedResolution: classifyOwnedProduct(owned, 'support', thread.areas),
+      ownedResolutions: {
+        support: classifyOwnedProduct(owned, 'support', thread.areas),
+        cold: classifyOwnedProduct(owned, 'cold'),
+        topical: classifyOwnedProduct(owned, 'topical')
+      },
       eligible: !neuro,
       supportReason: neuro
         ? 'The altered-feeling pattern needs a separate positioning and nerve-safety requirement. A combined wrist/thumb support is not automatically eligible simply because it covers both areas.'
@@ -296,9 +301,18 @@
   }
 
   function ownedDecisionCopy(rec) {
-    if (rec.ownedResolution === 'inadequate') return rec.owned + ' It is already inadequate because the story identifies a condition or function failure, so the plan replaces it.';
-    if (rec.ownedResolution === 'adequate') return rec.owned + ' It appears to cover the required role, so the plan uses yours instead of adding a duplicate.';
-    return rec.owned + ' Keneflex still needs fit, condition, cleanliness, coverage, and function details before deciding KEEP versus BUY.';
+    const resolutions = rec.ownedResolutions || { support: rec.ownedResolution };
+    const decisions = [];
+    if (rec.ownedResolution === 'inadequate') decisions.push('Your support is already inadequate because the story identifies a condition or function failure, so the plan replaces it.');
+    else if (rec.ownedResolution === 'adequate') decisions.push('Your support appears to cover the required role, so the plan uses yours instead of adding a duplicate.');
+    else if (resolutions.support === 'unknown') decisions.push('Your support still needs fit, condition, cleanliness, coverage, and function review before deciding KEEP versus BUY.');
+    if (resolutions.cold === 'adequate') decisions.push('Your cold pack appears usable, so the plan uses yours instead of adding another.');
+    else if (resolutions.cold === 'inadequate') decisions.push('Your cold pack is already inadequate based on the condition or function described, so the plan replaces it.');
+    else if (resolutions.cold === 'unknown') decisions.push('Your cold pack still needs a condition, cleanliness, and function review.');
+    if (resolutions.topical === 'adequate') decisions.push('Your topical appears usable, so the plan uses yours instead of adding another.');
+    else if (resolutions.topical === 'inadequate') decisions.push('Your topical is already inadequate based on the condition or expiration described, so the plan replaces it.');
+    else if (resolutions.topical === 'unknown') decisions.push('Your topical still needs a condition and expiration review.');
+    return rec.owned + ' ' + (decisions.join(' ') || 'Keneflex did not identify an owned plan item that changes this purchase.');
   }
 
   function setDisposition(id, disposition, message) {
