@@ -67,5 +67,13 @@ function assert(cond,name,detail){total++;if(!cond)failures.push({name,detail});
   assert(t.negatives.includes('numbness')&&t.symptoms.includes('swelling')&&!t.negatives.includes('swelling'),'with connector restarts symptom polarity',{thread:t});
 }
 
+// 8) Arbitrary modifiers after "with" must not extend the earlier symptom's negation.
+{
+  const s=E.createStore();
+  E.ingest(s,'My right wrist hurts for three weeks. I have no numbness with new rapidly increasing swelling.');
+  const t=E.activeThread(s);
+  assert(t.negatives.includes('numbness')&&t.symptoms.includes('swelling')&&!t.negatives.includes('swelling'),'with connector restarts polarity before modified symptom',{thread:t});
+}
+
 console.log(`\n${total-failures.length}/${total} P0 critical assertions passed`);
 if(failures.length){console.error(JSON.stringify({failures},null,2));process.exit(1);}
