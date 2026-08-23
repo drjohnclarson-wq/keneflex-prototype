@@ -157,7 +157,7 @@
 
   function latestInjuryStatus() {
     let status = 'unknown';
-    const denied = /\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b|\b(?:did not|didn't)\s+have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b/i;
+    const denied = /\bno\s+fall\s+(?:or|and)\s+(?:direct injury|injury|trauma)\b|\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b|\b(?:did not|didn't)\s+have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b/i;
     const reported = /\b(?:fell|had\s+(?:(?:a|the)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)|(?:after|following)\s+(?:(?:a|the)\s+)?(?:fall|injury|trauma|(?:sudden )?twist|hit|accident)|sudden twist)\b/i;
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
       const evidence = [];
