@@ -250,9 +250,12 @@
       .filter(value => rx.test(value))
       .join(' ');
     const inadequate = /\b(?:old|stretched|worn|torn|broken|damaged|expired|dirty|missing)\b|doesn['’]?t (?:fit|support|cover|work)|does not (?:fit|support|cover|work)|too (?:small|large|loose|tight)/i;
-    if (inadequate.test(segment)) return 'inadequate';
     const adequate = /good condition|fits? (?:me )?well|clean and (?:intact|works)|covers? (?:both )?(?:the )?(?:wrist|thumb)|still works|works well/i;
-    if (adequate.test(segment)) {
+    const inadequateEvidence = inadequate.test(segment);
+    const adequateEvidence = adequate.test(segment);
+    if (inadequateEvidence && adequateEvidence) return 'unknown';
+    if (inadequateEvidence) return 'inadequate';
+    if (adequateEvidence) {
       const needsCombinedCoverage = kind === 'support' && requiredAreas.includes('wrist') && requiredAreas.includes('thumb');
       const confirmsCombinedCoverage = /(?:wrist[^.!?]{0,35}thumb|thumb[^.!?]{0,35}wrist|both areas|combined)/i.test(segment);
       if (needsCombinedCoverage && !confirmsCombinedCoverage) return 'unknown';
