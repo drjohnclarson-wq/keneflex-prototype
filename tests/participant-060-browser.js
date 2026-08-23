@@ -638,7 +638,21 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
   });
 
+
+  await scenario('affirmative-scrape-after-denial-remains-reported', 'My right wrist hurts for four weeks after typing. It built up gradually. I don’t have numbness or weakness, and I do have a small superficial scrape on my wrist. The bleeding stopped, and I washed and covered it.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('minor scrape does not automatically require medical care'));
+    assert(safety.includes('unprotected broken skin'));
+    assert(!safety.includes('Self-care should pause here'));
+  });
+
+  await scenario('persistent-bleeding-cut-pauses-self-care', 'My right wrist hurts after a fall. I have a small cut that keeps bleeding despite pressure.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert(message.includes('may need professional evaluation'));
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 49, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 51, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
