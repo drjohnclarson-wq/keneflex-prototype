@@ -72,7 +72,7 @@
       model.answers.push(value);
       if (question.concept === 'preciseLocation' && /\b(?:i\s+)?(?:do not|don't|cannot|can't)\s+(?:know|tell|locate)|\bnot sure\b|\bunsure\b/i.test(value)) {
         interaction.innerHTML = '';
-        addBubble('ai', '<p>That is okay. Please describe the closest area you can identify—for example, the palm side, back of the wrist, thumb knuckle, or another spot you can point to.</p>', true);
+        addBubble('ai', '<p>That is okay. Please describe the closest area you can identify—for example, the palm side, top of the wrist, thumb knuckle, or another spot you can point to.</p>', true);
         composer(question);
         return;
       }
@@ -132,7 +132,7 @@
     const unresolved = [];
     const injuryDenied = latestInjuryStatus() === 'denied';
     if (!injuryDenied) unresolved.push('a major recent injury');
-    if (!negative.has('wound')) unresolved.push('an open wound');
+    if (latestOpenWoundStatus() !== 'denied') unresolved.push('an open wound');
     if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
     if (!negative.has('numbness')) unresolved.push('loss of feeling');
     if (!negative.has('weakness')) unresolved.push('marked new weakness');
@@ -157,8 +157,8 @@
 
   function latestInjuryStatus() {
     let status = 'unknown';
-    const denied = /\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:did not|didn't)\s+(?:fall|have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma))\b/i;
-    const reported = /\b(?:fell|had\s+(?:(?:a|the)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)|(?:after|following)\s+(?:(?:a|the)\s+)?(?:fall|injury|trauma))\b/i;
+    const denied = /\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b|\b(?:did not|didn't)\s+have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b/i;
+    const reported = /\b(?:fell|had\s+(?:(?:a|the)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)|(?:after|following)\s+(?:(?:a|the)\s+)?(?:fall|injury|trauma|(?:sudden )?twist|hit|accident)|sudden twist)\b/i;
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
       const evidence = [];
       const collect = (rx, value) => {
@@ -166,6 +166,20 @@
         let match;
         while ((match = global.exec(clause))) evidence.push({ index: match.index, value });
       };
+      collect(denied, 'denied');
+      collect(reported, 'reported');
+      evidence.sort((a, b) => a.index - b.index).forEach(item => { status = item.value; });
+    }));
+    return status;
+  }
+
+  function latestOpenWoundStatus() {
+    let status = 'unknown';
+    const denied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?(?:open wound|wound|open skin)\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?(?:open wound|wound|open skin)\b/i;
+    const reported = /\b(?:open wound|open skin|skin is open)\b/i;
+    model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
+      const evidence = [];
+      const collect = (rx, value) => { const global = new RegExp(rx.source, 'ig'); let match; while ((match = global.exec(clause))) evidence.push({ index: match.index, value }); };
       collect(denied, 'denied');
       collect(reported, 'reported');
       evidence.sort((a, b) => a.index - b.index).forEach(item => { status = item.value; });
