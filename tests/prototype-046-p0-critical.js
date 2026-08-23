@@ -13,13 +13,12 @@ function assert(cond,name,detail){total++;if(!cond)failures.push({name,detail});
   assert(Array.isArray(t.provider)&&t.provider.length>0,'provider instruction survives canonical ingest',{thread:t});
 }
 
-// 2) Already-owned products must survive canonical ingest so KEEP/replace logic can assess
-// fit, condition and function instead of silently reverting to BUY.
+// 2) Consumer-owned products must not alter Keneflex's vetted recommendation.
 {
   const s=E.createStore();
   E.ingest(s,'I already have a wrist brace but it is old and does not fit well. My right wrist has hurt for three weeks after typing and there was no injury.');
   const t=E.activeThread(s);
-  assert(Array.isArray(t.owned)&&t.owned.length>0,'owned product survives canonical ingest',{thread:t});
+  assert(Array.isArray(t.owned)&&t.owned.length===0,'owned product does not alter canonical recommendation state',{thread:t});
 }
 
 // 3) A correction must supersede stale laterality. It must never become bilateral merely
