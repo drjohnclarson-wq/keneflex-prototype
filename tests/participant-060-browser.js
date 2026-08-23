@@ -298,7 +298,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('wound-pain-denial-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My open cut has no wound pain.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
-    assert(safety.includes('deep or gaping wound'));
+    assert(safety.includes('Self-care should pause here'));
+    assert(safety.includes('may need professional evaluation'));
   });
 
   await scenario('cut-back-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and I cut back on typing because of the wrist pain.', async () => {
