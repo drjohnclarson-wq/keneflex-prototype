@@ -183,30 +183,32 @@
   function latestOpenWoundStatus() {
     const activeReports = new Set();
     let deniedSeen = false;
-    const cutObject = '(?:(?:on|over|across)\\s+)?(?:(?:my|the|a|an|both|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple|many|\\d+)\\s+|both\\s+of\\s+my\\s+)?(?:skin|hands?|wrists?|thumbs?|fingers?)';
+    const cutObject = '(?:(?:on|over|across)\\s+)?(?:(?:my|the|a|an|both|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple|many|\\d+)\\s+|both\\s+of\\s+my\\s+)?(?:(?:left|right)\\s+)?(?:skin|hands?|wrists?|thumbs?|fingers?)';
     const denied = new RegExp('\\b(?:no|without)\\s+(?:(?:a|an|any)\\s+)?(?:open wound(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|wound\\b(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|open skin(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|(?:open )?cut)\\b|\\b(?:do not|don\'t|have not|haven\'t)\\s+have\\s+(?:(?:a|an|any)\\s+)?(?:open wound|wound\\b(?!\\s+(?:dressing|care|cover|bandage))|open skin|(?:open )?cut)\\b|\\b(?:did not|didn\'t|do not|don\'t|have not|haven\'t|never)\\s+cut\\s+' + cutObject, 'i');
     const reported = new RegExp('\\b(?:open wound|open skin|skin is open|(?:(?:a|an|my|open|deep|small|large|fresh|bleeding)\\s+cut)|cut\\s+' + cutObject + ')\\b', 'i');
     const evidenceKey = item => {
       const body = String(item.text || '').match(/\b(skin|hands?|wrists?|thumbs?|fingers?)\b/i)?.[1]?.toLowerCase();
       return body ? body.replace(/s$/, '') : 'unspecified';
     };
+    const evidenceSegment = (clause, index) => {
+      const before = clause.slice(0, index);
+      const boundaries = [...before.matchAll(/,|\b(?:but|however|although|yet)\b/ig)];
+      const startMatch = boundaries[boundaries.length - 1];
+      const start = startMatch ? (startMatch.index || 0) + startMatch[0].length : 0;
+      const rest = clause.slice(index);
+      const endMatch = rest.match(/,|\b(?:but|however|although|yet)\b/i);
+      const end = endMatch ? index + (endMatch.index || 0) : clause.length;
+      return clause.slice(start, end);
+    };
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
-      const cutShort = /\bcut\b[^.!?;]{0,120}\bshort\b/i.test(clause);
-      const resolved = /\b(?:healed|closed|resolved|no longer open|fully healed)\b/i.test(clause);
-      const explicitOpenCut = /\bopen cut\b/i.test(clause);
-      const openCutDenied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?open cut\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?open cut\b/i.test(clause);
-      if (explicitOpenCut && !openCutDenied) {
-        if (!resolved) activeReports.add('unspecified');
-        else deniedSeen = true;
-        return;
-      }
       const evidence = [];
       const deniedSpans = [];
       const collect = (rx, value) => {
         const global = new RegExp(rx.source, 'ig');
         let match;
         while ((match = global.exec(clause))) {
-          const item = { index: match.index, end: match.index + match[0].length, value, text: match[0] };
+          const item = { index: match.index, end: match.index + match[0].length, value, text: match[0], segment: evidenceSegment(clause, match.index) };
+          const cutShort = /^\s*cut\b[^.!?;]{0,120}\bshort\b/i.test(item.segment);
           if (value === 'reported' && (deniedSpans.some(span => item.index >= span.index && item.end <= span.end) || cutShort && /^cut\b/i.test(item.text))) continue;
           evidence.push(item);
           if (value === 'denied') deniedSpans.push(item);
@@ -216,7 +218,9 @@
       collect(reported, 'reported');
       evidence.sort((a, b) => a.index - b.index).forEach(item => {
         const key = evidenceKey(item);
+        const resolved = /\b(?:healed|closed|resolved|no longer open|fully healed)\b/i.test(item.segment);
         if (item.value === 'reported' && !resolved) activeReports.add(key);
+        if (item.value === 'reported' && resolved) deniedSeen = true;
         if (item.value === 'denied') {
           deniedSeen = true;
           activeReports.delete(key);
