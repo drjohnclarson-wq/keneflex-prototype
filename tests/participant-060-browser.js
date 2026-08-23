@@ -385,6 +385,26 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!safety.includes('You reported an open wound'));
   });
 
+  await scenario('laterality-in-cut-object-stops-intake', 'My right wrist hurts for four weeks. Typing makes it worse. Yesterday I cut my right wrist.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
+  await scenario('healed-cut-does-not-hide-fresh-cut', 'My right wrist hurts for four weeks. Typing makes it worse. My finger cut healed, but I have a fresh cut on my wrist.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
+  await scenario('cut-short-does-not-hide-real-cut', 'My right wrist hurts for four weeks. Typing makes it worse. I cut my wrist, but I cut my therapy short.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
+  await scenario('connected-problems-keep-symptoms-scoped', 'My right wrist tingles but my left knee hurts.', async () => {
+    const prompt = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(!prompt.includes('Which fingers or part of the hand feel numb or tingly?'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
