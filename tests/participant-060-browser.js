@@ -186,7 +186,31 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(warning.includes('clean, dry skin'));
   });
 
+  await scenario('free-form-precise-location-is-accepted', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+    assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
+    await page.fill('#reply', 'On the palm side near the thumb knuckle.');
+    await page.click('#send');
+    assert.equal(await page.locator('#interaction #reply').count(), 0, 'precise-location question repeated');
+    assert(await page.locator('[data-safety="clear"]').count());
+  });
+
+  await scenario('unrelated-negation-does-not-deny-fall', 'My right wrist hurts after a fall yesterday. No swelling. Typing makes it worse.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('major recent injury'));
+  });
+
+  await scenario('tingling-denial-does-not-deny-numbness', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no tingling.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('loss of feeling'));
+  });
+
+  await scenario('neighbors-product-is-not-owned', 'My neighbor has a cold pack that works well. My right wrist hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#coldState').innerText(), 'Recommended');
+    assert.equal(await page.locator('#total').innerText(), '$52.98');
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 18, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 22, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
