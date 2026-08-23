@@ -197,7 +197,7 @@
     let deniedSeen = false;
     const cutObject = '(?:(?:on|over|across)\\s+)?(?:(?:my|the|a|an|both|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple|many|\\d+)\\s+|both\\s+of\\s+my\\s+)?(?:(?:left|right)\\s+)?(?:skin|hands?|wrists?|thumbs?|fingers?)';
     const denied = new RegExp('\\b(?:no|without)\\s+(?:(?:a|an|any)\\s+)?(?:open wound(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|wound\\b(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|open skin(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|(?:open )?cut(?:\\s+' + cutObject + ')?)\\b|\\b(?:do not|don\'t|have not|haven\'t)\\s+have\\s+(?:(?:a|an|any)\\s+)?(?:open wound|wound\\b(?!\\s+(?:dressing|care|cover|bandage))|open skin|(?:open )?cut(?:\\s+' + cutObject + ')?)\\b|\\b(?:did not|didn\'t|do not|don\'t|have not|haven\'t|never)\\s+cut\\s+' + cutObject, 'i');
-    const listDenied = /\b(?:do not|don't|does not|doesn't|did not|didn't|have not|haven't|has not|hasn't)\s+have\b(?:(?!\b(?:but|however|although|yet)\b)[^.!?;]){0,220}\b(?:open wound|open skin|(?:open )?cut|scrape|abrasion)\b/i;
+    const listDenied = /\b(?:do not|don't|does not|doesn't|did not|didn't|have not|haven't|has not|hasn't)\s+have\b(?:(?!\b(?:(?:but|however|although|yet)|(?:and|or)\s+(?:(?:i|we)\s+)?(?:do\s+)?have)\b)[^.!?;]){0,220}\b(?:open wound|open skin|(?:open )?cut|scrape|abrasion)\b/i;
     const reported = new RegExp('\\b(?:open wound|open skin|skin is open|(?:(?:a|an|my|open|deep|small|large|fresh|bleeding)\\s+cut)|(?:(?:(?:minor|small|superficial|shallow)\\s+)+)?(?:scrape|abrasion)|skinned\\s+(?:my\\s+)?(?:hand|wrist|thumb|finger|knee|elbow)|(?:(?:left|right)\\s+)?(?:hand|wrist|thumb|finger)\\s+cut|cut\\s+' + cutObject + ')\\b', 'i');
     const evidenceKey = item => {
       const source = String(item.segment || item.text || '');
@@ -252,7 +252,7 @@
     const status = latestOpenWoundStatus();
     if (status !== 'reported') return status;
     const text = model.story.events.map(event => String(event.text || '').replace(/[’‘]/g, "'")).join(' ');
-    const concerning = /\b(?:deep|gaping|puncture|punctured|bite|bitten|dirty|contaminated|embedded|foreign (?:body|object)|exposed (?:bone|tendon)|pus|drainage|red streaks?|spreading redness|uncontrolled bleeding|severe bleeding|bleeding (?:will not|won't|cannot|can't) stop|fever)\b/i.test(text);
+    const concerning = /\b(?:deep|gaping|puncture|punctured|bite|bitten|dirty|contaminated|embedded|foreign (?:body|object)|exposed (?:bone|tendon)|pus|drainage|red streaks?|spreading redness|uncontrolled bleeding|severe bleeding|persistent bleeding|keeps? bleeding|continues? (?:to bleed|bleeding)|bleeding (?:continues?|persists?|will not|won't|cannot|can't) stop?|still bleeding|fever)\b/i.test(text);
     const minor = /\b(?:(?:(?:minor|small|superficial|shallow)\s+)+(?:scrape|abrasion|cut)|skinned\s+(?:my\s+)?(?:hand|wrist|thumb|finger|knee|elbow))\b/i.test(text);
     return concerning ? 'concerning' : minor ? 'minor' : 'concerning';
   }
