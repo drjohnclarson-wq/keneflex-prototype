@@ -443,6 +443,26 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
   });
 
+  await scenario('posterior-location-variant-stays-on-hand-thread', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+    await page.fill('#reply', 'It is on the back side of my wrist near the thumb.');
+    await page.click('#send');
+    assert(await page.locator('[data-safety="clear"]').count());
+    const families = await page.evaluate(() => window.KeneflexParticipant.model.story.order.map(key => window.KeneflexParticipant.model.story.threads[key].family));
+    assert.deepEqual(families, ['hand']);
+  });
+
+  await scenario('generic-location-with-uncertainty-stays-unresolved', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+    await page.fill('#reply', "I'm not sure where on my hand.");
+    await page.click('#send');
+    assert(await page.locator('#interaction[data-concept="preciseLocation"] #reply').count());
+    assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
+  });
+
+  await scenario('side-less-connected-problems-keep-symptoms-scoped', 'My wrist hurts but my knee tingles.', async () => {
+    const hand = await page.evaluate(() => Object.values(window.KeneflexParticipant.model.story.threads).find(thread => thread.family === 'hand'));
+    assert(!hand.symptoms.includes('tingling'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
