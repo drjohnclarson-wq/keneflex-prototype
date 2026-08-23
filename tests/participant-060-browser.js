@@ -247,7 +247,28 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(await page.locator('.kfxBuy').isDisabled());
   });
 
+  await scenario('contrast-stops-symptom-negation', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness but it is rapidly swelling.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('rapidly increasing swelling'));
+  });
+
+  await scenario('same-clause-later-injury-wins', 'My right wrist has hurt for four weeks. There was no fall, but yesterday I had a direct injury. Typing makes it worse.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('major recent injury'));
+  });
+
+  await scenario('precise-location-nonanswer-stays-unresolved', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+    assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
+    await page.fill('#reply', "I don't know.");
+    await page.click('#send');
+    assert(await page.locator('#interaction[data-concept="preciseLocation"] #reply').count());
+    assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
+    await page.fill('#reply', 'On the palm side near the thumb knuckle.');
+    await page.click('#send');
+    assert(await page.locator('[data-safety="clear"]').count());
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 28, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 31, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
