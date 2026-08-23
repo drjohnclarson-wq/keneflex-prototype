@@ -71,7 +71,7 @@
       addBubble('user', value);
       model.answers.push(value);
       const locationUncertain = /\b(?:i\s+)?(?:do not|don't|cannot|can't)\s+(?:know|tell|locate)|\b(?:i\s+)?(?:have\s+)?no idea\b|\bnot sure\b|\bunsure\b/i.test(value);
-      const hasLocationDetail = /\b(?:palm|top|back|thumb|knuckle|crease|side|base|joint|finger|wrist|hand|inside|outside|near|below|above)\b/i.test(value);
+      const hasLocationDetail = /\b(?:palm|top|back|thumb|knuckle|crease|side|base|joint|finger|inside|outside|near|below|above)\b/i.test(value);
       if (question.concept === 'preciseLocation' && locationUncertain && !hasLocationDetail) {
         interaction.innerHTML = '';
         addBubble('ai', '<p>That is okay. Please describe the closest area you can identify—for example, the palm side, top of the wrist, thumb knuckle, or another spot you can point to.</p>', true);
@@ -80,7 +80,7 @@
       }
       if (question.concept === 'preciseLocation') {
         const thread = activeProblem();
-        const parsedValue = value.replace(/\bback\s+of\s+(?=(?:my|the)\s+(?:wrist|hand|thumb))/ig, 'posterior side of ');
+        const parsedValue = value.replace(/\bback(?:\s+side)?\s+of\s+(?=(?:my|the)\s+(?:wrist|hand|thumb))/ig, 'posterior side of ');
         Engine.ingest(model.story, parsedValue);
         if (thread && !Engine.known(thread, 'preciseLocation')) thread.locations.push(value);
         if (thread) model.story.active = threadKey(thread);
