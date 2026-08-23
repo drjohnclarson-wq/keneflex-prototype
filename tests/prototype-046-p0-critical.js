@@ -59,5 +59,13 @@ function assert(cond,name,detail){total++;if(!cond)failures.push({name,detail});
   assert(t.symptoms.includes('numbness')&&!t.negatives.includes('numbness'),'positive symptom correction supersedes stale negative',{thread:t});
 }
 
+// 7) A new symptom introduced with a connector must not inherit the prior symptom's negation.
+{
+  const s=E.createStore();
+  E.ingest(s,'My right wrist hurts for three weeks. I have no numbness with rapidly increasing swelling.');
+  const t=E.activeThread(s);
+  assert(t.negatives.includes('numbness')&&t.symptoms.includes('swelling')&&!t.negatives.includes('swelling'),'with connector restarts symptom polarity',{thread:t});
+}
+
 console.log(`\n${total-failures.length}/${total} P0 critical assertions passed`);
 if(failures.length){console.error(JSON.stringify({failures},null,2));process.exit(1);}
