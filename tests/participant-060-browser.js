@@ -334,6 +334,18 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!safety.includes('You reported an open wound'));
   });
 
+  await scenario('negated-transitive-cut-does-not-stop', 'My right wrist hurts for four weeks after I fell, but I did not cut my wrist. Typing makes it worse.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(!safety.includes('You reported an open wound'));
+    assert(safety.includes('safety check'));
+  });
+
+  await scenario('indefinite-transitive-cut-stops-intake', 'My right wrist hurts for four weeks. Typing makes it worse. Yesterday I cut a finger.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert(message.includes('open wound or cut'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
