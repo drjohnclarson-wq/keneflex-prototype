@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.6.4
+/* Keneflex participant runtime 0.6.5
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -17,7 +17,7 @@
   });
 
   const model = {
-    release: '0.6.4',
+    release: '0.6.5',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
@@ -212,7 +212,6 @@
     const neuro = thread.symptoms.some(value => value === 'numbness' || value === 'tingling');
     const locations = thread.locations.join(', ') || thread.areas.join(', ') || 'hand/wrist area';
     const provider = (thread.provider || []).join(' ');
-    const owned = (thread.owned || []).join('. ');
     const activities = (thread.triggers || []).join(', ');
     const combinedArea = (thread.areas || []).includes('wrist') && (thread.areas || []).includes('thumb');
     const supportReason = combinedArea
@@ -223,13 +222,6 @@
       neuro,
       locations,
       provider,
-      owned,
-      ownedResolution: classifyOwnedProduct(owned, 'support', thread.areas),
-      ownedResolutions: {
-        support: classifyOwnedProduct(owned, 'support', thread.areas),
-        cold: classifyOwnedProduct(owned, 'cold'),
-        topical: classifyOwnedProduct(owned, 'topical')
-      },
       eligible: !neuro,
       supportReason: neuro
         ? 'The altered-feeling pattern needs a separate positioning and nerve-safety requirement. A combined wrist/thumb support is not automatically eligible simply because it covers both areas.'
@@ -244,69 +236,19 @@
     const thread = activeProblem();
     model.recommendation = recommendationFor(thread);
     if (!model.recommendation.eligible || !model.fit.supportSku || model.recommendation.provider) model.cart.support.disposition = 'REVIEW';
-    applyOwnedProductHolds(model.recommendation.owned);
     renderSolution();
     showStage('solution');
   }
 
-  function applyOwnedProductHolds(ownedText) {
-    const owned = String(ownedText || '');
-    const support = classifyOwnedProduct(owned, 'support', activeProblem()?.areas);
-    const cold = classifyOwnedProduct(owned, 'cold');
-    const topical = classifyOwnedProduct(owned, 'topical');
-    if (support === 'adequate' && model.cart.support.disposition !== 'REVIEW') model.cart.support.disposition = 'KEEP';
-    else if (support === 'unknown') model.cart.support.disposition = 'REVIEW';
-    // An item already proven inadequate is replaced, so the recommended BUY remains.
-    if (cold === 'adequate') model.cart.cold.disposition = 'KEEP';
-    else if (cold === 'unknown') model.cart.cold.disposition = 'REVIEW';
-    if (topical === 'adequate') model.cart.topical.disposition = 'KEEP';
-    else if (topical === 'unknown') model.cart.topical.disposition = 'REVIEW';
-  }
-
-  function classifyOwnedProduct(ownedText, kind, requiredAreas = []) {
-    const owned = String(ownedText || '');
-    const rx = {
-      support: /\b(?:brace|braces|support|splint|splints)\b|(?<!ice )(?<!cold )\b(?:wrist|thumb|hand) wrap\b/i,
-      cold: /\b(?:ice|cold) pack\b|\b(?:ice|cold)\s+(?:(?:wrist|thumb|hand)\s+)?wrap\b/i,
-      topical: /\b(?:cream|ointment|biofreeze)\b|\bpain relief gel\b|\bgel\b(?!\s+(?:(?:cold|ice)\s+)?pack\b)/i
-    }[kind];
-    if (!rx.test(owned)) return 'none';
-    const segment = owned
-      .split(/[.!?;]|\band\b(?=[^.!?;]{0,35}\b(?:brace|support|splint|wrist wrap|ice pack|cold pack|cream|gel)\b)/i)
-      .map(value => value.trim())
-      .filter(value => rx.test(value))
-      .join(' ');
-    const inadequate = /\b(?:old|stretched|worn|torn|broken|damaged|expired|dirty|missing)\b|doesn['’]?t (?:fit|support|cover|work)|does not (?:fit|support|cover|work)|too (?:small|large|loose|tight)/i;
-    const adequate = /good condition|fits? (?:me )?well|clean and (?:intact|works)|covers? (?:both )?(?:the )?(?:wrist|thumb)|still works|works well/i;
-    const inadequateEvidence = inadequate.test(segment);
-    const adequateEvidence = adequate.test(segment);
-    if (inadequateEvidence && adequateEvidence) return 'unknown';
-    if (inadequateEvidence) return 'inadequate';
-    if (adequateEvidence) {
-      if (kind === 'support') {
-        const fitKnown = /fits? (?:me )?well/i.test(segment);
-        const conditionKnown = /good condition|\bintact\b|\bnew\b/i.test(segment);
-        const cleanlinessKnown = /\bclean\b/i.test(segment);
-        const functionKnown = /still works|works well|supports?\b|covers?\b/i.test(segment);
-        if (!fitKnown || !conditionKnown || !cleanlinessKnown || !functionKnown) return 'unknown';
-      }
-      const needsCombinedCoverage = kind === 'support' && requiredAreas.includes('wrist') && requiredAreas.includes('thumb');
-      const confirmsCombinedCoverage = /(?:wrist[^.!?]{0,35}thumb|thumb[^.!?]{0,35}wrist|both areas|combined)/i.test(segment);
-      if (needsCombinedCoverage && !confirmsCombinedCoverage) return 'unknown';
-      return 'adequate';
-    }
-    return 'unknown';
-  }
-
   function statusText(disposition) {
-    return { BUY: 'Recommended', KEEP: 'Use yours', REMOVE: 'Removed', REVIEW: 'Needs review before buying' }[disposition];
+    return { BUY: 'Recommended', REMOVE: 'Removed by you', REVIEW: 'Needs review before buying' }[disposition];
   }
 
   function renderLine(id) {
     const line = productLine(id);
     const item = $('#' + id + 'Item');
     item.classList.toggle('removed', line.disposition === 'REMOVE');
-    item.classList.toggle('kept', line.disposition === 'KEEP' || line.disposition === 'REVIEW');
+    item.classList.toggle('kept', line.disposition === 'REVIEW');
     const state = $('#' + id + 'State');
     state.textContent = statusText(line.disposition);
     state.className = 'planState ' + (line.disposition === 'BUY' ? 'buy' : line.disposition === 'REMOVE' ? 'remove' : 'keep');
@@ -329,27 +271,11 @@
       ['Location carried forward', rec.locations],
       ['Pattern considered', rec.neuro ? 'Pain plus altered feeling' : 'Use-related pain without an identified altered-feeling pattern'],
       ['What changed the product decision', rec.supportReason],
-      ...(rec.provider ? [['Provider direction protected', rec.provider + ' Keneflex will not recommend a conflicting use pattern.']] : []),
-      ...(rec.owned ? [['What you already own', ownedDecisionCopy(rec)]] : [])
+      ...(rec.provider ? [['Provider direction protected', rec.provider + ' Keneflex will not recommend a conflicting use pattern.']] : [])
     ].map(([title, copy]) => '<div class="why"><b>' + escapeHtml(title) + '</b><span>' + escapeHtml(copy) + '</span></div>').join('');
     Object.keys(PRODUCTS).forEach(renderLine);
     $('#total').textContent = money(total());
     ensureCommerceControls();
-  }
-
-  function ownedDecisionCopy(rec) {
-    const resolutions = rec.ownedResolutions || { support: rec.ownedResolution };
-    const decisions = [];
-    if (rec.ownedResolution === 'inadequate') decisions.push('Your support is already inadequate because the story identifies a condition or function failure, so the plan replaces it.');
-    else if (rec.ownedResolution === 'adequate') decisions.push('Your support appears to cover the required role, so the plan uses yours instead of adding a duplicate.');
-    else if (resolutions.support === 'unknown') decisions.push('Your support still needs fit, condition, cleanliness, coverage, and function review before deciding KEEP versus BUY.');
-    if (resolutions.cold === 'adequate') decisions.push('Your cold pack appears usable, so the plan uses yours instead of adding another.');
-    else if (resolutions.cold === 'inadequate') decisions.push('Your cold pack is already inadequate based on the condition or function described, so the plan replaces it.');
-    else if (resolutions.cold === 'unknown') decisions.push('Your cold pack still needs a condition, cleanliness, and function review.');
-    if (resolutions.topical === 'adequate') decisions.push('Your topical appears usable, so the plan uses yours instead of adding another.');
-    else if (resolutions.topical === 'inadequate') decisions.push('Your topical is already inadequate based on the condition or expiration described, so the plan replaces it.');
-    else if (resolutions.topical === 'unknown') decisions.push('Your topical still needs a condition and expiration review.');
-    return rec.owned + ' ' + (decisions.join(' ') || 'Keneflex did not identify an owned plan item that changes this purchase.');
   }
 
   function setDisposition(id, disposition, message) {
@@ -361,24 +287,13 @@
   }
 
   function adjust(kind) {
-    if (kind === 'cold') return setDisposition('cold', 'KEEP', '<b>Use yours.</b> Keep recovery in the plan without buying a duplicate, provided your cold option is intact, clean, comfortable, and still works as intended.');
-    if (kind === 'topical') return setDisposition('topical', 'REMOVE', '<b>Topical removed.</b> It is optional comfort support, so removing it does not invalidate the core plan.');
-    if (kind === 'support') return setDisposition('support', 'REVIEW', '<b>Do not buy another support yet.</b> First check the area covered, fit, condition, cleanliness, and whether your current support still performs the required function.');
-    if (kind === 'budget') {
-      model.cart.topical.disposition = 'REMOVE';
-      model.cart.cold.disposition = 'KEEP';
-      $('#tuneResult').classList.remove('hidden');
-      $('#tuneResult').innerHTML = '<b>Lower-priority purchases removed.</b> The primary recommendation was not replaced by an inferior product to meet a price target.';
-      $('#resetTune').classList.remove('hidden');
-      renderSolution();
-    }
+    if (PRODUCTS[kind]) return setDisposition(kind, 'REMOVE', '<b>' + escapeHtml(PRODUCTS[kind].name) + ' removed.</b> Keneflex still recommends it, but it will not be included in your purchase.');
   }
 
   function resetAdjustments() {
     model.cart.support.disposition = model.recommendation?.eligible && model.fit.supportSku && !model.recommendation?.provider ? 'BUY' : 'REVIEW';
     model.cart.cold.disposition = 'BUY';
     model.cart.topical.disposition = 'BUY';
-    applyOwnedProductHolds(model.recommendation?.owned);
     $('#tuneResult').classList.add('hidden');
     $('#resetTune').classList.add('hidden');
     renderSolution();
@@ -441,7 +356,7 @@
   function modal(key) {
     const content = {
       how: '<h2>How Keneflex works</h2><p>Tell the story in your own words. Keneflex carries known facts forward, investigates what could change the decision, checks safety, and builds one plan.</p>',
-      approach: '<h2>Our approach</h2><p>Product fit, function, safety, limitations, what you already own, and reasonable non-product options come before a purchase.</p>'
+      approach: '<h2>Our approach</h2><p>Product fit, function, safety, limitations, and reasonable non-product options come before a purchase.</p>'
     }[key];
     if (!content) return;
     $('#modalContent').innerHTML = content;
@@ -462,7 +377,7 @@
       const heading = $('h2', tune);
       const help = $('.help', tune);
       if (heading) heading.textContent = 'Want to change what you buy?';
-      if (help) help.textContent = 'Remove anything you do not want to buy, or tell Keneflex when you already own something that may do the job.';
+      if (help) help.textContent = 'Remove any recommended item you do not want included in this purchase. Removing it does not change Keneflex’s recommendation.';
     }
   }
 
