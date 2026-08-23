@@ -78,10 +78,11 @@
         composer(question);
         return;
       }
-      Engine.ingest(model.story, value);
       if (question.concept === 'preciseLocation') {
         const thread = activeProblem();
         if (thread && !Engine.known(thread, 'preciseLocation')) thread.locations.push(value);
+      } else {
+        Engine.ingest(model.story, value);
       }
       interaction.innerHTML = '';
       advance();
@@ -221,7 +222,7 @@
         const key = evidenceKey(item);
         const nextReport = evidence.find(candidate => candidate.value === 'reported' && candidate.index > item.index);
         const following = clause.slice(item.end, nextReport ? nextReport.index : clause.length);
-        const resolved = /^\s*(?:(?:has|is|was)\s+)?(?:fully\s+)?(?:healed|closed|resolved|no longer open)\b/i.test(following) || /(?:,|\bbut\b)\s*it\s+(?:healed|closed|resolved|is\s+no\s+longer\s+open)\b/i.test(following);
+        const resolved = /^\s*(?:that\s+)?(?:(?:has|is|was)\s+)?(?:fully\s+)?(?:healed|closed|resolved|no longer open)\b/i.test(following) || /(?:,|\bbut\b)\s*it\s+(?:healed|closed|resolved|is\s+no\s+longer\s+open)\b/i.test(following);
         if (item.value === 'reported' && !resolved) activeReports.add(key);
         if (item.value === 'reported' && resolved) deniedSeen = true;
         if (item.value === 'denied') {
