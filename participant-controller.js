@@ -181,15 +181,16 @@
   }
 
   function latestOpenWoundStatus() {
-    let status = 'unknown';
-    const cutObject = '(?:(?:on|over|across)\\s+)?(?:(?:my|the|a|an|both)\\s+)?(?:skin|hands?|wrists?|thumbs?|fingers?)';
+    let reportedSeen = false;
+    let deniedSeen = false;
+    const cutObject = '(?:(?:on|over|across)\\s+)?(?:(?:my|the|a|an|both|two|three|several|multiple|\\d+)\\s+|both\\s+of\\s+my\\s+)?(?:skin|hands?|wrists?|thumbs?|fingers?)(?!\\s+(?:exercises?|stretches?|workouts?|sessions?|practice)\\b)';
     const denied = new RegExp('\\b(?:no|without)\\s+(?:(?:a|an|any)\\s+)?(?:open wound(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|wound\\b(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|open skin(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|(?:open )?cut)\\b|\\b(?:do not|don\'t|have not|haven\'t)\\s+have\\s+(?:(?:a|an|any)\\s+)?(?:open wound|wound\\b(?!\\s+(?:dressing|care|cover|bandage))|open skin|(?:open )?cut)\\b|\\b(?:did not|didn\'t|do not|don\'t|have not|haven\'t|never)\\s+cut\\s+' + cutObject, 'i');
     const reported = new RegExp('\\b(?:open wound|open skin|skin is open|(?:(?:a|an|my|open|deep|small|large|fresh|bleeding)\\s+cut)|cut\\s+' + cutObject + ')\\b', 'i');
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
       const explicitOpenCut = /\bopen cut\b/i.test(clause);
       const openCutDenied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?open cut\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?open cut\b/i.test(clause);
       if (explicitOpenCut && !openCutDenied) {
-        status = 'reported';
+        reportedSeen = true;
         return;
       }
       const evidence = [];
@@ -206,9 +207,12 @@
       };
       collect(denied, 'denied');
       collect(reported, 'reported');
-      evidence.sort((a, b) => a.index - b.index).forEach(item => { status = item.value; });
+      evidence.forEach(item => {
+        if (item.value === 'reported') reportedSeen = true;
+        if (item.value === 'denied') deniedSeen = true;
+      });
     }));
-    return status;
+    return reportedSeen ? 'reported' : deniedSeen ? 'denied' : 'unknown';
   }
 
   function fitGate() {
