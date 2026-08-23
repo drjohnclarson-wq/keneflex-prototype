@@ -463,6 +463,19 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!hand.symptoms.includes('tingling'));
   });
 
+  await scenario('and-connected-problems-are-split-before-ingest', 'My wrist hurts and my knee tingles.', async () => {
+    const hand = await page.evaluate(() => Object.values(window.KeneflexParticipant.model.story.threads).find(thread => thread.family === 'hand'));
+    const knee = await page.evaluate(() => Object.values(window.KeneflexParticipant.model.story.threads).find(thread => thread.family === 'knee'));
+    assert(!hand.symptoms.includes('tingling'));
+    assert(knee.symptoms.includes('tingling'));
+  });
+
+  await scenario('just-restarts-symptom-polarity', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness, just tingling in my thumb.', async () => {
+    const hand = await page.evaluate(() => Object.values(window.KeneflexParticipant.model.story.threads).find(thread => thread.family === 'hand'));
+    assert(hand.symptoms.includes('tingling'));
+    assert(!hand.negatives.includes('tingling'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
