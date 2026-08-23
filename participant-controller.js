@@ -103,6 +103,11 @@
 
   function advance() {
     let thread = activeProblem();
+    if (latestOpenWoundStatus() === 'reported') {
+      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>You reported an open wound or cut. That can change what is safe, so seek an appropriate in-person medical evaluation before choosing a support or continuing this plan.</p>', true);
+      $('#interaction').innerHTML = '';
+      return;
+    }
     if (Engine.adequate(model.story)) {
       if (!thread || hasUnsupportedRegion()) {
         addBubble('ai', '<p><b>I have enough of the story to understand the concern.</b></p><p>This participant build currently completes product recommendations only for the hand, wrist, and thumb pathway. I will not substitute a hand product for a ' + (thread?.family || 'different') + ' problem.</p>', true);
