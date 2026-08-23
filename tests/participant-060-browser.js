@@ -302,7 +302,24 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(safety.includes('open wound'));
   });
 
+  await scenario('multi-region-symptoms-stay-with-source-thread', 'My right wrist tingles. My left knee hurts.', async () => {
+    const prompt = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(!prompt.includes('Which fingers or part of the hand feel numb or tingly?'));
+  });
+
+  await scenario('later-same-clause-symptom-wins', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I had no swelling but now the swelling is rapidly increasing.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('rapidly increasing swelling'));
+  });
+
+  await scenario('gel-cold-pack-is-not-topical', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have a gel cold pack that works well.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#coldState').innerText(), 'Use yours');
+    assert.equal(await page.locator('#topicalState').innerText(), 'Recommended');
+    assert.equal(await page.locator('#total').innerText(), '$31.98');
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 36, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 39, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
