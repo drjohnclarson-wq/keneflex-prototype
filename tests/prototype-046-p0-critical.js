@@ -75,5 +75,13 @@ function assert(cond,name,detail){total++;if(!cond)failures.push({name,detail});
   assert(t.negatives.includes('numbness')&&t.symptoms.includes('swelling')&&!t.negatives.includes('swelling'),'with connector restarts polarity before modified symptom',{thread:t});
 }
 
+// 9) Ordinary activity-modification language must not invent a wound or back complaint.
+{
+  const s=E.createStore();
+  E.ingest(s,'My right wrist hurts for four weeks. It built up gradually and I cut back on typing because of the wrist pain.');
+  const t=E.activeThread(s);
+  assert(s.order.length===1&&t.family==='hand'&&!t.symptoms.includes('wound'),'cut back remains activity language, not anatomy or a wound',{store:s,thread:t});
+}
+
 console.log(`\n${total-failures.length}/${total} P0 critical assertions passed`);
 if(failures.length){console.error(JSON.stringify({failures},null,2));process.exit(1);}
