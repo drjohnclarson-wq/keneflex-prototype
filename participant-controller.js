@@ -266,8 +266,8 @@
   function classifyOwnedProduct(ownedText, kind, requiredAreas = []) {
     const owned = String(ownedText || '');
     const rx = {
-      support: /\b(?:brace|braces|support|splint|splints|(?:wrist|thumb|hand) wrap)\b/i,
-      cold: /ice pack|cold pack/i,
+      support: /\b(?:brace|braces|support|splint|splints)\b|(?<!ice )(?<!cold )\b(?:wrist|thumb|hand) wrap\b/i,
+      cold: /\b(?:ice|cold) pack\b|\b(?:ice|cold)\s+(?:(?:wrist|thumb|hand)\s+)?wrap\b/i,
       topical: /\b(?:cream|ointment|biofreeze)\b|\bpain relief gel\b|\bgel\b(?!\s+(?:(?:cold|ice)\s+)?pack\b)/i
     }[kind];
     if (!rx.test(owned)) return 'none';
