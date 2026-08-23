@@ -571,7 +571,29 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#total').innerText(), '$31.98');
   });
 
+
+  await scenario('postnominal-cut-denial-does-not-stop-intake', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no cut on my left wrist.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(!message.includes('Self-care should pause here'));
+    assert(message.includes('safety check'));
+  });
+
+  await scenario('plural-connected-problems-stay-separated', 'My wrists hurt but my knees tingle.', async () => {
+    const state = await page.evaluate(() => {
+      const threads = Object.values(window.KeneflexParticipant.model.story.threads);
+      const hand = threads.find(thread => thread.family === 'hand');
+      const knee = threads.find(thread => thread.family === 'knee');
+      return { hand, knee };
+    });
+    assert(state.hand, 'hand thread missing');
+    assert(state.knee, 'knee thread missing');
+    assert(state.hand.symptoms.includes('pain'));
+    assert(!state.hand.symptoms.includes('tingling'));
+    assert(state.knee.symptoms.includes('tingling'));
+    assert(!state.knee.symptoms.includes('pain'));
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 44, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 46, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
