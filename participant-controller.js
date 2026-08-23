@@ -252,7 +252,7 @@
   function classifyOwnedProduct(ownedText, kind, requiredAreas = []) {
     const owned = String(ownedText || '');
     const rx = {
-      support: /\b(?:brace|braces|support|splint|splints|wrist wrap)\b/i,
+      support: /\b(?:brace|braces|support|splint|splints|(?:wrist|thumb|hand) wrap)\b/i,
       cold: /ice pack|cold pack/i,
       topical: /cream|gel/i
     }[kind];
