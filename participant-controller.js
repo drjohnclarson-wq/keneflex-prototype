@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.6.6
+/* Keneflex participant runtime 0.6.7
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -17,12 +17,13 @@
   });
 
   const model = {
-    release: '0.6.6',
+    release: '0.6.7',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
     answers: [],
     safetyCleared: false,
+    woundAssessment: 'unknown',
     recommendation: null,
     fit: { wristInches: null, supportSize: null, supportSku: null },
     cart: {
@@ -107,8 +108,10 @@
 
   function advance() {
     let thread = activeProblem();
-    if (latestOpenWoundStatus() === 'reported') {
-      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>You reported an open wound or cut. That can change what is safe, so seek an appropriate in-person medical evaluation before choosing a support or continuing this plan.</p>', true);
+    const woundAssessment = latestWoundAssessment();
+    model.woundAssessment = woundAssessment;
+    if (woundAssessment === 'concerning') {
+      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>You described a wound that may need professional evaluation—for example, one that is deep or gaping, will not stop bleeding, is a puncture or bite, is dirty or contaminated, contains debris, or shows signs of infection. Address that before choosing a support or continuing this plan.</p>', true);
       $('#interaction').innerHTML = '';
       return;
     }
@@ -142,8 +145,10 @@
     const negative = new Set(thread?.negatives || []);
     const unresolved = [];
     const injuryDenied = latestInjuryStatus() === 'denied';
+    const woundAssessment = latestWoundAssessment();
+    model.woundAssessment = woundAssessment;
     if (!injuryDenied) unresolved.push('a major recent injury');
-    if (latestOpenWoundStatus() !== 'denied') unresolved.push('an open wound');
+    if (woundAssessment === 'unknown') unresolved.push('a deep or gaping wound, bleeding that will not stop, a puncture, bite, or dirty wound, or signs of infection');
     if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
     if (!negative.has('numbness')) unresolved.push('loss of feeling');
     if (!negative.has('weakness')) unresolved.push('marked new weakness');
@@ -152,7 +157,10 @@
     const list = unresolved.length === 1
       ? unresolved[0]
       : unresolved.slice(0, -1).join(', ') + ', or ' + unresolved[unresolved.length - 1];
-    addBubble('ai', '<p><b>One safety check before I build the plan:</b> have you noticed ' + escapeHtml(list) + '?</p>', true);
+    const minorWoundNotice = woundAssessment === 'minor'
+      ? '<p><b>A minor scrape does not automatically require medical care.</b> Wash it with soap and water, cover it with a clean bandage, and watch for worsening redness, drainage, swelling, or pain. Do not place a brace or topical pain product directly over unprotected broken skin.</p>'
+      : '';
+    addBubble('ai', minorWoundNotice + '<p><b>One safety check before I build the plan:</b> have you noticed ' + escapeHtml(list) + '?</p>', true);
     interaction.innerHTML = '<div class="options"><button class="opt" data-safety="clear">No</button><button class="opt" data-safety="stop">Yes / I am not sure</button></div>';
     $$('[data-safety]', interaction).forEach(button => button.addEventListener('click', () => {
       addBubble('user', button.textContent.trim());
@@ -170,7 +178,7 @@
     let status = 'unknown';
     const denied = /\bno\s+fall\s+(?:or|and)\s+(?:direct injury|injury|trauma)\b|\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b|\b(?:did not|didn't)\s+have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)\b/i;
     const reported = /\b(?:fell|had\s+(?:(?:a|the)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)|(?:after|following)\s+(?:(?:a|the)\s+)?(?:fall|injury|trauma|(?:sudden )?twist|hit|accident)|sudden twist)\b/i;
-    model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
+    model.story.events.forEach(event => String(event.text || '').replace(/[’‘]/g, "'").split(/[.!?;]/).forEach(clause => {
       const evidence = [];
       const collect = (rx, value) => {
         const global = new RegExp(rx.source, 'ig');
@@ -189,7 +197,8 @@
     let deniedSeen = false;
     const cutObject = '(?:(?:on|over|across)\\s+)?(?:(?:my|the|a|an|both|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple|many|\\d+)\\s+|both\\s+of\\s+my\\s+)?(?:(?:left|right)\\s+)?(?:skin|hands?|wrists?|thumbs?|fingers?)';
     const denied = new RegExp('\\b(?:no|without)\\s+(?:(?:a|an|any)\\s+)?(?:open wound(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|wound\\b(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|open skin(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|(?:open )?cut(?:\\s+' + cutObject + ')?)\\b|\\b(?:do not|don\'t|have not|haven\'t)\\s+have\\s+(?:(?:a|an|any)\\s+)?(?:open wound|wound\\b(?!\\s+(?:dressing|care|cover|bandage))|open skin|(?:open )?cut(?:\\s+' + cutObject + ')?)\\b|\\b(?:did not|didn\'t|do not|don\'t|have not|haven\'t|never)\\s+cut\\s+' + cutObject, 'i');
-    const reported = new RegExp('\\b(?:open wound|open skin|skin is open|(?:(?:a|an|my|open|deep|small|large|fresh|bleeding)\\s+cut)|(?:(?:left|right)\\s+)?(?:hand|wrist|thumb|finger)\\s+cut|cut\\s+' + cutObject + ')\\b', 'i');
+    const listDenied = /\b(?:do not|don't|does not|doesn't|did not|didn't|have not|haven't|has not|hasn't)\s+have\b(?:(?!\b(?:but|however|although|yet)\b)[^.!?;]){0,220}\b(?:open wound|open skin|(?:open )?cut|scrape|abrasion)\b/i;
+    const reported = new RegExp('\\b(?:open wound|open skin|skin is open|(?:(?:a|an|my|open|deep|small|large|fresh|bleeding)\\s+cut)|(?:(?:(?:minor|small|superficial|shallow)\\s+)+)?(?:scrape|abrasion)|skinned\\s+(?:my\\s+)?(?:hand|wrist|thumb|finger|knee|elbow)|(?:(?:left|right)\\s+)?(?:hand|wrist|thumb|finger)\\s+cut|cut\\s+' + cutObject + ')\\b', 'i');
     const evidenceKey = item => {
       const source = String(item.segment || item.text || '');
       const body = source.match(/\b(skin|hands?|wrists?|thumbs?|fingers?)\b/i)?.[1]?.toLowerCase();
@@ -206,7 +215,7 @@
       const end = endMatch ? index + (endMatch.index || 0) : clause.length;
       return clause.slice(start, end);
     };
-    model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
+    model.story.events.forEach(event => String(event.text || '').replace(/[’‘]/g, "'").split(/[.!?;]/).forEach(clause => {
       const evidence = [];
       const deniedSpans = [];
       const collect = (rx, value) => {
@@ -221,6 +230,7 @@
         }
       };
       collect(denied, 'denied');
+      collect(listDenied, 'denied');
       collect(reported, 'reported');
       evidence.sort((a, b) => a.index - b.index).forEach(item => {
         const key = evidenceKey(item);
@@ -236,6 +246,15 @@
       });
     }));
     return activeReports.size ? 'reported' : deniedSeen ? 'denied' : 'unknown';
+  }
+
+  function latestWoundAssessment() {
+    const status = latestOpenWoundStatus();
+    if (status !== 'reported') return status;
+    const text = model.story.events.map(event => String(event.text || '').replace(/[’‘]/g, "'")).join(' ');
+    const concerning = /\b(?:deep|gaping|puncture|punctured|bite|bitten|dirty|contaminated|embedded|foreign (?:body|object)|exposed (?:bone|tendon)|pus|drainage|red streaks?|spreading redness|uncontrolled bleeding|severe bleeding|bleeding (?:will not|won't|cannot|can't) stop|fever)\b/i.test(text);
+    const minor = /\b(?:(?:(?:minor|small|superficial|shallow)\s+)+(?:scrape|abrasion|cut)|skinned\s+(?:my\s+)?(?:hand|wrist|thumb|finger|knee|elbow))\b/i.test(text);
+    return concerning ? 'concerning' : minor ? 'minor' : 'concerning';
   }
 
   function fitGate() {
@@ -322,7 +341,8 @@
       ['Location carried forward', rec.locations],
       ['Pattern considered', rec.neuro ? 'Pain plus altered feeling' : 'Use-related pain without an identified altered-feeling pattern'],
       ['What changed the product decision', rec.supportReason],
-      ...(rec.provider ? [['Provider direction protected', rec.provider + ' Keneflex will not recommend a conflicting use pattern.']] : [])
+      ...(rec.provider ? [['Provider direction protected', rec.provider + ' Keneflex will not recommend a conflicting use pattern.']] : []),
+      ...(model.woundAssessment === 'minor' ? [['Skin protection', 'Clean and cover the minor scrape. Do not place a brace or topical pain product directly over unprotected broken skin.']] : [])
     ].map(([title, copy]) => '<div class="why"><b>' + escapeHtml(title) + '</b><span>' + escapeHtml(copy) + '</span></div>').join('');
     Object.keys(PRODUCTS).forEach(renderLine);
     $('#total').textContent = money(total());
@@ -384,7 +404,10 @@
     const combinationWarning = model.cart.support.disposition === 'BUY' && model.cart.topical.disposition === 'BUY'
       ? '<div class="kfxSafetyNotice"><b>Use separately.</b> Do not wear the support over Biofreeze, gels, or creams. Apply topical products only as directed, and put the support on clean, dry skin.</div>'
       : '';
-    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your selected products</h2>' + combinationWarning + '<div>' +
+    const woundWarning = model.woundAssessment === 'minor'
+      ? '<div class="kfxSafetyNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a brace or topical pain product directly over unprotected broken skin.</div>'
+      : '';
+    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your selected products</h2>' + woundWarning + combinationWarning + '<div>' +
       selected.map(line => '<div class="rowx"><span>' + line.name + '</span><b>' + money(line.price) + '</b></div>').join('') +
       '</div><div class="totalx"><span>Total</span><span>' + money(total()) + '</span></div><div class="actions"><button class="primary" data-checkout-complete>Continue →</button><button class="secondary" data-checkout-close>Go back</button></div><p class="micro">This test will not place an order or charge you.</p></section>';
     document.body.appendChild(overlay);
@@ -400,7 +423,8 @@
     const win = window.open('', '_blank');
     if (!win) return;
     const selected = lines().filter(line => line.disposition !== 'REMOVE');
-    win.document.write('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your Keneflex Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f4ee;color:#173f3b;margin:0}.wrap{max-width:820px;margin:auto;padding:18px}.hero,.card{border-radius:22px;padding:22px}.hero{background:#174b46;color:white}.card{background:white;margin-top:14px;border:1px solid #d9e1dc}.line{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid #e2e7e4}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.step{background:#f2f6f2;padding:13px;border-radius:14px}@media(max-width:650px){.steps{grid-template-columns:1fr}}</style></head><body><main class="wrap"><section class="hero"><h1>Your Keneflex Plan</h1><p>Built from your ' + escapeHtml(thread.family) + ' story. Location: ' + escapeHtml(model.recommendation.locations || 'as described') + '.</p></section><section class="card"><h2>Products and items</h2>' + selected.map(line => '<div class="line"><span>' + escapeHtml(line.name) + '<br><small>' + escapeHtml(statusText(line.disposition)) + '</small></span><b>' + (line.disposition === 'BUY' ? money(line.price) : '$0') + '</b></div>').join('') + '</section><section class="card"><h2>What to do</h2><div class="steps"><div class="step"><b>Reduce repeated aggravation</b><p>Break up or reduce the activity that consistently increases symptoms.</p></div><div class="step"><b>Keep motion comfortable</b><p>Do not force painful end ranges or continue movements that increase altered feeling.</p></div><div class="step"><b>Watch the trend</b><p>Track function, soreness, numbness, tingling, swelling, and activity tolerance.</p></div></div></section><section class="card"><h2>When the plan changes</h2><p>Stop self-care and seek appropriate evaluation for meaningful new weakness, loss of feeling, major swelling, deformity, an open wound, or significant worsening.</p></section></main></body></html>');
+    const woundPlan = model.woundAssessment === 'minor' ? '<section class="card"><h2>Protect the scrape</h2><p>Clean and cover it. Do not place a brace or topical pain product directly over unprotected broken skin.</p></section>' : '';
+    win.document.write('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your Keneflex Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f4ee;color:#173f3b;margin:0}.wrap{max-width:820px;margin:auto;padding:18px}.hero,.card{border-radius:22px;padding:22px}.hero{background:#174b46;color:white}.card{background:white;margin-top:14px;border:1px solid #d9e1dc}.line{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid #e2e7e4}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.step{background:#f2f6f2;padding:13px;border-radius:14px}@media(max-width:650px){.steps{grid-template-columns:1fr}}</style></head><body><main class="wrap"><section class="hero"><h1>Your Keneflex Plan</h1><p>Built from your ' + escapeHtml(thread.family) + ' story. Location: ' + escapeHtml(model.recommendation.locations || 'as described') + '.</p></section><section class="card"><h2>Products and items</h2>' + selected.map(line => '<div class="line"><span>' + escapeHtml(line.name) + '<br><small>' + escapeHtml(statusText(line.disposition)) + '</small></span><b>' + (line.disposition === 'BUY' ? money(line.price) : '$0') + '</b></div>').join('') + '</section>' + woundPlan + '<section class="card"><h2>What to do</h2><div class="steps"><div class="step"><b>Reduce repeated aggravation</b><p>Break up or reduce the activity that consistently increases symptoms.</p></div><div class="step"><b>Keep motion comfortable</b><p>Do not force painful end ranges or continue movements that increase altered feeling.</p></div><div class="step"><b>Watch the trend</b><p>Track function, soreness, numbness, tingling, swelling, and activity tolerance.</p></div></div></section><section class="card"><h2>When the plan changes</h2><p>Stop self-care and seek appropriate evaluation for meaningful new weakness, loss of feeling, major swelling, deformity, a deep, contaminated, infected, or uncontrolled-bleeding wound, or significant worsening.</p></section></main></body></html>');
     win.document.close();
   }
 
