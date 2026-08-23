@@ -362,6 +362,29 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(message.includes('Self-care should pause here'));
   });
 
+  await scenario('spelled-quantity-cut-stops-intake', 'My right wrist hurts for four weeks. Typing makes it worse. Yesterday I cut four fingers.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
+  await scenario('therapy-cut-short-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I cut my wrist therapy short because it hurt.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('safety check'));
+    assert(!safety.includes('You reported an open wound'));
+  });
+
+  await scenario('healed-historical-cut-does-not-stop', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I had a cut on my wrist last year, but it healed.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('safety check'));
+    assert(!safety.includes('You reported an open wound'));
+  });
+
+  await scenario('exact-cut-correction-retracts-report', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I thought I cut my wrist, but I did not cut my wrist.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('safety check'));
+    assert(!safety.includes('You reported an open wound'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
