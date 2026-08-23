@@ -70,7 +70,9 @@
       if (!value) return;
       addBubble('user', value);
       model.answers.push(value);
-      if (question.concept === 'preciseLocation' && /\b(?:i\s+)?(?:do not|don't|cannot|can't)\s+(?:know|tell|locate)|\b(?:i\s+)?(?:have\s+)?no idea\b|\bnot sure\b|\bunsure\b/i.test(value)) {
+      const locationUncertain = /\b(?:i\s+)?(?:do not|don't|cannot|can't)\s+(?:know|tell|locate)|\b(?:i\s+)?(?:have\s+)?no idea\b|\bnot sure\b|\bunsure\b/i.test(value);
+      const hasLocationDetail = /\b(?:palm|top|back|thumb|knuckle|crease|side|base|joint|finger|wrist|hand|inside|outside|near|below|above)\b/i.test(value);
+      if (question.concept === 'preciseLocation' && locationUncertain && !hasLocationDetail) {
         interaction.innerHTML = '';
         addBubble('ai', '<p>That is okay. Please describe the closest area you can identify—for example, the palm side, top of the wrist, thumb knuckle, or another spot you can point to.</p>', true);
         composer(question);
@@ -175,7 +177,7 @@
 
   function latestOpenWoundStatus() {
     let status = 'unknown';
-    const denied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?(?:open wound|wound\b(?!\s+(?:dressing|care|cover|bandage))|open skin)\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?(?:open wound|wound\b(?!\s+(?:dressing|care|cover|bandage))|open skin)\b/i;
+    const denied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?(?:open wound(?!\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|wound\b(?!\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|open skin(?!\s+(?:pain|soreness|drainage|care|dressing|cover|bandage)))\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?(?:open wound|wound\b(?!\s+(?:dressing|care|cover|bandage))|open skin)\b/i;
     const reported = /\b(?:open wound|open skin|skin is open|cut)\b/i;
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
       const evidence = [];
