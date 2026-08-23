@@ -188,15 +188,16 @@
     const reported = new RegExp('\\b(?:open wound|open skin|skin is open|(?:(?:a|an|my|open|deep|small|large|fresh|bleeding)\\s+cut)|(?:(?:left|right)\\s+)?(?:hand|wrist|thumb|finger)\\s+cut|cut\\s+' + cutObject + ')\\b', 'i');
     const evidenceKey = item => {
       const body = String(item.text || '').match(/\b(skin|hands?|wrists?|thumbs?|fingers?)\b/i)?.[1]?.toLowerCase();
-      return body ? body.replace(/s$/, '') : 'unspecified';
+      const side = String(item.text || '').match(/\b(left|right)\b/i)?.[1]?.toLowerCase();
+      return (side ? side + ':' : '') + (body ? body.replace(/s$/, '') : 'unspecified');
     };
     const evidenceSegment = (clause, index) => {
       const before = clause.slice(0, index);
-      const boundaries = [...before.matchAll(/,|\b(?:but|however|although|yet)\b/ig)];
+      const boundaries = [...before.matchAll(/,|\b(?:but|however|although|yet|and\s+(?:later|then))\b/ig)];
       const startMatch = boundaries[boundaries.length - 1];
       const start = startMatch ? (startMatch.index || 0) + startMatch[0].length : 0;
       const rest = clause.slice(index);
-      const endMatch = rest.match(/,|\b(?:but|however|although|yet)\b/i);
+      const endMatch = rest.match(/,|\b(?:but|however|although|yet|and\s+(?:later|then))\b/i);
       const end = endMatch ? index + (endMatch.index || 0) : clause.length;
       return clause.slice(start, end);
     };
@@ -216,11 +217,11 @@
       };
       collect(denied, 'denied');
       collect(reported, 'reported');
-      const reportedCount = evidence.filter(item => item.value === 'reported').length;
-      const singleReportResolved = reportedCount === 1 && /\b(?:healed|closed|resolved|no longer open|fully healed)\b/i.test(clause);
       evidence.sort((a, b) => a.index - b.index).forEach(item => {
         const key = evidenceKey(item);
-        const resolved = singleReportResolved || /\b(?:healed|closed|resolved|no longer open|fully healed)\b/i.test(item.segment);
+        const nextReport = evidence.find(candidate => candidate.value === 'reported' && candidate.index > item.index);
+        const following = clause.slice(item.end, nextReport ? nextReport.index : clause.length);
+        const resolved = /^\s*(?:(?:has|is|was)\s+)?(?:fully\s+)?(?:healed|closed|resolved|no longer open)\b/i.test(following) || /(?:,|\bbut\b)\s*it\s+(?:healed|closed|resolved|is\s+no\s+longer\s+open)\b/i.test(following);
         if (item.value === 'reported' && !resolved) activeReports.add(key);
         if (item.value === 'reported' && resolved) deniedSeen = true;
         if (item.value === 'denied') {
