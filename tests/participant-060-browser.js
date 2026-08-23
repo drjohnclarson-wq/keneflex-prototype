@@ -298,7 +298,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('wound-pain-denial-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My open cut has no wound pain.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
-    assert(safety.includes('open wound'));
+    assert(safety.includes('deep or gaping wound'));
   });
 
   await scenario('cut-back-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and I cut back on typing because of the wrist pain.', async () => {
@@ -324,7 +324,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('transitive-cut-report-stops-intake', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. Yesterday I cut my wrist.', async () => {
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
-    assert(message.includes('open wound or cut'));
+    assert(message.includes('may need professional evaluation'));
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
   });
 
@@ -343,7 +343,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('indefinite-transitive-cut-stops-intake', 'My right wrist hurts for four weeks. Typing makes it worse. Yesterday I cut a finger.', async () => {
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
-    assert(message.includes('open wound or cut'));
+    assert(message.includes('may need professional evaluation'));
   });
 
   await scenario('quantified-plural-cut-stops-intake', 'My right wrist hurts for four weeks. Typing makes it worse. Yesterday I cut two fingers.', async () => {
@@ -439,7 +439,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.click('#send');
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
-    assert(message.includes('open wound or cut'));
+    assert(message.includes('may need professional evaluation'));
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
   });
 
@@ -517,7 +517,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('burn-denial-does-not-clear-open-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no burn.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
-    assert(safety.includes('open wound'));
+    assert(safety.includes('deep or gaping wound'));
   });
 
   await scenario('multi-region-symptoms-stay-with-source-thread', 'My right wrist tingles. My left knee hurts.', async () => {
@@ -544,7 +544,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('wound-dressing-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no wound dressing on the cut.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
-    assert(safety.includes('open wound'));
+    assert(safety.includes('deep or gaping wound'));
   });
 
   await scenario('partial-support-assessment-requires-review', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My wrist brace fits well.', async () => {
