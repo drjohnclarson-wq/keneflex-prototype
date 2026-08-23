@@ -279,7 +279,30 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#total').innerText(), '$32.99');
   });
 
+  await scenario('location-help-does-not-create-back-problem', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+    await page.fill('#reply', "I don't know.");
+    await page.click('#send');
+    const help = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(help.includes('top of the wrist'));
+    assert(!help.includes('back of the wrist'));
+    await page.fill('#reply', 'The top of my wrist near the thumb.');
+    await page.click('#send');
+    assert(await page.locator('[data-safety="clear"]').count());
+    const body = await page.locator('body').innerText();
+    assert(!body.includes('different problem area'));
+  });
+
+  await scenario('fall-denial-does-not-clear-twist-injury', 'My right wrist hurts for four weeks after a sudden twist without a fall. Typing makes it worse.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('major recent injury'));
+  });
+
+  await scenario('burn-denial-does-not-clear-open-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no burn.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('open wound'));
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 33, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 36, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
