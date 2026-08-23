@@ -405,6 +405,21 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!prompt.includes('Which fingers or part of the hand feel numb or tingly?'));
   });
 
+  await scenario('opposite-side-denial-preserves-cut', 'My right wrist hurts for four weeks. Typing makes it worse. I cut my right wrist, but I did not cut my left wrist.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
+  await scenario('unrelated-healed-scrape-does-not-resolve-cut', 'My right wrist hurts for four weeks. Typing makes it worse. I have a fresh wrist cut and an old scrape that healed.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
+  await scenario('and-later-cut-short-preserves-cut', 'My right wrist hurts for four weeks. Typing makes it worse. I cut my wrist and later cut my therapy short.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
