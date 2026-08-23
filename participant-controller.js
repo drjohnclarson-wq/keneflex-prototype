@@ -70,7 +70,7 @@
       if (!value) return;
       addBubble('user', value);
       model.answers.push(value);
-      if (question.concept === 'preciseLocation' && /\b(?:i\s+)?(?:do not|don't|cannot|can't)\s+(?:know|tell|locate)|\bnot sure\b|\bunsure\b/i.test(value)) {
+      if (question.concept === 'preciseLocation' && /\b(?:i\s+)?(?:do not|don't|cannot|can't)\s+(?:know|tell|locate)|\b(?:i\s+)?(?:have\s+)?no idea\b|\bnot sure\b|\bunsure\b/i.test(value)) {
         interaction.innerHTML = '';
         addBubble('ai', '<p>That is okay. Please describe the closest area you can identify—for example, the palm side, top of the wrist, thumb knuckle, or another spot you can point to.</p>', true);
         composer(question);
@@ -179,7 +179,17 @@
     const reported = /\b(?:open wound|open skin|skin is open|cut)\b/i;
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
       const evidence = [];
-      const collect = (rx, value) => { const global = new RegExp(rx.source, 'ig'); let match; while ((match = global.exec(clause))) evidence.push({ index: match.index, value }); };
+      const deniedSpans = [];
+      const collect = (rx, value) => {
+        const global = new RegExp(rx.source, 'ig');
+        let match;
+        while ((match = global.exec(clause))) {
+          const item = { index: match.index, end: match.index + match[0].length, value };
+          if (value === 'reported' && deniedSpans.some(span => item.index >= span.index && item.end <= span.end)) continue;
+          evidence.push(item);
+          if (value === 'denied') deniedSpans.push(item);
+        }
+      };
       collect(denied, 'denied');
       collect(reported, 'reported');
       evidence.sort((a, b) => a.index - b.index).forEach(item => { status = item.value; });
