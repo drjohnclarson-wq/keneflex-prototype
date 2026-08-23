@@ -70,6 +70,12 @@
       if (!value) return;
       addBubble('user', value);
       model.answers.push(value);
+      if (question.concept === 'preciseLocation' && /\b(?:i\s+)?(?:do not|don't|cannot|can't)\s+(?:know|tell|locate)|\bnot sure\b|\bunsure\b/i.test(value)) {
+        interaction.innerHTML = '';
+        addBubble('ai', '<p>That is okay. Please describe the closest area you can identify—for example, the palm side, back of the wrist, thumb knuckle, or another spot you can point to.</p>', true);
+        composer(question);
+        return;
+      }
       Engine.ingest(model.story, value);
       if (question.concept === 'preciseLocation') {
         const thread = activeProblem();
@@ -154,8 +160,15 @@
     const denied = /\b(?:no|without)\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:have not|haven't)\s+had\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma|fall)\b|\b(?:did not|didn't)\s+(?:fall|have\s+(?:(?:a|any)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma))\b/i;
     const reported = /\b(?:fell|had\s+(?:(?:a|the)\s+)?(?:major (?:recent )?injury|direct injury|injury|trauma)|(?:after|following)\s+(?:(?:a|the)\s+)?(?:fall|injury|trauma))\b/i;
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
-      if (denied.test(clause)) status = 'denied';
-      else if (reported.test(clause)) status = 'reported';
+      const evidence = [];
+      const collect = (rx, value) => {
+        const global = new RegExp(rx.source, 'ig');
+        let match;
+        while ((match = global.exec(clause))) evidence.push({ index: match.index, value });
+      };
+      collect(denied, 'denied');
+      collect(reported, 'reported');
+      evidence.sort((a, b) => a.index - b.index).forEach(item => { status = item.value; });
     }));
     return status;
   }
