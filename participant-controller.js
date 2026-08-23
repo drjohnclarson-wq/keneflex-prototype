@@ -183,7 +183,7 @@
   function latestOpenWoundStatus() {
     let status = 'unknown';
     const denied = /\b(?:no|without)\s+(?:(?:a|an|any)\s+)?(?:open wound(?!\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|wound\b(?!\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|open skin(?!\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|(?:open )?cut)\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:a|an|any)\s+)?(?:open wound|wound\b(?!\s+(?:dressing|care|cover|bandage))|open skin|(?:open )?cut)\b/i;
-    const reported = /\b(?:open wound|open skin|skin is open|(?:(?:a|an|the|my|open|deep|small|large|fresh|bleeding)\s+cut)|cut\s+(?:on|over|across)\s+(?:my|the)\s+(?:skin|hand|wrist|thumb|finger))\b/i;
+    const reported = /\b(?:open wound|open skin|skin is open|(?:(?:a|an|my|open|deep|small|large|fresh|bleeding)\s+cut)|cut\s+(?:(?:on|over|across)\s+)?(?:my|the)\s+(?:skin|hand|wrist|thumb|finger))\b/i;
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
       const explicitOpenCut = /\bopen cut\b/i.test(clause);
       const openCutDenied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?open cut\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?open cut\b/i.test(clause);
