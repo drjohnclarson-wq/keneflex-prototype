@@ -268,7 +268,18 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(await page.locator('[data-safety="clear"]').count());
   });
 
+  await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('rapidly increasing swelling'));
+  });
+
+  await scenario('thumb-wrap-is-owned-support', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and gripping makes it worse. My thumb wrap fits well and covers both wrist and thumb.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Use yours');
+    assert.equal(await page.locator('#total').innerText(), '$32.99');
+  });
+
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 31, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: 33, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();
