@@ -181,16 +181,23 @@
   }
 
   function latestOpenWoundStatus() {
-    let reportedSeen = false;
+    const activeReports = new Set();
     let deniedSeen = false;
-    const cutObject = '(?:(?:on|over|across)\\s+)?(?:(?:my|the|a|an|both|two|three|several|multiple|\\d+)\\s+|both\\s+of\\s+my\\s+)?(?:skin|hands?|wrists?|thumbs?|fingers?)(?!\\s+(?:exercises?|stretches?|workouts?|sessions?|practice)\\b)';
+    const cutObject = '(?:(?:on|over|across)\\s+)?(?:(?:my|the|a|an|both|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple|many|\\d+)\\s+|both\\s+of\\s+my\\s+)?(?:skin|hands?|wrists?|thumbs?|fingers?)';
     const denied = new RegExp('\\b(?:no|without)\\s+(?:(?:a|an|any)\\s+)?(?:open wound(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|wound\\b(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|open skin(?!\\s+(?:pain|soreness|drainage|care|dressing|cover|bandage))|(?:open )?cut)\\b|\\b(?:do not|don\'t|have not|haven\'t)\\s+have\\s+(?:(?:a|an|any)\\s+)?(?:open wound|wound\\b(?!\\s+(?:dressing|care|cover|bandage))|open skin|(?:open )?cut)\\b|\\b(?:did not|didn\'t|do not|don\'t|have not|haven\'t|never)\\s+cut\\s+' + cutObject, 'i');
     const reported = new RegExp('\\b(?:open wound|open skin|skin is open|(?:(?:a|an|my|open|deep|small|large|fresh|bleeding)\\s+cut)|cut\\s+' + cutObject + ')\\b', 'i');
+    const evidenceKey = item => {
+      const body = String(item.text || '').match(/\b(skin|hands?|wrists?|thumbs?|fingers?)\b/i)?.[1]?.toLowerCase();
+      return body ? body.replace(/s$/, '') : 'unspecified';
+    };
     model.story.events.forEach(event => String(event.text || '').split(/[.!?;]/).forEach(clause => {
+      const cutShort = /\bcut\b[^.!?;]{0,120}\bshort\b/i.test(clause);
+      const resolved = /\b(?:healed|closed|resolved|no longer open|fully healed)\b/i.test(clause);
       const explicitOpenCut = /\bopen cut\b/i.test(clause);
       const openCutDenied = /\b(?:no|without)\s+(?:(?:an|any)\s+)?open cut\b|\b(?:do not|don't|have not|haven't)\s+have\s+(?:(?:an|any)\s+)?open cut\b/i.test(clause);
       if (explicitOpenCut && !openCutDenied) {
-        reportedSeen = true;
+        if (!resolved) activeReports.add('unspecified');
+        else deniedSeen = true;
         return;
       }
       const evidence = [];
@@ -199,20 +206,24 @@
         const global = new RegExp(rx.source, 'ig');
         let match;
         while ((match = global.exec(clause))) {
-          const item = { index: match.index, end: match.index + match[0].length, value };
-          if (value === 'reported' && deniedSpans.some(span => item.index >= span.index && item.end <= span.end)) continue;
+          const item = { index: match.index, end: match.index + match[0].length, value, text: match[0] };
+          if (value === 'reported' && (deniedSpans.some(span => item.index >= span.index && item.end <= span.end) || cutShort && /^cut\b/i.test(item.text))) continue;
           evidence.push(item);
           if (value === 'denied') deniedSpans.push(item);
         }
       };
       collect(denied, 'denied');
       collect(reported, 'reported');
-      evidence.forEach(item => {
-        if (item.value === 'reported') reportedSeen = true;
-        if (item.value === 'denied') deniedSeen = true;
+      evidence.sort((a, b) => a.index - b.index).forEach(item => {
+        const key = evidenceKey(item);
+        if (item.value === 'reported' && !resolved) activeReports.add(key);
+        if (item.value === 'denied') {
+          deniedSeen = true;
+          activeReports.delete(key);
+        }
       });
     }));
-    return reportedSeen ? 'reported' : deniedSeen ? 'denied' : 'unknown';
+    return activeReports.size ? 'reported' : deniedSeen ? 'denied' : 'unknown';
   }
 
   function fitGate() {
