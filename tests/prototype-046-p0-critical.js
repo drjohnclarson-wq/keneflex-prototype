@@ -13,13 +13,12 @@ function assert(cond,name,detail){total++;if(!cond)failures.push({name,detail});
   assert(Array.isArray(t.provider)&&t.provider.length>0,'provider instruction survives canonical ingest',{thread:t});
 }
 
-// 2) Already-owned products must survive canonical ingest so KEEP/replace logic can assess
-// fit, condition and function instead of silently reverting to BUY.
+// 2) Consumer-owned products must not alter Keneflex's vetted recommendation.
 {
   const s=E.createStore();
   E.ingest(s,'I already have a wrist brace but it is old and does not fit well. My right wrist has hurt for three weeks after typing and there was no injury.');
   const t=E.activeThread(s);
-  assert(Array.isArray(t.owned)&&t.owned.length>0,'owned product survives canonical ingest',{thread:t});
+  assert(Array.isArray(t.owned)&&t.owned.length===0,'owned product does not alter canonical recommendation state',{thread:t});
 }
 
 // 3) A correction must supersede stale laterality. It must never become bilateral merely
@@ -58,6 +57,38 @@ function assert(cond,name,detail){total++;if(!cond)failures.push({name,detail});
   E.ingest(s,'Actually, I do get numbness sometimes.');
   const t=E.activeThread(s);
   assert(t.symptoms.includes('numbness')&&!t.negatives.includes('numbness'),'positive symptom correction supersedes stale negative',{thread:t});
+}
+
+// 7) A new symptom introduced with a connector must not inherit the prior symptom's negation.
+{
+  const s=E.createStore();
+  E.ingest(s,'My right wrist hurts for three weeks. I have no numbness with rapidly increasing swelling.');
+  const t=E.activeThread(s);
+  assert(t.negatives.includes('numbness')&&t.symptoms.includes('swelling')&&!t.negatives.includes('swelling'),'with connector restarts symptom polarity',{thread:t});
+}
+
+// 8) Arbitrary modifiers after "with" must not extend the earlier symptom's negation.
+{
+  const s=E.createStore();
+  E.ingest(s,'My right wrist hurts for three weeks. I have no numbness with new rapidly increasing swelling.');
+  const t=E.activeThread(s);
+  assert(t.negatives.includes('numbness')&&t.symptoms.includes('swelling')&&!t.negatives.includes('swelling'),'with connector restarts polarity before modified symptom',{thread:t});
+}
+
+// 9) Ordinary activity-modification language must not invent a wound or back complaint.
+{
+  const s=E.createStore();
+  E.ingest(s,'My right wrist hurts for four weeks. It built up gradually and I cut back on typing because of the wrist pain.');
+  const t=E.activeThread(s);
+  assert(s.order.length===1&&t.family==='hand'&&!t.symptoms.includes('wound'),'cut back remains activity language, not anatomy or a wound',{store:s,thread:t});
+}
+
+// 10) Inflected activity-modification language follows the same rule.
+{
+  const s=E.createStore();
+  E.ingest(s,'My right wrist hurts for four weeks. I have been cutting back on typing because of the wrist pain.');
+  const t=E.activeThread(s);
+  assert(s.order.length===1&&t.family==='hand'&&!t.symptoms.includes('wound'),'cutting back remains activity language, not anatomy or a wound',{store:s,thread:t});
 }
 
 console.log(`\n${total-failures.length}/${total} P0 critical assertions passed`);
