@@ -346,6 +346,22 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(message.includes('open wound or cut'));
   });
 
+  await scenario('quantified-plural-cut-stops-intake', 'My right wrist hurts for four weeks. Typing makes it worse. Yesterday I cut two fingers.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
+  await scenario('cut-short-idiom-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and I cut my wrist exercises short because they hurt.', async () => {
+    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(safety.includes('safety check'));
+    assert(!safety.includes('You reported an open wound'));
+  });
+
+  await scenario('separate-cut-denial-does-not-erase-report', 'My right wrist hurts for four weeks. Typing makes it worse. I cut a finger, but I did not cut my wrist.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
