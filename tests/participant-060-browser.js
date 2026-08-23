@@ -476,6 +476,16 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!hand.negatives.includes('tingling'));
   });
 
+  await scenario('article-led-connected-problem-is-split', 'My wrist hurts but the knee tingles.', async () => {
+    const hand = await page.evaluate(() => Object.values(window.KeneflexParticipant.model.story.threads).find(thread => thread.family === 'hand'));
+    assert(!hand.symptoms.includes('tingling'));
+  });
+
+  await scenario('postnominal-opposite-side-denial-preserves-cut', 'My right wrist hurts for four weeks. Typing makes it worse. I have an open cut on my right wrist, but no cut on my left wrist.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+  });
+
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(safety.includes('rapidly increasing swelling'));
