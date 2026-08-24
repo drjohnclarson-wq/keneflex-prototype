@@ -55,17 +55,34 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(initial.total, '$19.99');
     assert(initial.buy.includes('$19.99'));
     assert(initial.text.includes('Medium'));
+    assert(initial.text.includes('Core is enough to start'));
+    assert.equal(await page.locator('.planTier').count(), 3);
+    assert.equal(await page.locator('[data-plan="core"]').getAttribute('aria-pressed'), 'true');
+    assert((await content('[data-plan="core"]')).includes('$19.99 total'));
+    assert((await content('[data-plan="recovery"]')).includes('$40.99 total'));
+    assert((await content('[data-plan="recovery"]')).includes('$21.00 more than Core'));
+    assert((await content('[data-plan="complete"]')).includes('$52.98 total'));
+    assert((await content('[data-plan="complete"]')).includes('$11.99 more than Recovery'));
+    assert(await page.evaluate(() => !!(document.querySelector('.planChooser').compareDocumentPosition(document.querySelector('.purchaseBlock')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'purchase action must follow plan cards');
+    assert.equal(await content('#planName'), 'Core');
+    assert.equal(await content('#selectionCount'), '1 product included');
     assert.equal(initial.scripts.length, 4); // loader + engine + critical invariants + controller
     assert(!initial.observers, 'legacy observer runtime is active');
     assert(!banned.test(initial.text), 'internal language is visible');
 
     await page.click('[data-plan="recovery"]');
     assert.equal(await page.locator('#total').innerText(), '$40.99');
+    assert.equal(await content('#planName'), 'Recovery');
+    assert.equal(await content('#selectionCount'), '2 products included');
     assert((await page.locator('.kfxBuy').innerText()).includes('$40.99'));
 
     await page.click('#kfxPlanBtn');
     assert(await page.locator('.kfxPlanOverlay').count());
     assert((await page.locator('.kfxPlanPage').innerText()).includes('Biofreeze') === false);
+    assert.equal(await content('.finalSelection h2'), 'Recovery');
+    assert((await content('.finalSelection')).includes('$40.99'));
+    assert.equal(await page.locator('.finalSelection .planLine').count(), 2);
+    assert((await content('.kfxFinalBuy')).includes('$40.99 total'));
     await page.click('[data-plan-close]');
 
     await page.click('.kfxBuy');
@@ -139,7 +156,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#total').innerText(), '$19.99');
     assert(!(await page.locator('.kfxBuy').isDisabled()));
     const solution = await page.locator('#solutionView').innerText();
-    assert(!solution.includes('What you already own'));
+    assert(solution.includes('old brace is stretched out'));
+    assert(solution.includes('does not support your thumb'));
     assert(!solution.includes('movement-preserving support requirement'));
     await page.click('#kfxPlanBtn');
     assert.equal(await page.locator('.kfxPlanPage .planLine').first().locator('b').innerText(), '$19.99');
@@ -566,7 +584,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('consumer-can-remove-each-recommended-item', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
     await clearSafetyAndMeasure();
     await page.click('[data-plan="complete"]');
-    await page.getByText('Optional products and purchase controls', { exact: true }).click();
+    await page.getByText('Customize this purchase', { exact: true }).click();
     await page.click('[data-tune="support"]');
     assert.equal(await page.locator('#supportState').innerText(), 'Removed by you');
     assert.equal(await page.locator('#total').innerText(), '$32.99');
