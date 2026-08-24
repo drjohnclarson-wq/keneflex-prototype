@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.6.7
+/* Keneflex participant runtime 0.6.8
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -17,7 +17,7 @@
   });
 
   const model = {
-    release: '0.6.7',
+    release: '0.6.8',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
@@ -28,9 +28,10 @@
     fit: { wristInches: null, supportSize: null, supportSku: null },
     cart: {
       support: { disposition: 'BUY' },
-      cold: { disposition: 'BUY' },
-      topical: { disposition: 'BUY' }
-    }
+      cold: { disposition: 'OPTIONAL' },
+      topical: { disposition: 'OPTIONAL' }
+    },
+    selectedPlan: 'core'
   };
 
   function activeProblem() { return Engine.activeThread(model.story); }
@@ -144,6 +145,12 @@
     const thread = activeProblem();
     const negative = new Set(thread?.negatives || []);
     const unresolved = [];
+    const deformityStatus = latestDeformityStatus();
+    if (deformityStatus === 'reported') {
+      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>You reported visible deformity or that the area looks crooked. That can change what is safe, so seek an appropriate in-person medical evaluation before choosing a support or continuing this plan.</p>', true);
+      interaction.innerHTML = '';
+      return;
+    }
     const injuryDenied = latestInjuryStatus() === 'denied';
     const woundAssessment = latestWoundAssessment();
     model.woundAssessment = woundAssessment;
@@ -152,14 +159,19 @@
     if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
     if (!negative.has('numbness')) unresolved.push('loss of feeling');
     if (!negative.has('weakness')) unresolved.push('marked new weakness');
-    // Deformity is intentionally separate from the ordinary symptom parser.
-    unresolved.splice(Math.min(1, unresolved.length), 0, 'visible deformity');
+    if (deformityStatus === 'unknown') unresolved.splice(Math.min(1, unresolved.length), 0, 'visible deformity');
     const list = unresolved.length === 1
       ? unresolved[0]
       : unresolved.slice(0, -1).join(', ') + ', or ' + unresolved[unresolved.length - 1];
     const minorWoundNotice = woundAssessment === 'minor'
       ? '<p><b>A minor scrape does not automatically require medical care.</b> Wash it with soap and water, cover it with a clean bandage, and watch for worsening redness, drainage, swelling, or pain. Do not place a brace or topical pain product directly over unprotected broken skin.</p>'
       : '';
+    if (!unresolved.length) {
+      if (minorWoundNotice) addBubble('ai', minorWoundNotice, true);
+      model.safetyCleared = true;
+      fitGate();
+      return;
+    }
     addBubble('ai', minorWoundNotice + '<p><b>One safety check before I build the plan:</b> have you noticed ' + escapeHtml(list) + '?</p>', true);
     interaction.innerHTML = '<div class="options"><button class="opt" data-safety="clear">No</button><button class="opt" data-safety="stop">Yes / I am not sure</button></div>';
     $$('[data-safety]', interaction).forEach(button => button.addEventListener('click', () => {
@@ -172,6 +184,17 @@
       model.safetyCleared = true;
       fitGate();
     }));
+  }
+
+  function latestDeformityStatus() {
+    let status = 'unknown';
+    const denied = /\b(?:no|without)\b[^.!?;]{0,180}\b(?:visible )?(?:deformity|crookedness)\b|\b(?:do not|don't|have not|haven't|did not|didn't)\s+have\b[^.!?;]{0,180}\b(?:visible )?(?:deformity|crookedness)\b/i;
+    const reported = /\b(?:visible |obvious |new )?(?:deformity|crookedness)\b|\b(?:looks?|appears?|is)\s+crooked\b/i;
+    model.story.events.forEach(event => String(event.text || '').replace(/[’‘]/g, "'").split(/[.!?;]/).forEach(clause => {
+      if (denied.test(clause)) status = 'denied';
+      else if (reported.test(clause)) status = 'reported';
+    }));
+    return status;
   }
 
   function latestInjuryStatus() {
@@ -280,7 +303,8 @@
 
   function recommendationFor(thread) {
     const neuro = thread.symptoms.some(value => value === 'numbness' || value === 'tingling');
-    const locations = thread.locations.join(', ') || thread.areas.join(', ') || 'hand/wrist area';
+    const locationText = thread.locations.join(', ') || thread.areas.join(', ') || 'hand/wrist area';
+    const locations = thread.side ? thread.side + ' — ' + locationText : locationText;
     const provider = (thread.provider || []).join(' ');
     const activities = (thread.triggers || []).join(', ');
     const combinedArea = (thread.areas || []).includes('wrist') && (thread.areas || []).includes('thumb');
@@ -310,8 +334,9 @@
     showStage('solution');
   }
 
-  function statusText(disposition) {
-    return { BUY: 'Recommended', REMOVE: 'Removed by you', REVIEW: 'Needs review before buying' }[disposition];
+  function statusText(disposition, id) {
+    if (disposition === 'BUY') return id === 'support' ? 'Recommended' : 'Selected add-on';
+    return { OPTIONAL: 'Optional add-on', REMOVE: 'Removed by you', REVIEW: 'Needs review before buying' }[disposition];
   }
 
   function renderLine(id) {
@@ -319,10 +344,11 @@
     const item = $('#' + id + 'Item');
     item.classList.toggle('removed', line.disposition === 'REMOVE');
     item.classList.toggle('kept', line.disposition === 'REVIEW');
+    item.classList.toggle('optional', line.disposition === 'OPTIONAL');
     const state = $('#' + id + 'State');
-    state.textContent = statusText(line.disposition);
-    state.className = 'planState ' + (line.disposition === 'BUY' ? 'buy' : line.disposition === 'REMOVE' ? 'remove' : 'keep');
-    $('#' + id + 'Price').textContent = line.disposition === 'BUY' ? money(line.price) : '$0';
+    state.textContent = statusText(line.disposition, id);
+    state.className = 'planState ' + (line.disposition === 'BUY' ? 'buy' : line.disposition === 'REMOVE' ? 'remove' : line.disposition === 'OPTIONAL' ? 'optional' : 'keep');
+    $('#' + id + 'Price').textContent = line.disposition === 'BUY' ? money(line.price) : line.disposition === 'OPTIONAL' ? '+' + money(line.price) : '$0';
     if (id === 'support') {
       $('.planName', item).textContent = line.name;
       if (!model.fit.supportSku) $('.planCopy', item).textContent = 'The available support size is not verified for your measurement, so this item remains under review and cannot be purchased yet.';
@@ -346,7 +372,23 @@
     ].map(([title, copy]) => '<div class="why"><b>' + escapeHtml(title) + '</b><span>' + escapeHtml(copy) + '</span></div>').join('');
     Object.keys(PRODUCTS).forEach(renderLine);
     $('#total').textContent = money(total());
+    $('#planName').textContent = ({ core: 'Core plan', recovery: 'Core + recovery', complete: 'Complete comfort plan' })[model.selectedPlan] || 'Custom plan';
+    $$('[data-plan]').forEach(button => {
+      const selected = button.dataset.plan === model.selectedPlan;
+      button.classList.toggle('selected', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
     ensureCommerceControls();
+  }
+
+  function selectPlan(plan) {
+    if (!['core', 'recovery', 'complete'].includes(plan)) return;
+    model.selectedPlan = plan;
+    model.cart.cold.disposition = plan === 'core' ? 'OPTIONAL' : 'BUY';
+    model.cart.topical.disposition = plan === 'complete' ? 'BUY' : 'OPTIONAL';
+    $('#tuneResult').classList.add('hidden');
+    $('#resetTune').classList.add('hidden');
+    renderSolution();
   }
 
   function setDisposition(id, disposition, message) {
@@ -358,13 +400,17 @@
   }
 
   function adjust(kind) {
-    if (PRODUCTS[kind]) return setDisposition(kind, 'REMOVE', '<b>' + escapeHtml(PRODUCTS[kind].name) + ' removed.</b> Keneflex still recommends it, but it will not be included in your purchase.');
+    if (PRODUCTS[kind]) {
+      model.selectedPlan = 'custom';
+      return setDisposition(kind, 'REMOVE', '<b>' + escapeHtml(PRODUCTS[kind].name) + ' removed.</b> It will not be included in your purchase.');
+    }
   }
 
   function resetAdjustments() {
     model.cart.support.disposition = model.recommendation?.eligible && model.fit.supportSku && !model.recommendation?.provider ? 'BUY' : 'REVIEW';
-    model.cart.cold.disposition = 'BUY';
-    model.cart.topical.disposition = 'BUY';
+    model.cart.cold.disposition = 'OPTIONAL';
+    model.cart.topical.disposition = 'OPTIONAL';
+    model.selectedPlan = 'core';
     $('#tuneResult').classList.add('hidden');
     $('#resetTune').classList.add('hidden');
     renderSolution();
@@ -420,12 +466,15 @@
 
   function openPlan() {
     const thread = activeProblem();
-    const win = window.open('', '_blank');
-    if (!win) return;
-    const selected = lines().filter(line => line.disposition !== 'REMOVE');
+    $('.kfxPlanOverlay')?.remove();
+    const selected = lines().filter(line => line.disposition === 'BUY' || line.disposition === 'REVIEW');
     const woundPlan = model.woundAssessment === 'minor' ? '<section class="card"><h2>Protect the scrape</h2><p>Clean and cover it. Do not place a brace or topical pain product directly over unprotected broken skin.</p></section>' : '';
-    win.document.write('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your Keneflex Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f4ee;color:#173f3b;margin:0}.wrap{max-width:820px;margin:auto;padding:18px}.hero,.card{border-radius:22px;padding:22px}.hero{background:#174b46;color:white}.card{background:white;margin-top:14px;border:1px solid #d9e1dc}.line{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid #e2e7e4}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.step{background:#f2f6f2;padding:13px;border-radius:14px}@media(max-width:650px){.steps{grid-template-columns:1fr}}</style></head><body><main class="wrap"><section class="hero"><h1>Your Keneflex Plan</h1><p>Built from your ' + escapeHtml(thread.family) + ' story. Location: ' + escapeHtml(model.recommendation.locations || 'as described') + '.</p></section><section class="card"><h2>Products and items</h2>' + selected.map(line => '<div class="line"><span>' + escapeHtml(line.name) + '<br><small>' + escapeHtml(statusText(line.disposition)) + '</small></span><b>' + (line.disposition === 'BUY' ? money(line.price) : '$0') + '</b></div>').join('') + '</section>' + woundPlan + '<section class="card"><h2>What to do</h2><div class="steps"><div class="step"><b>Reduce repeated aggravation</b><p>Break up or reduce the activity that consistently increases symptoms.</p></div><div class="step"><b>Keep motion comfortable</b><p>Do not force painful end ranges or continue movements that increase altered feeling.</p></div><div class="step"><b>Watch the trend</b><p>Track function, soreness, numbness, tingling, swelling, and activity tolerance.</p></div></div></section><section class="card"><h2>When the plan changes</h2><p>Stop self-care and seek appropriate evaluation for meaningful new weakness, loss of feeling, major swelling, deformity, a deep, contaminated, infected, or uncontrolled-bleeding wound, or significant worsening.</p></section></main></body></html>');
-    win.document.close();
+    const overlay = document.createElement('div');
+    overlay.className = 'kfxPlanOverlay';
+    overlay.innerHTML = '<div class="kfxPlanPage"><header><div class="logo">KENEFLEX</div><button class="secondary" data-plan-close>Back to recommendation</button></header><main><section class="planHero"><h1>Your Keneflex Plan</h1><p>Built from your ' + escapeHtml(thread.family) + ' story. Location: ' + escapeHtml(model.recommendation.locations || 'as described') + '.</p></section><section class="card"><h2>Products and items</h2>' + selected.map(line => '<div class="planLine"><span>' + escapeHtml(line.name) + '<br><small>' + escapeHtml(statusText(line.disposition, line.id)) + '</small></span><b>' + (line.disposition === 'BUY' ? money(line.price) : '$0') + '</b></div>').join('') + '</section>' + woundPlan + '<section class="card"><h2>What to do</h2><div class="planSteps"><div class="planStep"><b>Reduce repeated aggravation</b><p>Break up or reduce the activity that consistently increases symptoms.</p></div><div class="planStep"><b>Keep motion comfortable</b><p>Do not force painful end ranges or continue movements that increase altered feeling.</p></div><div class="planStep"><b>Watch the trend</b><p>Track function, soreness, numbness, tingling, swelling, and activity tolerance.</p></div></div></section><section class="card"><h2>When the plan changes</h2><p>Stop self-care and seek appropriate evaluation for meaningful new weakness, loss of feeling, major swelling, deformity, a deep, contaminated, infected, or uncontrolled-bleeding wound, or significant worsening.</p></section><section class="card follow"><h2>Then tell Keneflex what happened.</h2><p>Your fit and outcome help improve future recommendations.</p></section></main></div>';
+    document.body.appendChild(overlay);
+    $('[data-plan-close]', overlay).addEventListener('click', () => overlay.remove());
+    overlay.scrollTo(0, 0);
   }
 
   function modal(key) {
@@ -441,8 +490,6 @@
   function applyConsumerCopy() {
     const hero = $('#solutionView .solHero h1');
     if (hero) hero.textContent = 'Here’s what Keneflex recommends.';
-    const source = $('#solutionView .detailsBlock details:nth-of-type(3) .detailInside p');
-    if (source) source.textContent = 'Product specifications and sizing come from manufacturer information. Keneflex also considers the problem pattern, product function, fit, safety, limitations, and what happens after use.';
     const trust = $('#solutionView .integrity');
     if (trust) trust.innerHTML = '<h2>Why trust this recommendation?</h2><p class="help">Keneflex compares what you described with product function, fit, safety, limitations, and reasonable non-product options before recommending what to buy.</p><p class="micro"><b>How Keneflex makes money:</b> Keneflex may earn money when some recommended products are purchased. That does not determine which product is recommended.</p>';
     const totalHelp = $('#total')?.closest('.block')?.querySelector('.help');
@@ -471,6 +518,7 @@
       advance();
     });
     $$('[data-tune]').forEach(button => button.addEventListener('click', () => adjust(button.dataset.tune)));
+    $$('[data-plan]').forEach(button => button.addEventListener('click', () => selectPlan(button.dataset.plan)));
     $('#resetTune').addEventListener('click', resetAdjustments);
     $$('[data-ask]').forEach(button => button.addEventListener('click', () => $('#' + button.dataset.ask)?.classList.toggle('show')));
     $$('[data-modal]').forEach(button => button.addEventListener('click', () => modal(button.dataset.modal)));
@@ -478,6 +526,6 @@
     $('#modal').addEventListener('click', event => { if (event.target === $('#modal')) $('#modal').classList.add('hidden'); });
   }
 
-  root.KeneflexParticipant = Object.freeze({ model, PRODUCTS, total, lines, activeProblem, renderSolution });
+  root.KeneflexParticipant = Object.freeze({ model, PRODUCTS, total, lines, activeProblem, renderSolution, selectPlan });
   bind();
 })(window);

@@ -22,9 +22,9 @@ check(loadedScripts[1] === 'prototype-046b-critical-state.js', 'critical provide
 check(loadedScripts[2] === 'participant-controller.js', 'single participant controller loads last');
 check((loader.match(/<script defer/g) || []).length === 3, 'consolidated runtime starts after the legacy inline parser phase');
 check(!/prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/.test(loader), 'legacy patch stack is absent from production loader');
-check(route.includes("searchParams.set('participant','067')"), 'participant route matches consolidated release');
+check(route.includes("searchParams.set('participant','068')"), 'participant route matches decision-closure release');
 check(route.includes("searchParams.set('build',String(stamp))"), 'participant route cache-busts each launch');
-check(html.includes('participant-consolidated.css?v=067'), 'consolidated stylesheet is loaded');
+check(html.includes('participant-consolidated.css?v=068'), 'consolidated stylesheet is loaded');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'legacy inline commerce runtime is removed');
 check(controller.includes('const model ='), 'one authoritative participant model exists');
 check(controller.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
@@ -39,7 +39,9 @@ check(!controller.includes('classifyOwnedProduct') && !controller.includes("'KEE
 check(html.includes('Remove the wrist/thumb support') && html.includes('Remove the cold wrap') && html.includes('Remove the topical gel'), 'consumer can remove each recommended item');
 check(controller.includes("negative.has('swelling')") && controller.includes("negative.has('weakness')"), 'safety gate suppresses facts already supplied as negatives');
 check(critical.includes('needsPreciseHandLocation'), 'combined wrist/thumb stories require decision-changing location detail');
-check(participantCss.includes('@media(max-width:900px)') && participantCss.includes('.grid{grid-template-columns:1fr}'), 'tablet layout uses one primary reading column');
+check(participantCss.includes('@media(max-width:650px)') && participantCss.includes('.planTiers{grid-template-columns:1fr}'), 'mobile decision plans use one primary reading column');
+check(!controller.includes("window.open('', '_blank')"), 'plan renders in the responsive Keneflex shell instead of about:blank');
+check(controller.includes('function selectPlan(plan)') && html.includes('data-plan="core"'), 'core, recovery, and complete choices have one controller owner');
 check(controller.includes('function applyConsumerCopy()'), 'consumer copy is authored once without observer cleanup');
 check(!controller.includes('MutationObserver'), 'participant controller does not repair itself with DOM observers');
 check(!controller.includes('setTimeout('), 'participant controller does not use timing patches for synchronization');
