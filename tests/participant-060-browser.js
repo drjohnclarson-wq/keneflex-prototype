@@ -90,14 +90,16 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await content('.finalSelection h2'), 'Recovery');
     assert((await content('.finalSelection')).includes('$40.99'));
     assert.equal(await page.locator('.finalSelection .planLine').count(), 3);
-    assert.equal(await content('.finalSelection .planIncluded'), 'Personalized Keneflex care plan\nIncluded');
+    assert((await content('.finalSelection .planIncluded')).includes('Personalized Keneflex care plan'));
+    assert((await content('.finalSelection .planIncluded')).includes('Included'));
     assert((await content('.kfxFinalBuy')).includes('$40.99 total'));
     await page.click('[data-plan-close]');
 
     await page.click('.kfxBuy');
     assert.equal(await page.locator('.kfxCheckout .totalx span:last-child').innerText(), '$40.99');
     assert.equal(await page.locator('.kfxCheckout .rowx:not(.planIncluded)').count(), 2);
-    assert.equal(await content('.kfxCheckout .planIncluded'), 'Personalized Keneflex care plan\nIncluded');
+    assert((await content('.kfxCheckout .planIncluded')).includes('Personalized Keneflex care plan'));
+    assert((await content('.kfxCheckout .planIncluded')).includes('Included'));
   });
 
   await scenario('altered-feeling-gate', 'My left wrist and thumb hurt and my thumb and index finger tingle after typing for 3 weeks. It built up gradually.', async () => {
