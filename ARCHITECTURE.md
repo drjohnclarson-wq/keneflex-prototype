@@ -4,11 +4,11 @@
 
 `participant-card.html` → `test.html` → `index.html`
 
-The `0.6.8` participant runtime intentionally has three explicit JavaScript files and two domain owners:
+The `0.6.9` participant runtime intentionally has three explicit JavaScript files and two domain owners:
 
 1. `prototype-046-conversation-engine.js` — pure story parsing, problem threads, known-fact detection, question selection, and adequacy.
 2. `prototype-046b-critical-state.js` — critical engine invariants for corrections, multiple problems, provider instructions, and owned products.
-3. `participant-controller.js` — participant flow, safety gate, recommendation presentation, Core/Recovery/Complete plan state, pricing, adjustment, cart, checkout, and the responsive in-page plan view.
+3. `participant-controller.js` — participant flow, safety gate, recommendation presentation, Core/Recovery/Recovery + Comfort plan state, pricing, adjustment, cart, checkout, and the responsive in-page care-instructions view.
 
 `prototype-044.css` preserves the established visual shell. `participant-consolidated.css` contains only styles owned by the consolidated controller.
 
