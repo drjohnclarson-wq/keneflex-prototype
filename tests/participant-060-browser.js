@@ -11,8 +11,10 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   const browser = await chromium.launch({ headless: true, channel: 'chrome' });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const failures = [];
+  let scenarioCount = 0;
 
   async function scenario(name, story, verify) {
+    scenarioCount += 1;
     try {
       await page.goto(base + '&scenario=' + encodeURIComponent(name), { waitUntil: 'domcontentloaded' });
       await page.fill('#opening', story);
@@ -31,10 +33,14 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
       await page.fill('#reply', 'It is centered at the base of my thumb and thumb side of my wrist.');
       await page.click('#send');
     }
-    await page.click('[data-safety="clear"]');
+    if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
     await page.fill('#wristMeasure', value);
     await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
+  }
+
+  async function content(selector) {
+    return page.locator(selector).evaluate(node => node.textContent.trim());
   }
 
   await scenario('complete-hand-path', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually. Phone use makes it worse. I have no numbness or swelling.', async () => {
@@ -46,24 +52,21 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
       observers: !!window.KFX049,
       text: document.querySelector('#solutionView').innerText
     }));
-    assert.equal(initial.total, '$52.98');
-    assert(initial.buy.includes('$52.98'));
+    assert.equal(initial.total, '$19.99');
+    assert(initial.buy.includes('$19.99'));
     assert(initial.text.includes('Medium'));
     assert.equal(initial.scripts.length, 4); // loader + engine + critical invariants + controller
     assert(!initial.observers, 'legacy observer runtime is active');
     assert(!banned.test(initial.text), 'internal language is visible');
 
-    await page.click('[data-tune="topical"]');
+    await page.click('[data-plan="recovery"]');
     assert.equal(await page.locator('#total').innerText(), '$40.99');
     assert((await page.locator('.kfxBuy').innerText()).includes('$40.99'));
 
-    const popupPromise = page.waitForEvent('popup');
     await page.click('#kfxPlanBtn');
-    const popup = await popupPromise;
-    await popup.waitForLoadState('domcontentloaded');
-    assert.equal(await popup.title(), 'Your Keneflex Plan');
-    assert((await popup.locator('body').innerText()).includes('Biofreeze') === false);
-    await popup.close();
+    assert(await page.locator('.kfxPlanOverlay').count());
+    assert((await page.locator('.kfxPlanPage').innerText()).includes('Biofreeze') === false);
+    await page.click('[data-plan-close]');
 
     await page.click('.kfxBuy');
     assert.equal(await page.locator('.kfxCheckout .totalx span:last-child').innerText(), '$40.99');
@@ -133,24 +136,22 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await clearSafetyAndMeasure();
     assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
     assert.equal(await page.locator('#supportPrice').innerText(), '$19.99');
-    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert.equal(await page.locator('#total').innerText(), '$19.99');
     assert(!(await page.locator('.kfxBuy').isDisabled()));
     const solution = await page.locator('#solutionView').innerText();
     assert(!solution.includes('What you already own'));
     assert(!solution.includes('movement-preserving support requirement'));
-    const popupPromise = page.waitForEvent('popup');
     await page.click('#kfxPlanBtn');
-    const popup = await popupPromise;
-    await popup.waitForLoadState('domcontentloaded');
-    assert.equal(await popup.locator('.line').first().locator('b').innerText(), '$19.99');
-    await popup.close();
+    assert.equal(await page.locator('.kfxPlanPage .planLine').first().locator('b').innerText(), '$19.99');
+    assert((await page.locator('.kfxPlanPage').innerText()).includes('right —'));
+    await page.click('[data-plan-close]');
   });
 
   await scenario('ipad-single-column', 'My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
     await page.setViewportSize({ width: 834, height: 1112 });
     await clearSafetyAndMeasure();
-    const columns = await page.locator('#solutionView .grid').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
-    assert.equal(columns, 1, 'iPad layout must use one primary reading column');
+    const widths = await page.locator('.decisionLayout').evaluate(node => ({ content: node.getBoundingClientRect().width, viewport: window.innerWidth }));
+    assert(widths.content <= 760 && widths.content > 600, 'iPad layout must use one centered primary reading column');
     await page.setViewportSize({ width: 390, height: 844 });
   });
 
@@ -162,8 +163,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('mixed-owned-products-are-independent', 'I have an old right wrist brace that is stretched out. I have a cold pack that works well. My wrist has hurt for four weeks, built up gradually, and typing makes it worse.', async () => {
     await clearSafetyAndMeasure();
     assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#coldState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert.equal(await content('#coldState'), 'Optional add-on');
+    assert.equal(await page.locator('#total').innerText(), '$19.99');
   });
 
   await scenario('wrist-only-brace-cannot-cover-combined-role', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and gripping makes it worse. My wrist brace is in good condition and fits well.', async () => {
@@ -180,6 +181,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('combination-warning', 'My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
     await clearSafetyAndMeasure();
+    await page.click('[data-plan="complete"]');
     await page.click('.kfxBuy');
     const warning = await page.locator('.kfxSafetyNotice').innerText();
     assert(warning.includes('Do not wear the support over Biofreeze'));
@@ -206,8 +208,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('neighbors-product-is-not-owned', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My neighbor has a cold pack that works well.', async () => {
     await clearSafetyAndMeasure();
-    assert.equal(await page.locator('#coldState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert.equal(await content('#coldState'), 'Optional add-on');
+    assert.equal(await page.locator('#total').innerText(), '$19.99');
   });
 
   await scenario('owned-support-cannot-clear-neuro-review', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and typing makes it worse. My thumb and index finger tingle. My wrist and thumb brace is in good condition, fits well, and covers both areas.', async () => {
@@ -224,8 +226,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('support-verb-is-not-owned-support', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have a cold pack that supports my wrist and works well.', async () => {
     await clearSafetyAndMeasure();
     assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#coldState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert.equal(await content('#coldState'), 'Optional add-on');
+    assert.equal(await page.locator('#total').innerText(), '$19.99');
   });
 
   await scenario('later-swelling-overrides-earlier-denial', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. There was no swelling yesterday. Today it is rapidly swelling.', async () => {
@@ -235,8 +237,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('owned-cold-does-not-change-plan', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have a cold pack that works well.', async () => {
     await clearSafetyAndMeasure();
-    assert.equal(await page.locator('#coldState').innerText(), 'Recommended');
-    const explanation = await page.locator('#whyRows').innerText();
+    assert.equal(await content('#coldState'), 'Optional add-on');
+    const explanation = await content('#whyRows');
     assert(!explanation.includes('What you already own'));
   });
 
@@ -495,7 +497,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('thumb-wrap-is-owned-support', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and gripping makes it worse. My thumb wrap fits well, is clean and in good condition, still works, and covers both wrist and thumb.', async () => {
     await clearSafetyAndMeasure();
     assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert.equal(await page.locator('#total').innerText(), '$19.99');
   });
 
   await scenario('location-help-does-not-create-back-problem', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
@@ -533,9 +535,9 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('gel-cold-pack-is-not-topical', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have a gel cold pack that works well.', async () => {
     await clearSafetyAndMeasure();
-    assert.equal(await page.locator('#coldState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#topicalState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert.equal(await content('#coldState'), 'Optional add-on');
+    assert.equal(await content('#topicalState'), 'Optional add-on');
+    assert.equal(await page.locator('#total').innerText(), '$19.99');
   });
 
   await scenario('uncertain-numbness-remains-in-safety-check', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I am not sure whether my fingers are numb.', async () => {
@@ -557,16 +559,19 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('ice-wrist-wrap-is-cold-product', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I already have a Polar Soft Ice Wrist Wrap that works well.', async () => {
     await clearSafetyAndMeasure();
     assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#coldState').innerText(), 'Recommended');
-    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert.equal(await content('#coldState'), 'Optional add-on');
+    assert.equal(await page.locator('#total').innerText(), '$19.99');
   });
 
   await scenario('consumer-can-remove-each-recommended-item', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
     await clearSafetyAndMeasure();
+    await page.click('[data-plan="complete"]');
+    await page.getByText('Optional products and purchase controls', { exact: true }).click();
     await page.click('[data-tune="support"]');
     assert.equal(await page.locator('#supportState').innerText(), 'Removed by you');
     assert.equal(await page.locator('#total').innerText(), '$32.99');
     await page.click('#resetTune');
+    await page.click('[data-plan="complete"]');
     await page.click('[data-tune="cold"]');
     assert.equal(await page.locator('#coldState').innerText(), 'Removed by you');
     assert.equal(await page.locator('#total').innerText(), '$31.98');
@@ -600,29 +605,52 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!(await page.locator('#conversation .bubble.ai').last().innerText()).includes('Self-care should pause here'));
     await page.fill('#reply', 'At the base of my thumb and along the thumb side of my wrist.');
     await page.click('#send');
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
-    assert(safety.includes('safety check'));
-    assert(!safety.includes('open wound'));
-    await page.click('[data-safety="clear"]');
+    assert.equal(await page.locator('[data-safety="clear"]').count(), 0, 'fully denied warning signs were asked again');
+    assert(await page.locator('#wristMeasure').count());
     await page.fill('#wristMeasure', '7');
     await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
     assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
     assert.equal(await page.locator('#supportPrice').innerText(), '$19.99');
-    assert.equal(await page.locator('#total').innerText(), '$52.98');
+    assert.equal(await page.locator('#total').innerText(), '$19.99');
+    assert((await content('#whyRows')).includes('right —'));
     assert(!(await page.locator('.kfxBuy').isDisabled()));
   });
 
+  await scenario('reported-visible-deformity-pauses-self-care', 'My right wrist hurts and looks visibly deformed after a fall yesterday. Gripping makes it worse.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert(message.includes('visible deformity'));
+    assert.equal(await page.locator('#wristMeasure').count(), 0);
+  });
+
+  await scenario('reported-misshapen-area-pauses-self-care', 'My right wrist hurts after a fall yesterday and the area looks misshapen. Gripping makes it worse.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert.equal(await page.locator('#wristMeasure').count(), 0);
+  });
+
+  await scenario('reported-odd-angle-pauses-self-care', 'My right wrist hurts after a fall yesterday and it appears to be at an odd angle. Gripping makes it worse.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert.equal(await page.locator('#wristMeasure').count(), 0);
+  });
+
+  await scenario('explicit-deformed-denial-does-not-stop', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. It does not look deformed.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(!message.includes('Self-care should pause here'));
+  });
+
   await scenario('minor-superficial-scrape-continues-with-protection', 'My right wrist hurts for four weeks after typing. It built up gradually. There was no fall or direct injury. I have a small superficial scrape on my hand. The bleeding stopped, and I washed and covered it. I do not have numbness, major swelling, weakness, or deformity.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await page.locator('#conversation').innerText();
     assert(safety.includes('minor scrape does not automatically require medical care'));
     assert(safety.includes('Do not place a brace or topical pain product directly over unprotected broken skin'));
     assert(!safety.includes('Self-care should pause here'));
-    await page.click('[data-safety="clear"]');
+    if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
     await page.fill('#wristMeasure', '7');
     await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
-    const solution = await page.locator('#solutionView').innerText();
+    const solution = await content('#solutionView');
     assert(solution.includes('Skin protection'));
     assert(solution.includes('Do not place a brace or topical pain product directly over unprotected broken skin'));
     await page.click('.kfxBuy');
@@ -653,6 +681,6 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 51, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: scenarioCount, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();

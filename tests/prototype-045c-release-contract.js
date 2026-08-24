@@ -32,10 +32,10 @@ check(!loader.includes('MutationObserver'), 'loader has no observer repair logic
 check(!loader.includes('setTimeout('), 'loader has no timing repair logic');
 
 check(route.includes('<title>Keneflex</title>'), 'participant route uses consumer-facing title');
-check(route.includes("searchParams.set('participant','067')"), 'participant route requests consolidated release 0.6.7');
+check(route.includes("searchParams.set('participant','068')"), 'participant route requests decision-closure release 0.6.8');
 check(route.includes("searchParams.set('build',String(stamp))") && route.includes("searchParams.set('cache','no-store')"), 'participant route uses unique no-store URL');
 check(route.includes('location.replace(u.href)'), 'participant route uses deterministic top-level navigation');
-check(html.includes('participant-consolidated.css?v=067'), 'participant route loads consolidated styles');
+check(html.includes('participant-consolidated.css?v=068'), 'participant route loads consolidated styles');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'duplicated inline commerce runtime is absent');
 
 check(engine.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"), 'hand family canonicalization retained');
@@ -47,7 +47,7 @@ check(critical.includes('correctionSide'), 'laterality corrections supported');
 check(critical.includes('threads.every(threadAdequate)'), 'multi-problem adequacy retained');
 
 check(participant.includes('const model ='), 'one authoritative participant model exists');
-check(participant.includes("release: '0.6.7'"), 'participant model identifies consolidated release');
+check(participant.includes("release: '0.6.8'"), 'participant model identifies decision-closure release');
 check(participant.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
 check(participant.includes('function safetyGate()'), 'safety gate has one controller owner');
 check(participant.includes("model.cart.support.disposition = 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
@@ -61,6 +61,8 @@ check(participant.includes('function openPlan()'), 'plan page has one controller
 check(participant.includes('function applyConsumerCopy()'), 'consumer copy has one controller owner');
 check(participant.includes('Buy selected items'), 'controller owns the visible purchase CTA');
 check(participant.includes('Your Keneflex Plan'), 'controller owns the consumer plan page');
+check(!participant.includes("window.open('', '_blank')"), 'consumer plan does not open as about:blank');
+check(participant.includes('function selectPlan(plan)') && html.includes('data-plan="complete"'), 'plan tiers are explicit structured choices');
 check(!participant.includes('MutationObserver'), 'controller does not repair itself with DOM observers');
 check(!participant.includes('setTimeout('), 'controller does not use timing patches');
 
