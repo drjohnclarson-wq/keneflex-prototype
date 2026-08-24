@@ -70,7 +70,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-plan="recovery"] .tierProduct img').count(), 2);
     assert.equal(await page.locator('[data-plan="complete"] .tierProduct img').count(), 3);
     assert.equal(await page.locator('.tierPlanIcon').count(), 3);
-    assert.equal(await page.getByText('Personalized Keneflex care plan', { exact: true }).count(), 3);
+    assert.equal(await page.locator('.tierPlanCopy').filter({ hasText: 'Personalized Keneflex care plan' }).count(), 3);
     assert(await page.evaluate(() => !!(document.querySelector('.planChooser').compareDocumentPosition(document.querySelector('.purchaseBlock')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'purchase action must follow plan cards');
     assert.equal(await content('#planName'), 'Core');
     assert.equal(await content('#selectionCount'), '1 product + Personalized Keneflex care plan');
@@ -170,7 +170,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(solution.includes('does not support your thumb'));
     assert(!solution.includes('movement-preserving support requirement'));
     await page.click('#kfxPlanBtn');
-    assert.equal(await page.locator('.kfxPlanPage .planLine').first().locator('b').innerText(), '$19.99');
+    assert.equal(await page.locator('.kfxPlanPage .planLine:not(.planIncluded)').first().locator('b').innerText(), '$19.99');
     assert((await page.locator('.kfxPlanPage').innerText()).includes('right —'));
     await page.click('[data-plan-close]');
   });
