@@ -11,8 +11,10 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   const browser = await chromium.launch({ headless: true, channel: 'chrome' });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const failures = [];
+  let scenarioCount = 0;
 
   async function scenario(name, story, verify) {
+    scenarioCount += 1;
     try {
       await page.goto(base + '&scenario=' + encodeURIComponent(name), { waitUntil: 'domcontentloaded' });
       await page.fill('#opening', story);
@@ -622,6 +624,23 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#wristMeasure').count(), 0);
   });
 
+  await scenario('reported-misshapen-area-pauses-self-care', 'My right wrist hurts after a fall yesterday and the area looks misshapen. Gripping makes it worse.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert.equal(await page.locator('#wristMeasure').count(), 0);
+  });
+
+  await scenario('reported-odd-angle-pauses-self-care', 'My right wrist hurts after a fall yesterday and it appears to be at an odd angle. Gripping makes it worse.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert.equal(await page.locator('#wristMeasure').count(), 0);
+  });
+
+  await scenario('explicit-deformed-denial-does-not-stop', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. It does not look deformed.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(!message.includes('Self-care should pause here'));
+  });
+
   await scenario('minor-superficial-scrape-continues-with-protection', 'My right wrist hurts for four weeks after typing. It built up gradually. There was no fall or direct injury. I have a small superficial scrape on my hand. The bleeding stopped, and I washed and covered it. I do not have numbness, major swelling, weakness, or deformity.', async () => {
     const safety = await page.locator('#conversation').innerText();
     assert(safety.includes('minor scrape does not automatically require medical care'));
@@ -631,7 +650,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.fill('#wristMeasure', '7');
     await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
-    const solution = await page.locator('#solutionView').innerText();
+    const solution = await content('#solutionView');
     assert(solution.includes('Skin protection'));
     assert(solution.includes('Do not place a brace or topical pain product directly over unprotected broken skin'));
     await page.click('.kfxBuy');
@@ -662,6 +681,6 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await browser.close();
-  console.log(JSON.stringify({ scenarios: 52, failures }, null, 2));
+  console.log(JSON.stringify({ scenarios: scenarioCount, failures }, null, 2));
   if (failures.length) process.exit(1);
 })();

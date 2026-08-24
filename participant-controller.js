@@ -147,7 +147,7 @@
     const unresolved = [];
     const deformityStatus = latestDeformityStatus();
     if (deformityStatus === 'reported') {
-      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>You reported visible deformity or that the area looks crooked. That can change what is safe, so seek an appropriate in-person medical evaluation before choosing a support or continuing this plan.</p>', true);
+      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>You reported visible deformity or that the area looks crooked, misshapen, or out of place. That can change what is safe, so seek an appropriate in-person medical evaluation before choosing a support or continuing this plan.</p>', true);
       interaction.innerHTML = '';
       return;
     }
@@ -188,8 +188,8 @@
 
   function latestDeformityStatus() {
     let status = 'unknown';
-    const denied = /\b(?:no|without)\b[^.!?;]{0,180}\b(?:visible )?(?:deformity|crookedness)\b|\b(?:do not|don't|have not|haven't|did not|didn't)\s+have\b[^.!?;]{0,180}\b(?:visible )?(?:deformity|crookedness)\b/i;
-    const reported = /\b(?:visible |obvious |new )?(?:deformity|crookedness)\b|\b(?:looks?|appears?|is)\s+crooked\b/i;
+    const denied = /\b(?:no|without)\b[^.!?;]{0,180}\b(?:visible )?(?:deformity|crookedness)\b|\b(?:do not|don't|have not|haven't|did not|didn't)\s+have\b[^.!?;]{0,180}\b(?:visible )?(?:deformity|crookedness)\b|\b(?:do not|don't|does not|doesn't|did not|didn't)\s+(?:look|appear|seem)\s+(?:visibly |obviously )?(?:deformed|crooked|misshapen|bent|out of place|at an (?:odd|unusual) angle)\b/i;
+    const reported = /\b(?:visible |obvious |new )?(?:deformity|crookedness)\b|\b(?:looks?|appears?|seems?|is|was|became)\s+(?:to be\s+)?(?:visibly |obviously |newly )?(?:deformed|crooked|misshapen|bent|out of place|at an (?:odd|unusual) angle)\b|\b(?:a |an )?(?:visibly |obviously |newly )?(?:deformed|crooked|misshapen)\s+(?:wrist|thumb|hand|finger|joint|area)\b/i;
     model.story.events.forEach(event => String(event.text || '').replace(/[’‘]/g, "'").split(/[.!?;]/).forEach(clause => {
       if (denied.test(clause)) status = 'denied';
       else if (reported.test(clause)) status = 'reported';
