@@ -4,7 +4,7 @@
 
 `participant-card.html` → `test.html` → `index.html`
 
-The `0.6.9` participant runtime intentionally has three explicit JavaScript files and two domain owners:
+The `0.7.0` participant runtime intentionally has three explicit JavaScript files and two domain owners:
 
 1. `prototype-046-conversation-engine.js` — pure story parsing, problem threads, known-fact detection, question selection, and adequacy.
 2. `prototype-046b-critical-state.js` — critical engine invariants for corrections, multiple problems, provider instructions, and owned products.

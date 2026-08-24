@@ -22,9 +22,9 @@ check(loadedScripts[1] === 'prototype-046b-critical-state.js', 'critical provide
 check(loadedScripts[2] === 'participant-controller.js', 'single participant controller loads last');
 check((loader.match(/<script defer/g) || []).length === 3, 'consolidated runtime starts after the legacy inline parser phase');
 check(!/prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/.test(loader), 'legacy patch stack is absent from production loader');
-check(route.includes("searchParams.set('participant','069')"), 'participant route matches conversion-clarity release');
+check(route.includes("searchParams.set('participant','070')"), 'participant route matches solution-value release');
 check(route.includes("searchParams.set('build',String(stamp))"), 'participant route cache-busts each launch');
-check(html.includes('participant-consolidated.css?v=069'), 'consolidated stylesheet is loaded');
+check(html.includes('participant-consolidated.css?v=070'), 'consolidated stylesheet is loaded');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'legacy inline commerce runtime is removed');
 check(controller.includes('const model ='), 'one authoritative participant model exists');
 check(controller.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
@@ -43,8 +43,11 @@ check(participantCss.includes('@media(max-width:650px)') && participantCss.inclu
 check(!controller.includes("window.open('', '_blank')"), 'plan renders in the responsive Keneflex shell instead of about:blank');
 check(controller.includes('function selectPlan(plan)') && html.includes('data-plan="core"'), 'core, recovery, and complete choices have one controller owner');
 check(html.includes('$19.99 <small>total</small>') && html.includes('$40.99 <small>total</small>') && html.includes('$52.98 <small>total</small>'), 'all plan cards state inclusive totals');
-check(html.includes('$21.00 more than Core') && html.includes('$11.99 more than Recovery'), 'higher plans distinguish incremental cost from total');
+check(html.includes('+$21.00:') && html.includes('+$11.99:'), 'higher plans distinguish incremental cost from total');
 check(controller.includes('View my care instructions'), 'care-instructions action uses consumer language');
+check((html.match(/Personalized Keneflex care plan/g) || []).length >= 4, 'Keneflex care plan appears in every package and the selected summary');
+check(html.includes('Most comprehensive') && html.includes('tierVisuals'), 'complete package and cumulative product visuals are explicit');
+check(!html.includes('Core is enough to start') && !html.includes('optional additions'), 'package presentation does not minimize recovery or comfort');
 check(controller.includes('function applyConsumerCopy()'), 'consumer copy is authored once without observer cleanup');
 check(!controller.includes('MutationObserver'), 'participant controller does not repair itself with DOM observers');
 check(!controller.includes('setTimeout('), 'participant controller does not use timing patches for synchronization');
