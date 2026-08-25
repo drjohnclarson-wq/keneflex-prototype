@@ -55,17 +55,25 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(initial.total, '$19.99');
     assert(initial.buy.includes('$19.99'));
     assert(initial.text.includes('Medium'));
-    assert(initial.text.includes('Core is enough to start'));
+    assert(initial.text.includes('Built to help you get back to what you do'));
+    assert(!initial.text.includes('Core is enough to start'));
+    assert(!initial.text.includes('optional additions'));
     assert.equal(await page.locator('.planTier').count(), 3);
     assert.equal(await page.locator('[data-plan="core"]').getAttribute('aria-pressed'), 'true');
     assert((await content('[data-plan="core"]')).includes('$19.99 total'));
     assert((await content('[data-plan="recovery"]')).includes('$40.99 total'));
-    assert((await content('[data-plan="recovery"]')).includes('$21.00 more than Core'));
+    assert((await content('[data-plan="recovery"]')).includes('+$21.00: adds reusable cold recovery'));
     assert((await content('[data-plan="complete"]')).includes('$52.98 total'));
-    assert((await content('[data-plan="complete"]')).includes('$11.99 more than Recovery'));
+    assert((await content('[data-plan="complete"]')).includes('+$11.99: adds temporary topical comfort'));
+    assert((await content('[data-plan="complete"]')).includes('Most comprehensive'));
+    assert.equal(await page.locator('[data-plan="core"] .tierProduct img').count(), 1);
+    assert.equal(await page.locator('[data-plan="recovery"] .tierProduct img').count(), 2);
+    assert.equal(await page.locator('[data-plan="complete"] .tierProduct img').count(), 3);
+    assert.equal(await page.locator('.tierPlanIcon').count(), 3);
+    assert.equal(await page.locator('.tierIncludes span').filter({ hasText: 'Personalized Keneflex care plan' }).count(), 3);
     assert(await page.evaluate(() => !!(document.querySelector('.planChooser').compareDocumentPosition(document.querySelector('.purchaseBlock')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'purchase action must follow plan cards');
     assert.equal(await content('#planName'), 'Core');
-    assert.equal(await content('#selectionCount'), '1 product included');
+    assert.equal(await content('#selectionCount'), '1 product + Personalized Keneflex care plan');
     assert.equal(initial.scripts.length, 4); // loader + engine + critical invariants + controller
     assert(!initial.observers, 'legacy observer runtime is active');
     assert(!banned.test(initial.text), 'internal language is visible');
@@ -73,7 +81,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.click('[data-plan="recovery"]');
     assert.equal(await page.locator('#total').innerText(), '$40.99');
     assert.equal(await content('#planName'), 'Recovery');
-    assert.equal(await content('#selectionCount'), '2 products included');
+    assert.equal(await content('#selectionCount'), '2 products + Personalized Keneflex care plan');
     assert((await page.locator('.kfxBuy').innerText()).includes('$40.99'));
 
     await page.click('#kfxPlanBtn');
@@ -81,13 +89,17 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert((await page.locator('.kfxPlanPage').innerText()).includes('Biofreeze') === false);
     assert.equal(await content('.finalSelection h2'), 'Recovery');
     assert((await content('.finalSelection')).includes('$40.99'));
-    assert.equal(await page.locator('.finalSelection .planLine').count(), 2);
+    assert.equal(await page.locator('.finalSelection .planLine').count(), 3);
+    assert((await content('.finalSelection .planIncluded')).includes('Personalized Keneflex care plan'));
+    assert((await content('.finalSelection .planIncluded')).includes('Included'));
     assert((await content('.kfxFinalBuy')).includes('$40.99 total'));
     await page.click('[data-plan-close]');
 
     await page.click('.kfxBuy');
     assert.equal(await page.locator('.kfxCheckout .totalx span:last-child').innerText(), '$40.99');
-    assert.equal(await page.locator('.kfxCheckout .rowx').count(), 2);
+    assert.equal(await page.locator('.kfxCheckout .rowx:not(.planIncluded)').count(), 2);
+    assert((await content('.kfxCheckout .planIncluded')).includes('Personalized Keneflex care plan'));
+    assert((await content('.kfxCheckout .planIncluded')).includes('Included'));
   });
 
   await scenario('altered-feeling-gate', 'My left wrist and thumb hurt and my thumb and index finger tingle after typing for 3 weeks. It built up gradually.', async () => {
@@ -160,7 +172,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(solution.includes('does not support your thumb'));
     assert(!solution.includes('movement-preserving support requirement'));
     await page.click('#kfxPlanBtn');
-    assert.equal(await page.locator('.kfxPlanPage .planLine').first().locator('b').innerText(), '$19.99');
+    assert.equal(await page.locator('.kfxPlanPage .planLine:not(.planIncluded)').first().locator('b').innerText(), '$19.99');
     assert((await page.locator('.kfxPlanPage').innerText()).includes('right —'));
     await page.click('[data-plan-close]');
   });

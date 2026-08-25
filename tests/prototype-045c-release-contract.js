@@ -32,10 +32,10 @@ check(!loader.includes('MutationObserver'), 'loader has no observer repair logic
 check(!loader.includes('setTimeout('), 'loader has no timing repair logic');
 
 check(route.includes('<title>Keneflex</title>'), 'participant route uses consumer-facing title');
-check(route.includes("searchParams.set('participant','069')"), 'participant route requests conversion-clarity release 0.6.9');
+check(route.includes("searchParams.set('participant','070')"), 'participant route requests solution-value release 0.7.0');
 check(route.includes("searchParams.set('build',String(stamp))") && route.includes("searchParams.set('cache','no-store')"), 'participant route uses unique no-store URL');
 check(route.includes('location.replace(u.href)'), 'participant route uses deterministic top-level navigation');
-check(html.includes('participant-consolidated.css?v=069'), 'participant route loads consolidated styles');
+check(html.includes('participant-consolidated.css?v=070'), 'participant route loads consolidated styles');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'duplicated inline commerce runtime is absent');
 
 check(engine.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"), 'hand family canonicalization retained');
@@ -47,7 +47,7 @@ check(critical.includes('correctionSide'), 'laterality corrections supported');
 check(critical.includes('threads.every(threadAdequate)'), 'multi-problem adequacy retained');
 
 check(participant.includes('const model ='), 'one authoritative participant model exists');
-check(participant.includes("release: '0.6.9'"), 'participant model identifies conversion-clarity release');
+check(participant.includes("release: '0.7.0'"), 'participant model identifies solution-value release');
 check(participant.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
 check(participant.includes('function safetyGate()'), 'safety gate has one controller owner');
 check(participant.includes("model.cart.support.disposition = 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');

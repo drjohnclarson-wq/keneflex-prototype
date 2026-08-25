@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.6.9
+/* Keneflex participant runtime 0.7.0
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -17,7 +17,7 @@
   });
 
   const model = {
-    release: '0.6.9',
+    release: '0.7.0',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
@@ -369,14 +369,14 @@
   function renderSolution() {
     const rec = model.recommendation;
     const hasReview = lines().some(line => line.disposition === 'REVIEW');
-    $('#solutionView .solHero h1').textContent = hasReview ? 'Review this before buying.' : 'Start with Core.';
-    $('#solutionLead').textContent = hasReview ? rec.lead : 'Core is enough to start. It includes the one support Keneflex recommends for you.';
+    $('#solutionView .solHero h1').textContent = hasReview ? 'Review this before buying.' : 'Built to help you get back to what you do.';
+    $('#solutionLead').textContent = hasReview ? rec.lead : 'Keneflex turns product research and your story into one connected plan—with clear paths for support, recovery, comfort, and what to do next.';
     const wornBrace = wornBraceExplanation();
     $('#confidenceCopy').textContent = rec.neuro
       ? 'A product should not be treated as selected until it satisfies the altered-feeling pattern as well as the pain and activity requirements.'
       : wornBrace
         ? wornBrace
-        : 'This combined support matches the location, movement, fit, and safety information you provided.';
+        : 'Your plan connects the support Keneflex selected with practical steps for activity, recovery, and knowing when the plan should change.';
     $('#supportItem .planCopy').textContent = rec.supportReason;
     const why = $('#whyRows');
     why.innerHTML = [
@@ -391,8 +391,8 @@
     $('#planName').textContent = planLabel();
     const summaryCount = lines().filter(line => line.disposition === 'BUY' || line.disposition === 'REVIEW').length;
     $('#selectionCount').textContent = hasReview
-      ? summaryCount + (summaryCount === 1 ? ' product awaiting review' : ' products awaiting review')
-      : summaryCount + (summaryCount === 1 ? ' product included' : ' products included');
+      ? summaryCount + (summaryCount === 1 ? ' product awaiting review' : ' products awaiting review') + ' + Personalized Keneflex care plan'
+      : summaryCount + (summaryCount === 1 ? ' product' : ' products') + ' + Personalized Keneflex care plan';
     $$('[data-plan]').forEach(button => {
       const selected = button.dataset.plan === model.selectedPlan;
       button.classList.toggle('selected', selected);
@@ -475,7 +475,7 @@
     const woundWarning = model.woundAssessment === 'minor'
       ? '<div class="kfxSafetyNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a brace or topical pain product directly over unprotected broken skin.</div>'
       : '';
-    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your selected products</h2>' + woundWarning + combinationWarning + '<div>' +
+    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your Keneflex plan</h2><div class="rowx planIncluded"><span>Personalized Keneflex care plan</span><b>Included</b></div>' + woundWarning + combinationWarning + '<div>' +
       selected.map(line => '<div class="rowx"><span>' + line.name + '</span><b>' + money(line.price) + '</b></div>').join('') +
       '</div><div class="totalx"><span>Total</span><span>' + money(total()) + '</span></div><div class="actions"><button class="primary" data-checkout-complete>Continue →</button><button class="secondary" data-checkout-close>Go back</button></div><p class="micro">This test will not place an order or charge you.</p></section>';
     document.body.appendChild(overlay);
@@ -494,7 +494,7 @@
     const overlay = document.createElement('div');
     overlay.className = 'kfxPlanOverlay';
     const hasReview = selected.some(line => line.disposition === 'REVIEW');
-    overlay.innerHTML = '<div class="kfxPlanPage"><header><div class="logo">KENEFLEX</div><button class="secondary" data-plan-close>Back to recommendation</button></header><main><section class="planHero"><h1>Your care instructions</h1><p>Built from your ' + escapeHtml(thread.family) + ' story. Location: ' + escapeHtml(model.recommendation.locations || 'as described') + '.</p></section><section class="card finalSelection"><div class="finalSelectionTop"><div><div class="eyebrow">Your selected plan</div><h2>' + escapeHtml(planLabel()) + '</h2><p>' + selected.length + (selected.length === 1 ? ' product included' : ' products included') + '</p></div><div class="finalTotal">' + money(total()) + '<small>inclusive total</small></div></div><div class="finalProducts">' + selected.map(line => '<div class="planLine"><span>' + escapeHtml(line.name) + '</span><b>' + (line.disposition === 'BUY' ? money(line.price) : '$0') + '</b></div>').join('') + '</div><button class="primary kfxFinalBuy"' + (hasReview ? ' disabled' : '') + '>' + (hasReview ? 'Review needed before checkout' : 'Buy the ' + escapeHtml(planLabel()) + ' plan — ' + money(total()) + ' total') + '</button></section>' + woundPlan + '<section class="card"><h2>Care instructions</h2><div class="planSteps"><div class="planStep"><b>Reduce repeated aggravation</b><p>Break up or reduce the activity that consistently increases symptoms.</p></div><div class="planStep"><b>Keep motion comfortable</b><p>Do not force painful end ranges or continue movements that increase altered feeling.</p></div><div class="planStep"><b>Watch the trend</b><p>Track function, soreness, numbness, tingling, swelling, and activity tolerance.</p></div></div></section><section class="card"><h2>When the plan changes</h2><p>Stop self-care and seek appropriate evaluation for meaningful new weakness, loss of feeling, major swelling, deformity, a deep, contaminated, infected, or uncontrolled-bleeding wound, or significant worsening.</p></section></main></div>';
+    overlay.innerHTML = '<div class="kfxPlanPage"><header><div class="logo">KENEFLEX</div><button class="secondary" data-plan-close>Back to recommendation</button></header><main><section class="planHero"><h1>Your care instructions</h1><p>Built from your ' + escapeHtml(thread.family) + ' story. Location: ' + escapeHtml(model.recommendation.locations || 'as described') + '.</p></section><section class="card finalSelection"><div class="finalSelectionTop"><div><div class="eyebrow">Your selected Keneflex plan</div><h2>' + escapeHtml(planLabel()) + '</h2><p>' + selected.length + (selected.length === 1 ? ' product' : ' products') + ' + personalized care plan</p></div><div class="finalTotal">' + money(total()) + '<small>inclusive total</small></div></div><div class="finalProducts"><div class="planLine planIncluded"><span>Personalized Keneflex care plan</span><b>Included</b></div>' + selected.map(line => '<div class="planLine"><span>' + escapeHtml(line.name) + '</span><b>' + (line.disposition === 'BUY' ? money(line.price) : '$0') + '</b></div>').join('') + '</div><button class="primary kfxFinalBuy"' + (hasReview ? ' disabled' : '') + '>' + (hasReview ? 'Review needed before checkout' : 'Buy the ' + escapeHtml(planLabel()) + ' plan — ' + money(total()) + ' total') + '</button></section>' + woundPlan + '<section class="card"><h2>Care instructions</h2><div class="planSteps"><div class="planStep"><b>Reduce repeated aggravation</b><p>Break up or reduce the activity that consistently increases symptoms.</p></div><div class="planStep"><b>Keep motion comfortable</b><p>Do not force painful end ranges or continue movements that increase altered feeling.</p></div><div class="planStep"><b>Watch the trend</b><p>Track function, soreness, numbness, tingling, swelling, and activity tolerance.</p></div></div></section><section class="card"><h2>When the plan changes</h2><p>Stop self-care and seek appropriate evaluation for meaningful new weakness, loss of feeling, major swelling, deformity, a deep, contaminated, infected, or uncontrolled-bleeding wound, or significant worsening.</p></section></main></div>';
     document.body.appendChild(overlay);
     $('[data-plan-close]', overlay).addEventListener('click', () => overlay.remove());
     $('.kfxFinalBuy', overlay)?.addEventListener('click', checkout);
