@@ -343,7 +343,7 @@
     model.recommendation = recommendationFor(thread);
     if (!model.recommendation.eligible || !model.fit.supportSku || model.recommendation.provider) model.cart.support.disposition = 'REVIEW';
     const story = [model.opening, ...model.answers].join(' ').toLowerCase();
-    model.recommendedPlan = model.recommendation.eligible && /\b(?:pickleball|tennis|golf|paddle|racquet|racket|gripping|twisting)\b/.test(story) ? 'recovery' : 'core';
+    model.recommendedPlan = model.recommendation.eligible && /\b(?:pickleball|tennis|golf|paddle|racquet|racket)\b/.test(story) ? 'recovery' : 'core';
     model.selectedPlan = model.recommendedPlan;
     model.cart.cold.disposition = model.selectedPlan === 'recovery' ? 'BUY' : 'OPTIONAL';
     model.cart.topical.disposition = 'OPTIONAL';
