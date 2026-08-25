@@ -55,7 +55,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(initial.total, '$19.99');
     assert(initial.buy.includes('$19.99'));
     assert(initial.text.includes('Medium'));
-    assert(initial.text.includes('Built to help you get back to what you do'));
+    assert(initial.text.includes('Find the right product for what’s bothering you'));
     assert(!initial.text.includes('Core is enough to start'));
     assert(!initial.text.includes('optional additions'));
     assert.equal(await page.locator('.planTier').count(), 3);
