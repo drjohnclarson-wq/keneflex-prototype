@@ -1,4 +1,4 @@
-/* Keneflex participant runtime 0.7.1
+/* Keneflex participant runtime 0.8.0
    One owner for intake, recommendation presentation, plan adjustments, cart, and plan pages. */
 (function (root) {
   'use strict';
@@ -10,14 +10,25 @@
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
   const money = value => '$' + Number(value || 0).toFixed(2);
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
-  const PRODUCTS = Object.freeze({
-    support: { id: 'support', name: 'Neo G Airflow Wrist & Thumb Support', price: 19.99 },
-    cold: { id: 'cold', name: 'Polar Soft Ice Wrist Wrap', price: 21.00 },
-    topical: { id: 'topical', name: 'Biofreeze Pain Relief Gel, menthol 4%', price: 11.99 }
+  const placeholder = (label, color) => 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="30" fill="' + color + '"/><text x="120" y="110" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="white">' + label + '</text><text x="120" y="142" text-anchor="middle" font-family="Arial" font-size="15" fill="white">PRODUCT</text></svg>');
+  const CATALOG = Object.freeze({
+    support: Object.freeze({
+      combined: { id: 'support', sku: 'NEOG-AIRFLOW-WT', name: 'Neo G Airflow Wrist & Thumb Support', price: 19.99, role: 'Flexible wrist and thumb support', image: 'https://www.neo-g.com/cdn/shop/files/722-13-Box_R_1080x.png?v=1725268865', fit: 'sized', guide: 'Use it for the activity or situation identified in your story. Apply to clean, dry skin; confirm that it supports without pressure, altered feeling, color change, or circulation concerns. Follow the label for positioning, wear time, and cleaning.' },
+      wrist: { id: 'support', sku: 'BRACEABILITY-11H11', name: 'BraceAbility Volar Wrist Splint', price: 24.99, role: 'Neutral-position wrist support', image: placeholder('WRIST SPLINT', '#143f43'), fit: 'universal', guide: 'Use the adjustable straps to hold the wrist in a comfortable neutral position. The fingers should remain free and the brace should not create pressure, altered feeling, color change, or circulation concerns. Follow the label for use, stay removal, and hand washing.' }
+    }),
+    recovery: Object.freeze({
+      cold: { id: 'cold', sku: 'POLAR-SPW8', name: 'Polar Soft Ice Wrist Wrap', price: 21.00, role: 'Reusable flexible cold recovery', image: 'https://trkmedicalproducts.com/cdn/shop/products/41_999x.jpg?v=1626891716', guide: 'Use after an aggravating activity or when cold feels helpful. Protect the skin, use only for the label-directed time, and stop for skin changes, excessive numbness, or worsening symptoms.' },
+      heat: { id: 'cold', sku: 'POLAR-MHW', name: 'Polar Thera-Temp Moist Heat Wrist & Hand Wrap', price: 22.00, role: 'Reusable moist heat for stiffness or tightness', image: placeholder('MOIST HEAT', '#8b4c2f'), guide: 'Use when warmth feels helpful for stiffness or muscle tightness. Check temperature before applying, use only for the label-directed time, and never use while sleeping or on skin with reduced sensation.' }
+    }),
+    comfort: Object.freeze({
+      gel: { id: 'topical', sku: 'BIOFREEZE-GEL-4', name: 'Biofreeze Pain Relief Gel, menthol 4%', price: 11.99, role: 'Temporary topical comfort gel', image: 'https://biofreeze.com/static/a06132b8965c43644a3e10fc5aae7a80/7b187/en-US-bf_retailgeltubegreen.png', guide: 'Apply only as directed on intact skin. Wash hands after use unless treating the hands. Do not bandage tightly, use with a heating device, or place the support over the gel.' },
+      patch: { id: 'topical', sku: 'BIOFREEZE-PATCH-4', name: 'Biofreeze Pain Relief Patch, menthol 4%', price: 12.99, role: 'Temporary hands-free comfort patch', image: placeholder('PAIN PATCH', '#356d58'), guide: 'Apply one patch only as directed to intact skin and remove it within the label-directed time. Do not bandage tightly, use with a heating device, or place the support over the patch.' }
+    })
   });
+  const PRODUCTS = Object.freeze({ support: CATALOG.support.combined, cold: CATALOG.recovery.cold, topical: CATALOG.comfort.gel });
 
   const model = {
-    release: '0.7.1',
+    release: '0.8.0',
     story: Engine.createStore(),
     opening: '',
     stage: 'intro',
@@ -26,6 +37,8 @@
     woundAssessment: 'unknown',
     recommendation: null,
     fit: { wristInches: null, supportSize: null, supportSku: null },
+    selection: { support: 'combined', recovery: 'cold', comfort: 'gel' },
+    comfortEligible: true,
     cart: {
       support: { disposition: 'BUY' },
       cold: { disposition: 'OPTIONAL' },
@@ -40,10 +53,10 @@
   function threadKey(thread) { return model.story.order.find(key => model.story.threads[key] === thread); }
   function hasUnsupportedRegion() { return storyThreads().some(thread => thread.family !== 'hand'); }
   function productLine(id) {
-    const product = PRODUCTS[id];
+    const product = id === 'support' ? CATALOG.support[model.selection.support] : id === 'cold' ? CATALOG.recovery[model.selection.recovery] : CATALOG.comfort[model.selection.comfort];
     const disposition = model.cart[id].disposition;
     const name = id === 'support' && model.fit.supportSize ? product.name + ' — ' + model.fit.supportSize : product.name;
-    return { ...product, name, sku: id === 'support' ? model.fit.supportSku : null, disposition, charged: disposition === 'BUY' ? product.price : 0 };
+    return { ...product, name, sku: id === 'support' ? model.fit.supportSku : product.sku, disposition, charged: disposition === 'BUY' ? product.price : 0 };
   }
   function lines() { return Object.keys(PRODUCTS).map(productLine); }
   function total() { return lines().reduce((sum, line) => sum + line.charged, 0); }
@@ -303,14 +316,37 @@
         return;
       }
       model.fit.wristInches = value;
-      if (value >= 6.3 && value <= 7.5) {
-        model.fit.supportSize = 'Medium';
-        model.fit.supportSku = 'NEOG-AIRFLOW-WT-M';
-      }
       addBubble('user', value.toFixed(1) + ' inches');
       interaction.innerHTML = '';
       revealRecommendation();
     });
+  }
+
+  function fullStory() { return [model.opening, ...model.answers].join(' ').toLowerCase(); }
+
+  function selectProducts(thread) {
+    const story = fullStory();
+    const areas = thread.areas || [];
+    const thumbDenied = /\b(?:thumb (?:is|feels) fine|thumb (?:does not|doesn['’]?t) hurt|no thumb (?:pain|problem|symptoms)|not (?:in |at )?(?:my |the )?thumb)\b/.test(story);
+    const combined = areas.includes('wrist') && areas.includes('thumb') && !thumbDenied;
+    const thumbLanguage = /\b(?:thumb|base of (?:my |the )?thumb|thumb side)\b/.test(story);
+    const wristOnly = areas.includes('wrist') && (thumbDenied || (!areas.includes('thumb') && !thumbLanguage));
+    model.selection.support = wristOnly ? 'wrist' : 'combined';
+    model.selection.recovery = /\b(?:heat|warmth|warming|stiff|stiffness|tight|tightness|morning|chronic)\b/.test(story) && !/\b(?:cold|ice|icing|swollen|swelling|after (?:activity|exercise|playing))\b/.test(story) ? 'heat' : 'cold';
+    model.selection.comfort = /\b(?:patch|patches|hands[- ]?free|mess[- ]?free)\b/.test(story) ? 'patch' : 'gel';
+    model.comfortEligible = model.woundAssessment !== 'minor' && !/\b(?:allerg(?:y|ic)|sensitive skin|no topical|don['’]?t want (?:a )?(?:cream|gel|patch|topical))\b/.test(story);
+    const product = CATALOG.support[model.selection.support];
+    if (product.fit === 'universal' && model.fit.wristInches <= 9.5) {
+      model.fit.supportSize = 'Adjustable';
+      model.fit.supportSku = product.sku;
+    } else if (product.fit === 'sized') {
+      if (model.fit.wristInches >= 5.1 && model.fit.wristInches < 6.3) model.fit.supportSize = 'Small';
+      else if (model.fit.wristInches >= 6.3 && model.fit.wristInches <= 7.5) model.fit.supportSize = 'Medium';
+      else if (model.fit.wristInches > 7.5 && model.fit.wristInches <= 9.1) model.fit.supportSize = 'Large';
+      else model.fit.supportSize = null;
+      model.fit.supportSku = model.fit.supportSize ? product.sku + '-' + model.fit.supportSize.charAt(0) : null;
+    }
+    return { combined, wristOnly };
   }
 
   function recommendationFor(thread) {
@@ -319,10 +355,13 @@
     const locations = thread.side ? thread.side + ' — ' + locationText : locationText;
     const provider = (thread.provider || []).join(' ');
     const activities = (thread.triggers || []).join(', ');
-    const combinedArea = (thread.areas || []).includes('wrist') && (thread.areas || []).includes('thumb');
+    const combinedArea = model.selection.support === 'combined' && (thread.areas || []).includes('wrist') && (thread.areas || []).includes('thumb');
+    const wristOnly = model.selection.support === 'wrist';
     const supportReason = combinedArea
       ? 'Because your symptoms involve both the wrist and thumb' + (activities ? ' and are aggravated by ' + activities : '') + ', a flexible combined support covers the required areas without jumping to a rigid immobilizer.'
-      : 'The flexible support matches the area and activity pattern you described without jumping to a rigid immobilizer.';
+      : wristOnly
+        ? 'Your concern is centered at the wrist, so a neutral-position wrist support is a closer match than buying extra thumb coverage.'
+        : 'The flexible support matches the area and activity pattern you described without jumping to a rigid immobilizer.';
     return {
       region: thread.family,
       neuro,
@@ -340,13 +379,16 @@
 
   function revealRecommendation() {
     const thread = activeProblem();
+    selectProducts(thread);
     model.recommendation = recommendationFor(thread);
-    if (!model.recommendation.eligible || !model.fit.supportSku || model.recommendation.provider) model.cart.support.disposition = 'REVIEW';
-    const story = [model.opening, ...model.answers].join(' ').toLowerCase();
-    model.recommendedPlan = model.recommendation.eligible && /\b(?:pickleball|tennis|golf|paddle|racquet|racket)\b/.test(story) ? 'recovery' : 'core';
+    model.cart.support.disposition = model.recommendation.eligible && model.fit.supportSku && !model.recommendation.provider ? 'BUY' : 'REVIEW';
+    const story = fullStory();
+    const wantsOnlySupport = /\b(?:only|just)\s+(?:want|need|looking for)\b[^.!?]{0,35}\b(?:brace|support|splint)\b|\b(?:brace|support|splint)\s+only\b/.test(story);
+    const wantsComplete = /\b(?:complete|everything|most comprehensive|full package)\b/.test(story) || /\b(?:gel|cream|patch|topical|biofreeze)\b/.test(story);
+    model.recommendedPlan = wantsOnlySupport ? 'core' : wantsComplete && model.comfortEligible ? 'complete' : 'recovery';
     model.selectedPlan = model.recommendedPlan;
-    model.cart.cold.disposition = model.selectedPlan === 'recovery' ? 'BUY' : 'OPTIONAL';
-    model.cart.topical.disposition = 'OPTIONAL';
+    model.cart.cold.disposition = model.selectedPlan === 'core' ? 'OPTIONAL' : 'BUY';
+    model.cart.topical.disposition = model.selectedPlan === 'complete' ? 'BUY' : model.comfortEligible ? 'OPTIONAL' : 'REMOVE';
     renderSolution();
     showStage('solution');
   }
@@ -366,10 +408,35 @@
     state.textContent = statusText(line.disposition, id);
     state.className = 'planState ' + (line.disposition === 'BUY' ? 'buy' : line.disposition === 'REMOVE' ? 'remove' : line.disposition === 'OPTIONAL' ? 'optional' : 'keep');
     $('#' + id + 'Price').textContent = line.disposition === 'BUY' ? money(line.price) : line.disposition === 'OPTIONAL' ? '+' + money(line.price) : '$0';
-    if (id === 'support') {
-      $('.planName', item).textContent = line.name;
-      if (!model.fit.supportSku) $('.planCopy', item).textContent = 'The available support size is not verified for your measurement, so this item remains under review and cannot be purchased yet.';
-    }
+    $('.planName', item).textContent = line.name;
+    $('.planRole', item).textContent = id === 'support' ? 'Primary support' : id === 'cold' ? 'Matched recovery' : 'Optional comfort';
+    const image = $('img', item);
+    if (image) { image.src = line.image; image.alt = line.name; }
+    if (id === 'support' && !model.fit.supportSku) $('.planCopy', item).textContent = 'The available support size is not verified for your measurement, so this item remains under review and cannot be purchased yet.';
+    else if (id !== 'support') $('.planCopy', item).textContent = line.role + '. ' + (id === 'topical' ? 'Use only on intact skin and separately from the support.' : 'Follow the product label for timing and skin protection.');
+    const removeButton = $('[data-tune="' + id + '"]');
+    if (removeButton) removeButton.textContent = 'Remove ' + line.name.replace(/ — .+$/, '');
+  }
+
+  function renderTierCards() {
+    const support = productLine('support');
+    const recovery = productLine('cold');
+    const comfort = productLine('topical');
+    const definitions = [
+      { id: 'core', label: 'Essential', title: 'Support + product guide', products: [support], delta: 'The support Keneflex selected for you' },
+      { id: 'recovery', label: 'Recommended', title: 'Support + recovery + product guide', products: [support, recovery], delta: '<b>+' + money(recovery.price) + ':</b> adds ' + escapeHtml(recovery.role.toLowerCase()) },
+      { id: 'complete', label: 'Complete', title: 'Support + recovery + comfort + product guide', products: [support, recovery, comfort], delta: '<b>+' + money(comfort.price) + ':</b> adds ' + escapeHtml(comfort.role.toLowerCase()), disabled: !model.comfortEligible }
+    ];
+    $('.planTiers').innerHTML = definitions.map(tier => {
+      const selected = tier.id === model.selectedPlan;
+      const recommended = tier.id === model.recommendedPlan;
+      const tierTotal = tier.products.reduce((sum, product) => sum + product.price, 0);
+      const badge = recommended ? 'Keneflex recommended' : tier.disabled ? 'Not appropriate for this story' : ({ core: 'Personalized foundation', recovery: 'Adds recovery', complete: 'Most comprehensive' })[tier.id];
+      const visuals = tier.products.map(product => '<span class="tierProduct"><img alt="' + escapeHtml(product.name) + '" src="' + product.image + '"/><small>' + escapeHtml(product.id === 'support' ? 'Support' : product.id === 'cold' ? 'Recovery' : 'Comfort') + '</small></span>').join('');
+      const included = tier.products.map(product => '<span>✓ ' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</span>').join('');
+      return '<button class="planTier' + (selected ? ' selected' : '') + (recommended ? ' featured' : '') + '" data-plan="' + tier.id + '" aria-pressed="' + selected + '"' + (tier.disabled ? ' disabled aria-disabled="true"' : '') + '><span class="tierTop"><span class="tierLabel">' + tier.label + '</span><span class="tierBadge' + (recommended ? ' recommendedBadge' : '') + '">' + badge + '</span></span><b>' + tier.title + '</b><div class="tierVisuals">' + visuals + '<span class="tierPlanIcon" aria-hidden="true"><i>K</i><small>Product guide</small></span></div><strong>' + money(tierTotal) + ' <small>total</small></strong><span class="tierDelta">' + tier.delta + '</span><span class="tierIncludes"><b>Your package includes:</b><span>✓ Personalized product guide</span>' + included + '</span><span class="tierChoice">' + (selected ? 'Selected' : tier.disabled ? 'Unavailable for this story' : 'Select ' + tier.label) + '</span></button>';
+    }).join('');
+    $$('[data-plan]', $('.planTiers')).forEach(button => button.addEventListener('click', () => selectPlan(button.dataset.plan)));
   }
 
   function renderSolution() {
@@ -382,7 +449,7 @@
       ? 'A product should not be treated as selected until it satisfies the altered-feeling pattern as well as the pain and activity requirements.'
       : wornBrace
         ? wornBrace
-        : 'Your plan connects the support Keneflex selected with practical steps for activity, recovery, and knowing when the plan should change.';
+        : 'Your recommendation connects the selected products with practical guidance for fit, use, care, and knowing when the choice should be reconsidered.';
     $('#supportItem .planCopy').textContent = rec.supportReason;
     const why = $('#whyRows');
     why.innerHTML = [
@@ -393,31 +460,19 @@
       ...(model.woundAssessment === 'minor' ? [['Skin protection', 'Clean and cover the minor scrape. Do not place a brace or topical pain product directly over unprotected broken skin.']] : [])
     ].map(([title, copy]) => '<div class="why"><b>' + escapeHtml(title) + '</b><span>' + escapeHtml(copy) + '</span></div>').join('');
     Object.keys(PRODUCTS).forEach(renderLine);
+    renderTierCards();
     $('#total').textContent = money(total());
     $('#planName').textContent = planLabel();
     const summaryCount = lines().filter(line => line.disposition === 'BUY' || line.disposition === 'REVIEW').length;
     $('#selectionCount').textContent = hasReview
       ? summaryCount + (summaryCount === 1 ? ' product awaiting review' : ' products awaiting review') + ' + personalized product guide'
       : summaryCount + (summaryCount === 1 ? ' product' : ' products') + ' + personalized product guide';
-    $$('[data-plan]').forEach(button => {
-      const selected = button.dataset.plan === model.selectedPlan;
-      const recommended = button.dataset.plan === model.recommendedPlan;
-      button.classList.toggle('selected', selected);
-      button.classList.toggle('featured', recommended);
-      button.setAttribute('aria-pressed', String(selected));
-      const badge = $('.tierBadge', button);
-      if (badge) {
-        badge.textContent = recommended ? 'Keneflex recommended' : ({ core: 'Personalized foundation', recovery: 'Adds recovery', complete: 'Most comprehensive' })[button.dataset.plan];
-        badge.classList.toggle('recommendedBadge', recommended);
-      }
-      const choice = $('.tierChoice', button);
-      if (choice) choice.textContent = selected ? 'Selected' : 'Select ' + ({ core: 'Essential', recovery: 'Recommended', complete: 'Complete' })[button.dataset.plan];
-    });
     ensureCommerceControls();
   }
 
   function selectPlan(plan) {
     if (!['core', 'recovery', 'complete'].includes(plan)) return;
+    if (plan === 'complete' && !model.comfortEligible) return;
     model.selectedPlan = plan;
     model.cart.cold.disposition = plan === 'core' ? 'OPTIONAL' : 'BUY';
     model.cart.topical.disposition = plan === 'complete' ? 'BUY' : 'OPTIONAL';
@@ -437,14 +492,14 @@
   function adjust(kind) {
     if (PRODUCTS[kind]) {
       model.selectedPlan = 'custom';
-      return setDisposition(kind, 'REMOVE', '<b>' + escapeHtml(PRODUCTS[kind].name) + ' removed.</b> It will not be included in your purchase.');
+      return setDisposition(kind, 'REMOVE', '<b>' + escapeHtml(productLine(kind).name) + ' removed.</b> It will not be included in your purchase.');
     }
   }
 
   function resetAdjustments() {
     model.cart.support.disposition = model.recommendation?.eligible && model.fit.supportSku && !model.recommendation?.provider ? 'BUY' : 'REVIEW';
-    model.cart.cold.disposition = model.recommendedPlan === 'recovery' ? 'BUY' : 'OPTIONAL';
-    model.cart.topical.disposition = 'OPTIONAL';
+    model.cart.cold.disposition = model.recommendedPlan === 'core' ? 'OPTIONAL' : 'BUY';
+    model.cart.topical.disposition = model.recommendedPlan === 'complete' ? 'BUY' : model.comfortEligible ? 'OPTIONAL' : 'REMOVE';
     model.selectedPlan = model.recommendedPlan;
     $('#tuneResult').classList.add('hidden');
     $('#resetTune').classList.add('hidden');
@@ -483,7 +538,7 @@
     const overlay = document.createElement('div');
     overlay.className = 'kfxCheckoutOverlay';
     const combinationWarning = model.cart.support.disposition === 'BUY' && model.cart.topical.disposition === 'BUY'
-      ? '<div class="kfxSafetyNotice"><b>Use separately.</b> Do not wear the support over Biofreeze, gels, or creams. Apply topical products only as directed, and put the support on clean, dry skin.</div>'
+      ? '<div class="kfxSafetyNotice"><b>Use separately.</b> Do not wear the support over the selected gel or patch. Apply topical products only as directed, and put the support on clean, dry skin.</div>'
       : '';
     const woundWarning = model.woundAssessment === 'minor'
       ? '<div class="kfxSafetyNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a brace or topical pain product directly over unprotected broken skin.</div>'
@@ -519,15 +574,15 @@
       id: 'support',
       title: 'How to use your support',
       summary: 'The most relevant fit, timing, care, and safety directions for your selection.',
-      body: '<p><b>' + escapeHtml(support.name) + '</b> was selected to support the required area while preserving useful movement.</p><div class="planSteps"><div class="planStep"><b>When to use it</b><p>Use it for the aggravating activity or context identified in your story—not automatically all day and all night.</p></div><div class="planStep"><b>Confirm the fit</b><p>It should feel supportive without creating pressure, numbness, tingling, color change, or circulation concerns.</p></div><div class="planStep"><b>Wear and care</b><p>Apply it to clean, dry skin and follow the label for positioning, cleaning, wear time, and contraindications.</p></div></div><p class="planFinePrint">Keneflex highlights the directions most relevant to your situation. The manufacturer label and any professional instructions remain controlling.</p>'
+      body: '<p><b>' + escapeHtml(support.name) + '</b> was selected for this product role.</p><div class="planSteps"><div class="planStep"><b>Best use</b><p>' + escapeHtml(support.guide) + '</p></div><div class="planStep"><b>Confirm the fit</b><p>It should feel supportive without creating pressure, numbness, tingling, color change, or circulation concerns.</p></div><div class="planStep"><b>Label controls</b><p>Follow the package for positioning, cleaning, wear time, and contraindications.</p></div></div><p class="planFinePrint">Keneflex highlights the directions most relevant to your selection. The manufacturer label and any professional instructions remain controlling.</p>'
     });
 
     if (cold || topical) modules.push({
       id: 'recovery',
       title: 'How to use your recovery product',
       summary: 'When and how to use the additional product selected for your situation.',
-      body: (cold ? '<div class="planComponent"><b>Reusable cold recovery</b><p>Use after an aggravating activity when cold feels helpful, following the product directions and protecting the skin.</p></div>' : '') +
-        (topical ? '<div class="planComponent"><b>Temporary topical comfort</b><p>Use only as directed on intact skin. Do not apply beneath the support.</p></div>' : '') +
+      body: (cold ? '<div class="planComponent"><b>' + escapeHtml(cold.name) + '</b><p>' + escapeHtml(cold.guide) + '</p></div>' : '') +
+        (topical ? '<div class="planComponent"><b>' + escapeHtml(topical.name) + '</b><p>' + escapeHtml(topical.guide) + '</p></div>' : '') +
         '<p class="planFinePrint">Only products actually selected and currently offered by Keneflex appear here. Follow each manufacturer label for exact use and warnings.</p>'
     });
 
@@ -638,6 +693,6 @@
     $('#modal').addEventListener('click', event => { if (event.target === $('#modal')) $('#modal').classList.add('hidden'); });
   }
 
-  root.KeneflexParticipant = Object.freeze({ model, PRODUCTS, total, lines, activeProblem, renderSolution, selectPlan });
+  root.KeneflexParticipant = Object.freeze({ model, PRODUCTS, CATALOG, total, lines, activeProblem, renderSolution, selectPlan });
   bind();
 })(window);
