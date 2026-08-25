@@ -649,7 +649,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.waitForSelector('#solutionView:not(.hidden)');
     assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
     assert.equal(await page.locator('#supportPrice').innerText(), '$19.99');
-    assert.equal(await page.locator('#total').innerText(), '$19.99');
+    assert.equal(await page.locator('#total').innerText(), '$40.99');
+    assert.equal(await page.locator('[data-plan="recovery"]').getAttribute('aria-pressed'), 'true');
     assert((await content('#whyRows')).includes('right —'));
     assert(!(await page.locator('.kfxBuy').isDisabled()));
   });
