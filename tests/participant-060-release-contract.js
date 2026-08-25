@@ -22,9 +22,9 @@ check(loadedScripts[1] === 'prototype-046b-critical-state.js', 'critical provide
 check(loadedScripts[2] === 'participant-controller.js', 'single participant controller loads last');
 check((loader.match(/<script defer/g) || []).length === 3, 'consolidated runtime starts after the legacy inline parser phase');
 check(!/prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/.test(loader), 'legacy patch stack is absent from production loader');
-check(route.includes("searchParams.set('participant','071')"), 'participant route matches modular-plan release');
+check(route.includes("searchParams.set('participant','080')"), 'participant route matches launch-catalog release');
 check(route.includes("searchParams.set('build',String(stamp))"), 'participant route cache-busts each launch');
-check(html.includes('participant-consolidated.css?v=072'), 'consolidated stylesheet is loaded');
+check(html.includes('participant-consolidated.css?v=080'), 'consolidated stylesheet is loaded');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'legacy inline commerce runtime is removed');
 check(controller.includes('const model ='), 'one authoritative participant model exists');
 check(controller.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
@@ -33,7 +33,7 @@ check(controller.includes('function checkout()'), 'checkout has one controller o
 check(controller.includes('function openPlan()'), 'plan page has one controller owner');
 check(controller.includes('function adjust(kind)'), 'solution adjustment has one controller owner');
 check(controller.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
-check(controller.includes("model.cart.support.disposition = 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
+check(controller.includes("model.cart.support.disposition = model.recommendation.eligible") && controller.includes("? 'BUY' : 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
 check(controller.includes('Provider direction protected'), 'provider direction is visible in recommendation reasoning');
 check(!controller.includes('classifyOwnedProduct') && !controller.includes("'KEEP'"), 'unverified owned products cannot change recommendations');
 check(html.includes('Remove the wrist/thumb support') && html.includes('Remove the cold wrap') && html.includes('Remove the topical gel'), 'consumer can remove each recommended item');
@@ -56,6 +56,11 @@ check(controller.includes('data-print-module') && controller.includes('Print pro
 check(controller.includes('Only products actually selected and currently offered by Keneflex appear here'), 'guide is limited to selected launch offerings');
 check(!/investigat/i.test(controller), 'consumer controller no longer uses investigate terminology');
 check(html.includes('data-plan="recovery"') && html.includes('Keneflex recommended'), 'middle option supports an honest Keneflex recommendation treatment');
+check(controller.includes('const CATALOG = Object.freeze') && controller.includes("recovery: 'cold'") && controller.includes("comfort: 'gel'"), 'launch catalog separates stable roles from selected products');
+check(controller.includes("model.selection.recovery") && controller.includes("? 'heat' : 'cold'"), 'recovery selection can choose heat or cold');
+check(controller.includes("model.selection.comfort") && controller.includes("? 'patch' : 'gel'"), 'comfort selection can choose patch or gel');
+check(controller.includes("wantsOnlySupport") && controller.includes("model.recommendedPlan"), 'known-want support-only stories can use the Essential path');
+check(controller.includes('disabled aria-disabled="true"') && controller.includes('model.comfortEligible'), 'ineligible topical comfort cannot be selected');
 
 console.log(`\n${total - failed}/${total} consolidated release assertions passed`);
 process.exit(failed ? 1 : 0);
