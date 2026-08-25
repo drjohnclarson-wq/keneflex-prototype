@@ -375,8 +375,8 @@
   function renderSolution() {
     const rec = model.recommendation;
     const hasReview = lines().some(line => line.disposition === 'REVIEW');
-    $('#solutionView .solHero h1').textContent = hasReview ? 'Review this before buying.' : 'Built to help you get back to what you do.';
-    $('#solutionLead').textContent = hasReview ? rec.lead : 'Keneflex evaluates the options and turns your story into one connected plan—with clear guidance for what to use, what to do, and what to watch.';
+    $('#solutionView .solHero h1').textContent = hasReview ? 'Review this before buying.' : 'The right product for what you described.';
+    $('#solutionLead').textContent = hasReview ? rec.lead : 'Keneflex compares the relevant options and recommends what to buy, what to keep, or when buying something is not the right next step.';
     const wornBrace = wornBraceExplanation();
     $('#confidenceCopy').textContent = rec.neuro
       ? 'A product should not be treated as selected until it satisfies the altered-feeling pattern as well as the pain and activity requirements.'
