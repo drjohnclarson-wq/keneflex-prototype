@@ -70,10 +70,10 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-plan="recovery"] .tierProduct img').count(), 2);
     assert.equal(await page.locator('[data-plan="complete"] .tierProduct img').count(), 3);
     assert.equal(await page.locator('.tierPlanIcon').count(), 3);
-    assert.equal(await page.locator('.tierIncludes span').filter({ hasText: 'Personalized Keneflex Plan' }).count(), 3);
+    assert.equal(await page.locator('.tierIncludes span').filter({ hasText: 'Personalized product guide' }).count(), 3);
     assert(await page.evaluate(() => !!(document.querySelector('.planChooser').compareDocumentPosition(document.querySelector('.purchaseBlock')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'purchase action must follow plan cards');
     assert.equal(await content('#planName'), 'Essential');
-    assert.equal(await content('#selectionCount'), '1 product + Personalized Keneflex Plan');
+    assert.equal(await content('#selectionCount'), '1 product + personalized product guide');
     assert.equal(initial.scripts.length, 4); // loader + engine + critical invariants + controller
     assert(!initial.observers, 'legacy observer runtime is active');
     assert(!banned.test(initial.text), 'internal language is visible');
@@ -81,7 +81,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.click('[data-plan="recovery"]');
     assert.equal(await page.locator('#total').innerText(), '$40.99');
     assert.equal(await content('#planName'), 'Recommended');
-    assert.equal(await content('#selectionCount'), '2 products + Personalized Keneflex Plan');
+    assert.equal(await content('#selectionCount'), '2 products + personalized product guide');
     assert((await page.locator('.kfxBuy').innerText()).includes('$40.99'));
 
     await page.click('#kfxPlanBtn');
@@ -90,18 +90,18 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await content('.finalSelection h2'), 'Recommended');
     assert((await content('.finalSelection')).includes('$40.99'));
     assert.equal(await page.locator('.finalSelection .planLine').count(), 3);
-    assert((await content('.finalSelection .planIncluded')).includes('Personalized Keneflex Plan'));
+    assert((await content('.finalSelection .planIncluded')).includes('Personalized product guide'));
     assert((await content('.finalSelection .planIncluded')).includes('Included'));
     assert((await content('.kfxFinalBuy')).includes('$40.99 total'));
-    assert((await page.locator('.kfxPlanPage').innerText()).includes('Workspace and device setup'));
+    assert(!(await page.locator('.kfxPlanPage').innerText()).includes('Workspace and device setup'));
     assert.equal(await page.locator('[data-plan-print]').count(), 1);
-    assert((await page.locator('.kfxPlanPage').innerText()).includes('Exercises and stretches'));
+    assert(!(await page.locator('.kfxPlanPage').innerText()).includes('Exercises and stretches'));
     await page.click('[data-plan-close]');
 
     await page.click('.kfxBuy');
     assert.equal(await page.locator('.kfxCheckout .totalx span:last-child').innerText(), '$40.99');
     assert.equal(await page.locator('.kfxCheckout .rowx:not(.planIncluded)').count(), 2);
-    assert((await content('.kfxCheckout .planIncluded')).includes('Personalized Keneflex Plan'));
+    assert((await content('.kfxCheckout .planIncluded')).includes('Personalized product guide'));
     assert((await content('.kfxCheckout .planIncluded')).includes('Included'));
   });
 
@@ -179,7 +179,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.click('#kfxPlanBtn');
     assert.equal(await page.locator('.kfxPlanPage .planLine:not(.planIncluded)').first().locator('b').innerText(), '$19.99');
     assert((await page.locator('.kfxPlanPage').innerText()).includes('right —'));
-    assert((await page.locator('.kfxPlanPage').innerText()).includes('Exercises and stretches'));
+    assert(!(await page.locator('.kfxPlanPage').innerText()).includes('Exercises and stretches'));
     assert((await page.locator('.kfxPlanPage').innerText()).includes('Print this topic'));
     await page.click('[data-plan-close]');
   });

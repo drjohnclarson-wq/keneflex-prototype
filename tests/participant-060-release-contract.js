@@ -24,7 +24,7 @@ check((loader.match(/<script defer/g) || []).length === 3, 'consolidated runtime
 check(!/prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/.test(loader), 'legacy patch stack is absent from production loader');
 check(route.includes("searchParams.set('participant','071')"), 'participant route matches modular-plan release');
 check(route.includes("searchParams.set('build',String(stamp))"), 'participant route cache-busts each launch');
-check(html.includes('participant-consolidated.css?v=071'), 'consolidated stylesheet is loaded');
+check(html.includes('participant-consolidated.css?v=072'), 'consolidated stylesheet is loaded');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'legacy inline commerce runtime is removed');
 check(controller.includes('const model ='), 'one authoritative participant model exists');
 check(controller.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
@@ -44,16 +44,16 @@ check(!controller.includes("window.open('', '_blank')"), 'plan renders in the re
 check(controller.includes('function selectPlan(plan)') && html.includes('data-plan="core"'), 'core, recovery, and complete choices have one controller owner');
 check(html.includes('$19.99 <small>total</small>') && html.includes('$40.99 <small>total</small>') && html.includes('$52.98 <small>total</small>'), 'all plan cards state inclusive totals');
 check(html.includes('+$21.00:') && html.includes('+$11.99:'), 'higher plans distinguish incremental cost from total');
-check(controller.includes('Review my complete Keneflex Plan'), 'complete plan action uses consumer language');
-check((html.match(/Personalized Keneflex Plan/g) || []).length >= 4, 'Keneflex Plan appears in every package and the selected summary');
+check(controller.includes('Review my personalized product guide'), 'product guide action uses consumer language');
+check(html.includes('personalized product guide'), 'product guide appears in the selected summary');
 check(html.includes('Most comprehensive') && html.includes('tierVisuals'), 'complete package and cumulative product visuals are explicit');
 check(!html.includes('Core is enough to start') && !html.includes('optional additions'), 'package presentation does not minimize recovery or comfort');
 check(controller.includes('function applyConsumerCopy()'), 'consumer copy is authored once without observer cleanup');
 check(!controller.includes('MutationObserver'), 'participant controller does not repair itself with DOM observers');
 check(!controller.includes('setTimeout('), 'participant controller does not use timing patches for synchronization');
-check(controller.includes("'Exercises and stretches'") && controller.includes("title: 'Workspace and device setup'"), 'complete plan includes movement and conditional ergonomics topics');
-check(controller.includes('data-print-module') && controller.includes('Print complete plan'), 'complete plan and individual topics are printable');
-check(controller.includes('heat, TENS') && controller.includes('no recovery product'), 'recovery architecture is not described as one fixed bundle');
+check(!controller.includes("'Exercises and stretches'") && !controller.includes("title: 'Workspace and device setup'"), 'product guide excludes rehabilitation and ergonomics programming');
+check(controller.includes('data-print-module') && controller.includes('Print product guide'), 'product guide and individual topics are printable');
+check(controller.includes('Only products actually selected and currently offered by Keneflex appear here'), 'guide is limited to selected launch offerings');
 check(!/investigat/i.test(controller), 'consumer controller no longer uses investigate terminology');
 check(html.includes('data-plan="recovery"') && html.includes('Keneflex recommended'), 'middle option supports an honest Keneflex recommendation treatment');
 

@@ -397,8 +397,8 @@
     $('#planName').textContent = planLabel();
     const summaryCount = lines().filter(line => line.disposition === 'BUY' || line.disposition === 'REVIEW').length;
     $('#selectionCount').textContent = hasReview
-      ? summaryCount + (summaryCount === 1 ? ' product awaiting review' : ' products awaiting review') + ' + Personalized Keneflex Plan'
-      : summaryCount + (summaryCount === 1 ? ' product' : ' products') + ' + Personalized Keneflex Plan';
+      ? summaryCount + (summaryCount === 1 ? ' product awaiting review' : ' products awaiting review') + ' + personalized product guide'
+      : summaryCount + (summaryCount === 1 ? ' product' : ' products') + ' + personalized product guide';
     $$('[data-plan]').forEach(button => {
       const selected = button.dataset.plan === model.selectedPlan;
       const recommended = button.dataset.plan === model.recommendedPlan;
@@ -471,7 +471,7 @@
       plan = document.createElement('button');
       plan.id = 'kfxPlanBtn';
       plan.className = 'primary kfxPlanBtn';
-      plan.textContent = 'Review my complete Keneflex Plan →';
+      plan.textContent = 'Review my personalized product guide →';
       plan.addEventListener('click', openPlan);
       totalBlock.appendChild(plan);
     }
@@ -488,7 +488,7 @@
     const woundWarning = model.woundAssessment === 'minor'
       ? '<div class="kfxSafetyNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a brace or topical pain product directly over unprotected broken skin.</div>'
       : '';
-    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your Keneflex plan</h2><div class="rowx planIncluded"><span>Personalized Keneflex Plan</span><b>Included</b></div>' + woundWarning + combinationWarning + '<div>' +
+    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your Keneflex purchase</h2><div class="rowx planIncluded"><span>Personalized product guide</span><b>Included</b></div>' + woundWarning + combinationWarning + '<div>' +
       selected.map(line => '<div class="rowx"><span>' + line.name + '</span><b>' + money(line.price) + '</b></div>').join('') +
       '</div><div class="totalx"><span>Total</span><span>' + money(total()) + '</span></div><div class="actions"><button class="primary" data-checkout-complete>Continue →</button><button class="secondary" data-checkout-close>Go back</button></div><p class="micro">This test will not place an order or charge you.</p></section>';
     document.body.appendChild(overlay);
@@ -499,14 +499,7 @@
     });
   }
 
-  function fullStoryText() {
-    return [model.opening, ...model.answers].join(' ').toLowerCase();
-  }
-
   function planModules(thread, selected) {
-    const story = fullStoryText();
-    const digital = /\b(?:typing|computer|keyboard|mouse|laptop|desktop|phone|texting|scrolling)\b/.test(story);
-    const sport = /\b(?:pickleball|tennis|golf|paddle|racquet|racket|gripping|twisting)\b/.test(story);
     const provider = model.recommendation.provider;
     const support = selected.find(line => line.id === 'support');
     const cold = selected.find(line => line.id === 'cold');
@@ -515,59 +508,34 @@
 
     modules.push({
       id: 'start',
-      title: 'Your starting plan',
-      summary: 'The coordinated first steps and what each part is meant to do.',
+      title: 'Your recommendation',
+      summary: 'What Keneflex selected and the role each product is meant to perform.',
       body: '<p><b>Area:</b> ' + escapeHtml(model.recommendation.locations || 'the area you described') + '</p>' +
-        '<ol class="planChecklist"><li>Reduce the activity or position that repeatedly aggravates the area.</li><li>Use only the support or recovery components selected for this story.</li><li>Use the movement guidance below without forcing symptoms.</li><li>Track whether function and activity tolerance improve.</li></ol>' +
+        '<ol class="planChecklist"><li>Use only the products selected for the situation you described.</li><li>Follow the product-specific fit and use guidance in this guide.</li><li>Follow the manufacturer label and any professional instructions if they differ.</li><li>Reassess if the product does not fit, creates new symptoms, or is not helping as expected.</li></ol>' +
         (provider ? '<div class="kfxPlanNotice"><b>Provider direction controls.</b> ' + escapeHtml(provider) + ' Keneflex will not substitute a conflicting product or use schedule.</div>' : '')
-    });
-
-    modules.push({
-      id: 'movement',
-      title: model.recommendation.neuro ? 'Exercises and stretches — review needed' : 'Exercises and stretches',
-      summary: model.recommendation.neuro ? 'Generic exercise guidance is withheld because altered feeling can change what fits.' : 'Comfortable movements selected for this wrist and thumb pattern.',
-      body: model.recommendation.neuro
-        ? '<div class="kfxPlanNotice"><b>Do not add a generic nerve-glide or aggressive stretch.</b> The altered-feeling pattern needs review before Keneflex selects a specific exercise sequence.</div>'
-        : '<div class="movementGrid"><article><b>Relax and open the hand</b><p>After gripping or sustained device use, soften the grip, open the fingers comfortably, then relax. Repeat 5 times without forcing a stretch.</p></article><article><b>Comfortable thumb motion</b><p>Move the thumb toward each fingertip through a comfortable range. Complete 3 slow rounds. Stop before a painful end range.</p></article><article><b>Gentle wrist reset</b><p>With the forearm supported, return the wrist toward a relaxed, straight position. Hold 5 seconds and repeat 5 times.</p></article></div><div class="kfxPlanStop"><b>Stop the movement</b> if it meaningfully increases pain, numbness, tingling, weakness, swelling, or symptoms that do not settle after stopping.</div>'
     });
 
     if (support) modules.push({
       id: 'support',
       title: 'How to use your support',
-      summary: 'Fit, timing, skin checks, and the job this support is meant to perform.',
-      body: '<p><b>' + escapeHtml(support.name) + '</b> was selected to support the required area while preserving useful movement.</p><div class="planSteps"><div class="planStep"><b>Use it for the selected role</b><p>Use it during the aggravating activity or context identified in your plan—not automatically all day and all night.</p></div><div class="planStep"><b>Check the fit</b><p>It should not create new pressure, numbness, tingling, color change, or circulation concerns.</p></div><div class="planStep"><b>Keep products separate</b><p>Use the support on clean, dry skin. Do not place it over topical gel or unprotected broken skin.</p></div></div><p class="planFinePrint">The exact product label and any professional instructions remain controlling for wear time, cleaning, contraindications, and product-specific use.</p>'
+      summary: 'The most relevant fit, timing, care, and safety directions for your selection.',
+      body: '<p><b>' + escapeHtml(support.name) + '</b> was selected to support the required area while preserving useful movement.</p><div class="planSteps"><div class="planStep"><b>When to use it</b><p>Use it for the aggravating activity or context identified in your story—not automatically all day and all night.</p></div><div class="planStep"><b>Confirm the fit</b><p>It should feel supportive without creating pressure, numbness, tingling, color change, or circulation concerns.</p></div><div class="planStep"><b>Wear and care</b><p>Apply it to clean, dry skin and follow the label for positioning, cleaning, wear time, and contraindications.</p></div></div><p class="planFinePrint">Keneflex highlights the directions most relevant to your situation. The manufacturer label and any professional instructions remain controlling.</p>'
     });
 
     if (cold || topical) modules.push({
       id: 'recovery',
-      title: 'Recovery and comfort',
-      summary: 'How the recovery components selected for this story fit into the plan.',
+      title: 'How to use your recovery product',
+      summary: 'When and how to use the additional product selected for your situation.',
       body: (cold ? '<div class="planComponent"><b>Reusable cold recovery</b><p>Use after an aggravating activity when cold feels helpful, following the product directions and protecting the skin.</p></div>' : '') +
         (topical ? '<div class="planComponent"><b>Temporary topical comfort</b><p>Use only as directed on intact skin. Do not apply beneath the support.</p></div>' : '') +
-        '<p class="planFinePrint">Recovery is not a fixed Keneflex bundle. Depending on the story, a plan may instead use heat, TENS, another recovery method, something already owned, or no recovery product.</p>'
-    });
-
-    modules.push({
-      id: 'activity',
-      title: 'Activity modifications',
-      summary: 'No-cost changes intended to reduce the provoking load without unnecessarily stopping everything.',
-      body: sport
-        ? '<div class="planSteps"><div class="planStep"><b>Reduce provoking volume</b><p>Temporarily shorten sessions or add recovery time rather than repeatedly pushing through increasing symptoms.</p></div><div class="planStep"><b>Reduce grip and twist load</b><p>Avoid squeezing harder than the task requires. Pause when gripping or twisting clearly escalates symptoms.</p></div><div class="planStep"><b>Return by response</b><p>Increase activity only when function and next-day symptoms are stable or improving.</p></div></div>'
-        : '<div class="planSteps"><div class="planStep"><b>Break up repetition</b><p>Use shorter work periods and change position before symptoms build.</p></div><div class="planStep"><b>Reduce unnecessary force</b><p>Keep grip and wrist effort as light as the task allows.</p></div><div class="planStep"><b>Return by response</b><p>Increase activity only when function and next-day symptoms are stable or improving.</p></div></div>'
-    });
-
-    if (digital) modules.push({
-      id: 'ergonomics',
-      title: 'Workspace and device setup',
-      summary: 'Relevant positioning and workload changes based on the device use you described.',
-      body: '<div class="planSteps"><div class="planStep"><b>Bring the task closer</b><p>Position the keyboard, mouse, or phone so the forearm can stay supported and the wrist does not have to reach or bend continuously.</p></div><div class="planStep"><b>Reduce sustained holding</b><p>Prop the phone or alternate hands when prolonged holding or thumb reach contributes to symptoms.</p></div><div class="planStep"><b>Change the input load</b><p>Use shortcuts, voice input, or brief task rotation when repeated clicking, scrolling, or typing is a clear trigger.</p></div></div><p class="planFinePrint">Keneflex should recommend purchasable ergonomic equipment only after matching the specific device, hand size, workspace, and provoking motion—not by automatically adding generic accessories.</p>'
+        '<p class="planFinePrint">Only products actually selected and currently offered by Keneflex appear here. Follow each manufacturer label for exact use and warnings.</p>'
     });
 
     modules.push({
       id: 'followup',
-      title: 'Progress and reassessment',
-      summary: 'What improvement, partial improvement, or failure means.',
-      body: '<div class="planSteps"><div class="planStep"><b>Improving</b><p>Function, activity tolerance, and symptom recovery trend in the right direction. Continue and gradually progress.</p></div><div class="planStep"><b>Partly improving</b><p>Identify which part helped and which trigger or requirement remains unresolved before adding more products.</p></div><div class="planStep"><b>Not improving</b><p>Reassess the story, fit, product role, and whether professional evaluation is now the better next step.</p></div></div>'
+      title: 'Check whether it is working',
+      summary: 'How to judge the product fit and when the recommendation should be reconsidered.',
+      body: '<div class="planSteps"><div class="planStep"><b>Good fit</b><p>The product performs its intended role without creating new pressure, skin, movement, or circulation problems.</p></div><div class="planStep"><b>Needs adjustment</b><p>Recheck sizing, placement, wear time, and whether you are using it for the situation it was selected for.</p></div><div class="planStep"><b>Not helping</b><p>Reassess the product match rather than automatically adding more products. Professional evaluation may be the better next step.</p></div></div>'
     });
 
     modules.push({
@@ -598,7 +566,7 @@
     const overlay = document.createElement('div');
     overlay.className = 'kfxPlanOverlay';
     const hasReview = selected.some(line => line.disposition === 'REVIEW');
-    overlay.innerHTML = '<div class="kfxPlanPage"><header><div class="logo">KENEFLEX</div><div class="planHeaderActions"><button class="secondary" type="button" data-plan-print>Print complete plan</button><button class="secondary" type="button" data-plan-close>Back to recommendation</button></div></header><main><section class="planHero"><div class="eyebrow">Your personalized Keneflex Plan</div><h1>One plan. Open only what you need.</h1><p>Review or print the complete plan, or use one relevant topic at a time so the guidance stays manageable.</p></section><section class="card planAtGlance"><h2>Your plan at a glance</h2><p><b>Area:</b> ' + escapeHtml(model.recommendation.locations || 'as described') + '</p><div class="planTopicNav">' + modules.map(module => '<button type="button" data-plan-jump="' + escapeHtml(module.id) + '">' + escapeHtml(module.title) + '</button>').join('') + '</div></section><section class="planModules">' + modules.map(renderPlanModule).join('') + '</section><section class="card finalSelection"><div class="finalSelectionTop"><div><div class="eyebrow">Your selected purchase</div><h2>' + escapeHtml(planLabel()) + '</h2><p>Your Keneflex Plan is included. Product totals do not assign a $0 value to the plan.</p></div><div class="finalTotal">' + money(total()) + '<small>product total</small></div></div><div class="finalProducts"><div class="planLine planIncluded"><span>Personalized Keneflex Plan</span><b>Included</b></div>' + selected.map(line => '<div class="planLine"><span>' + escapeHtml(line.name) + '</span><b>' + (line.disposition === 'BUY' ? money(line.price) : 'Review') + '</b></div>').join('') + '</div><button class="primary kfxFinalBuy"' + (hasReview ? ' disabled' : '') + '>' + (hasReview ? 'Review needed before checkout' : 'Buy the ' + escapeHtml(planLabel()) + ' plan — ' + money(total()) + ' total') + '</button></section></main></div>';
+    overlay.innerHTML = '<div class="kfxPlanPage"><header><div class="logo">KENEFLEX</div><div class="planHeaderActions"><button class="secondary" type="button" data-plan-print>Print product guide</button><button class="secondary" type="button" data-plan-close>Back to recommendation</button></div></header><main><section class="planHero"><div class="eyebrow">Your personalized Keneflex product guide</div><h1>Use the products selected for you with confidence.</h1><p>See the directions that matter most for your situation, while keeping the manufacturer label and any professional instructions in control.</p></section><section class="card planAtGlance"><h2>Your guide at a glance</h2><p><b>Area:</b> ' + escapeHtml(model.recommendation.locations || 'as described') + '</p><div class="planTopicNav">' + modules.map(module => '<button type="button" data-plan-jump="' + escapeHtml(module.id) + '">' + escapeHtml(module.title) + '</button>').join('') + '</div></section><section class="planModules">' + modules.map(renderPlanModule).join('') + '</section><section class="card finalSelection"><div class="finalSelectionTop"><div><div class="eyebrow">Your selected purchase</div><h2>' + escapeHtml(planLabel()) + '</h2><p>Your personalized product guide is included with the products selected for you.</p></div><div class="finalTotal">' + money(total()) + '<small>product total</small></div></div><div class="finalProducts"><div class="planLine planIncluded"><span>Personalized product guide</span><b>Included</b></div>' + selected.map(line => '<div class="planLine"><span>' + escapeHtml(line.name) + '</span><b>' + (line.disposition === 'BUY' ? money(line.price) : 'Review') + '</b></div>').join('') + '</div><button class="primary kfxFinalBuy"' + (hasReview ? ' disabled' : '') + '>' + (hasReview ? 'Review needed before checkout' : 'Buy the ' + escapeHtml(planLabel()) + ' plan — ' + money(total()) + ' total') + '</button></section></main></div>';
     document.body.appendChild(overlay);
     $('[data-plan-close]', overlay).addEventListener('click', () => overlay.remove());
     $('[data-plan-print]', overlay).addEventListener('click', () => printPlan(overlay, 'all'));
@@ -613,7 +581,7 @@
 
   function modal(key) {
     const content = {
-      how: '<h2>How Keneflex works</h2><p>Tell the story in your own words. Keneflex carries known facts forward, asks only what could change the decision, checks safety, evaluates the options, and builds one connected plan.</p>',
+      how: '<h2>How Keneflex works</h2><p>Tell us what is bothering you—or what kind of product you already want. Keneflex asks only what could change the choice or safety decision, compares the relevant options, and recommends what to buy, keep, or skip.</p>',
       approach: '<h2>Our approach</h2><p>Product fit, function, safety, limitations, and reasonable non-product options come before a purchase.</p>'
     }[key];
     if (!content) return;
@@ -622,6 +590,19 @@
   }
 
   function applyConsumerCopy() {
+    const guideNames = {
+      core: 'Support + product guide',
+      recovery: 'Support + recovery + product guide',
+      complete: 'Support + recovery + comfort + product guide'
+    };
+    $$('.planTier').forEach(card => {
+      const title = $(':scope > b', card);
+      const iconLabel = $('.tierPlanIcon small', card);
+      const includedGuide = $('.tierIncludes span', card);
+      if (title) title.textContent = guideNames[card.dataset.plan];
+      if (iconLabel) iconLabel.textContent = 'Product guide';
+      if (includedGuide) includedGuide.textContent = '✓ Personalized product guide';
+    });
     const trust = $('#solutionView .integrity');
     if (trust) trust.innerHTML = '<h2>Why trust this recommendation?</h2><p class="help">Keneflex compares what you described with product function, fit, safety, limitations, and reasonable non-product options before recommending what to buy.</p><p class="micro"><b>How Keneflex makes money:</b> Keneflex may earn money when some recommended products are purchased. That does not determine which product is recommended.</p>';
     const tune = $('#solutionView .tune');
