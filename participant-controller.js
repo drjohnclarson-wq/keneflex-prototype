@@ -31,6 +31,8 @@
     release: '0.8.0',
     story: Engine.createStore(),
     opening: '',
+    turns: [],
+    interpretationMode: 'deterministic-fallback',
     stage: 'intro',
     answers: [],
     safetyCleared: false,
@@ -47,6 +49,7 @@
     selectedPlan: 'core',
     recommendedPlan: 'core'
   };
+  const acknowledgedFamilies = new Set();
 
   function activeProblem() { return Engine.activeThread(model.story); }
   function storyThreads() { return model.story.order.map(key => model.story.threads[key]).filter(Boolean); }
@@ -89,14 +92,35 @@
     $('#conversation').appendChild(bubble);
   }
 
+  async function refreshInterpretation(fallbackText) {
+    try {
+      const response = await fetch('./api/interpret-story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ turns: model.turns }),
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!response.ok) throw new Error('interpretation unavailable');
+      const payload = await response.json();
+      if (!payload?.interpretation?.problems?.length) throw new Error('empty interpretation');
+      model.story = Engine.importInterpretation(payload.interpretation, model.turns.filter(turn => turn.role === 'user').map(turn => turn.content));
+      model.interpretationMode = 'ai';
+    } catch (_) {
+      Engine.ingest(model.story, fallbackText);
+      model.interpretationMode = 'deterministic-fallback';
+    }
+  }
+
   function composer(question) {
     const interaction = $('#interaction');
     interaction.innerHTML = '<textarea id="reply" aria-label="Your answer" placeholder="Answer in your own words."></textarea><div class="row"><button id="send" class="primary">Continue →</button></div>';
-    const submit = () => {
+    const submit = async () => {
       const value = $('#reply').value.trim();
       if (!value) return;
+      $('#send').disabled = true;
       addBubble('user', value);
       model.answers.push(value);
+      model.turns.push({ role: 'user', content: value });
       const locationUncertain = /\b(?:i\s+)?(?:do not|don't|cannot|can't)\s+(?:know|tell|locate)|\b(?:i\s+)?(?:have\s+)?no idea\b|\bnot sure\b|\bunsure\b/i.test(value);
       const hasLocationDetail = /\b(?:palm|top|back|thumb|knuckle|crease|side|base|joint|finger|inside|outside|near|below|above)\b/i.test(value);
       if (question.concept === 'preciseLocation' && locationUncertain && !hasLocationDetail) {
@@ -105,14 +129,11 @@
         composer(question);
         return;
       }
-      if (question.concept === 'preciseLocation') {
+      await refreshInterpretation(value);
+      if (question.concept === 'preciseLocation' && model.interpretationMode !== 'ai') {
         const thread = activeProblem();
-        const parsedValue = value.replace(/\bback(?:\s+side)?\s+of\s+(?=(?:my|the)\s+(?:wrist|hand|thumb))/ig, 'posterior side of ');
-        Engine.ingest(model.story, parsedValue);
         if (thread && !Engine.known(thread, 'preciseLocation')) thread.locations.push(value);
         if (thread) model.story.active = threadKey(thread);
-      } else {
-        Engine.ingest(model.story, value);
       }
       interaction.innerHTML = '';
       advance();
@@ -160,7 +181,13 @@
       }
     }
     if (!question) return advance();
-    addBubble('ai', '<p>' + regionalMessage(thread) + '</p><p><b>' + question.text + '</b></p>', true);
+    const family = thread?.family;
+    const regional = family && !acknowledgedFamilies.has(family) ? regionalMessage(thread) : '';
+    if (family) acknowledgedFamilies.add(family);
+    const clarification = (model.story.ai?.clarifications || []).find(item => item.concept === question.concept);
+    if (clarification?.question) question = { ...question, text: clarification.question };
+    model.turns.push({ role: 'assistant', content: question.text });
+    addBubble('ai', (regional ? '<p>' + escapeHtml(regional) + '</p>' : '') + '<p><b>' + escapeHtml(question.text) + '</b></p>', true);
     composer(question);
   }
 
@@ -677,11 +704,13 @@
     const opening = $('#opening');
     const openingButton = $('#openingBtn');
     opening.addEventListener('input', () => { openingButton.disabled = opening.value.trim().length < 3; });
-    openingButton.addEventListener('click', () => {
+    openingButton.addEventListener('click', async () => {
       model.opening = opening.value.trim();
-      Engine.ingest(model.story, model.opening);
+      model.turns.push({ role: 'user', content: model.opening });
       addBubble('user', model.opening);
       showStage('chat');
+      openingButton.disabled = true;
+      await refreshInterpretation(model.opening);
       advance();
     });
     $('#planPreviewBtn')?.addEventListener('click', openPlan);
@@ -694,6 +723,6 @@
     $('#modal').addEventListener('click', event => { if (event.target === $('#modal')) $('#modal').classList.add('hidden'); });
   }
 
-  root.KeneflexParticipant = Object.freeze({ model, PRODUCTS, CATALOG, total, lines, activeProblem, renderSolution, selectPlan });
+  root.KeneflexParticipant = Object.freeze({ model, PRODUCTS, CATALOG, total, lines, activeProblem, renderSolution, selectPlan, refreshInterpretation });
   bind();
 })(window);
