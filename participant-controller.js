@@ -129,7 +129,10 @@
         composer(question);
         return;
       }
-      await refreshInterpretation(value);
+      const fallbackValue = question.concept === 'preciseLocation'
+        ? value.replace(/\bback(?:\s+side)?\s+of\s+(?=(?:my|the)\s+(?:wrist|hand|thumb))/ig, 'posterior side of ')
+        : value;
+      await refreshInterpretation(fallbackValue);
       if (question.concept === 'preciseLocation' && model.interpretationMode !== 'ai') {
         const thread = activeProblem();
         if (thread && !Engine.known(thread, 'preciseLocation')) thread.locations.push(value);
