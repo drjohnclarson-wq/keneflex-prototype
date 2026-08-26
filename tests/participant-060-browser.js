@@ -49,13 +49,17 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
       laterality: 'It is on the right.',
       sensoryDistribution: 'There is no numbness or tingling.'
     };
-    for (let step = 0; step < 8 && await page.locator('#interaction #reply').count(); step += 1) {
-      const concept = await page.locator('#interaction').getAttribute('data-concept');
-      await page.fill('#reply', overrides[concept] || defaults[concept] || 'It is use-related and has been present for four weeks.');
-      await page.click('#send');
-      await page.waitForTimeout(30);
+    for (let step = 0; step < 12 && !(await page.locator('#wristMeasure').count()); step += 1) {
+      if (await page.locator('#interaction #reply').count()) {
+        const concept = await page.locator('#interaction').getAttribute('data-concept');
+        await page.fill('#reply', overrides[concept] || defaults[concept] || 'It is use-related and has been present for four weeks.');
+        await page.click('#send');
+      } else if (await page.locator('[data-safety="clear"]').count()) {
+        await page.click('[data-safety="clear"]');
+      }
+      await page.waitForTimeout(40);
     }
-    if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
+    assert(await page.locator('#wristMeasure').count(), 'intake did not reach the fit step');
     await page.fill('#wristMeasure', value);
     await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
@@ -84,7 +88,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-plan="recovery"]').getAttribute('aria-pressed'), 'true');
     assert((await content('[data-plan="core"]')).includes('$19.99 total'));
     assert((await content('[data-plan="recovery"]')).includes('$40.99 total'));
-    assert((await content('[data-plan="recovery"]')).includes('+$21.00: adds reusable cold recovery'));
+    assert((await content('[data-plan="recovery"]')).includes('+$21.00: adds reusable flexible cold recovery'));
     assert((await content('[data-plan="complete"]')).includes('$52.98 total'));
     assert((await content('[data-plan="complete"]')).includes('+$11.99: adds temporary topical comfort'));
     assert((await content('[data-plan="complete"]')).includes('Most comprehensive'));
@@ -736,7 +740,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(message.includes('may need professional evaluation'));
   });
 
-  await scenario('wrist-only-stiffness-selects-heat', 'I already know I want a wrist brace. My left wrist has been stiff and tight in the morning for four weeks, but my thumb is fine. It built up gradually and typing makes it worse. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
+  await scenario('wrist-only-stiffness-selects-heat', 'I already know I want a wrist brace. The palm side of my left wrist has been stiff and tight in the morning for four weeks. It built up gradually and typing makes it worse. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
     await finishIntakeAndMeasure('7.0', { preciseLocation: 'It is centered on the palm side of my left wrist.' });
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
     assert((await content('#supportItem .planName')).includes('Adjustable'));
@@ -753,7 +757,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await content('#total'), '$53.98');
   });
 
-  await scenario('known-want-support-only-selects-essential', 'I only want help choosing a wrist support. My right wrist has ached when I type for four weeks, and my thumb does not hurt. It built up gradually. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
+  await scenario('known-want-support-only-selects-essential', 'I only want help choosing a wrist support. The palm side of my right wrist has hurt when I type for four weeks. It built up gradually. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
     await finishIntakeAndMeasure('7.0', { preciseLocation: 'It is centered on the palm side of my right wrist.', symptom: 'My wrist aches with use, but my thumb does not hurt.' });
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
     assert.equal(await content('#planName'), 'Essential');
