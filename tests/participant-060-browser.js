@@ -32,11 +32,19 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     if (await page.locator('#interaction[data-concept="preciseLocation"] #reply').count()) {
       await page.fill('#reply', 'It is centered at the base of my thumb and thumb side of my wrist.');
       await page.click('#send');
+      await waitForIntakeSettled();
     }
     if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
     await page.fill('#wristMeasure', value);
     await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
+  }
+
+  async function waitForIntakeSettled() {
+    await page.waitForFunction(() => {
+      const send = document.querySelector('#send');
+      return !send || !send.disabled;
+    }, null, { timeout: 10000 });
   }
 
   async function finishIntakeAndMeasure(value = '7.0', overrides = {}) {
@@ -184,6 +192,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!/which side|how long|make it worse/i.test(before), 'known story facts were asked again');
     await page.fill('#reply', 'It is centered at the base of my thumb and thumb side of my wrist.');
     await page.click('#send');
+    await waitForIntakeSettled();
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(!/major recent injury|swelling|loss of feeling|weakness/i.test(safety), 'known safety negatives were asked again');
     assert(/visible deformity|open wound/i.test(safety));
@@ -251,6 +260,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
     await page.fill('#reply', 'On the palm side near the thumb knuckle.');
     await page.click('#send');
+    await waitForIntakeSettled();
     assert.equal(await page.locator('#interaction #reply').count(), 0, 'precise-location question repeated');
     assert(await page.locator('[data-safety="clear"]').count());
   });
@@ -331,10 +341,12 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
     await page.fill('#reply', "I don't know.");
     await page.click('#send');
+    await waitForIntakeSettled();
     assert(await page.locator('#interaction[data-concept="preciseLocation"] #reply').count());
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
     await page.fill('#reply', 'On the palm side near the thumb knuckle.');
     await page.click('#send');
+    await waitForIntakeSettled();
     assert(await page.locator('[data-safety="clear"]').count());
   });
 
@@ -349,6 +361,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('uncertainty-with-location-is-accepted', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
     await page.fill('#reply', 'I have no idea what the spot is called, but it is on the palm side near my thumb knuckle.');
     await page.click('#send');
+    await waitForIntakeSettled();
     assert(await page.locator('[data-safety="clear"]').count());
   });
 
@@ -485,6 +498,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('posterior-wrist-location-stays-on-hand-thread', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
     await page.fill('#reply', 'It is on the back of my wrist near the thumb.');
     await page.click('#send');
+    await waitForIntakeSettled();
     assert(await page.locator('[data-safety="clear"]').count());
     const summary = await page.evaluate(() => window.KeneflexParticipant.model.story.order.map(key => window.KeneflexParticipant.model.story.threads[key].family));
     assert.deepEqual(summary, ['hand']);
@@ -499,6 +513,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('precise-location-warning-sign-is-preserved', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
     await page.fill('#reply', 'On the palm side near my thumb, where I have an open cut.');
     await page.click('#send');
+    await waitForIntakeSettled();
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
     assert(message.includes('may need professional evaluation'));
@@ -508,6 +523,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('posterior-location-variant-stays-on-hand-thread', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
     await page.fill('#reply', 'It is on the back side of my wrist near the thumb.');
     await page.click('#send');
+    await waitForIntakeSettled();
     assert(await page.locator('[data-safety="clear"]').count());
     const families = await page.evaluate(() => window.KeneflexParticipant.model.story.order.map(key => window.KeneflexParticipant.model.story.threads[key].family));
     assert.deepEqual(families, ['hand']);
@@ -562,11 +578,13 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('location-help-does-not-create-back-problem', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
     await page.fill('#reply', "I don't know.");
     await page.click('#send');
+    await waitForIntakeSettled();
     const help = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(help.includes('top of the wrist'));
     assert(!help.includes('back of the wrist'));
     await page.fill('#reply', 'The top of my wrist near the thumb.');
     await page.click('#send');
+    await waitForIntakeSettled();
     assert(await page.locator('[data-safety="clear"]').count());
     const body = await page.locator('body').innerText();
     assert(!body.includes('different problem area'));
@@ -664,6 +682,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!(await page.locator('#conversation .bubble.ai').last().innerText()).includes('Self-care should pause here'));
     await page.fill('#reply', 'At the base of my thumb and along the thumb side of my wrist.');
     await page.click('#send');
+    await waitForIntakeSettled();
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0, 'fully denied warning signs were asked again');
     assert(await page.locator('#wristMeasure').count());
     await page.fill('#wristMeasure', '7');

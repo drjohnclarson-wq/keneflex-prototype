@@ -25,6 +25,7 @@ jobs:
           node tests/prototype-046-50-subjects.js
           node tests/prototype-046-50-mutations.js
           node tests/prototype-046-p0-critical.js
+          node tests/ai-story-contract.js
       - name: Start participant server
         run: python3 -m http.server 8080 > /tmp/keneflex-http.log 2>&1 &
       - name: Run participant browser journeys
