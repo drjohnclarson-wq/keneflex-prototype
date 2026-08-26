@@ -384,7 +384,7 @@
     model.cart.support.disposition = model.recommendation.eligible && model.fit.supportSku && !model.recommendation.provider ? 'BUY' : 'REVIEW';
     const story = fullStory();
     const wantsOnlySupport = /\b(?:only|just)\s+(?:want|need|looking for)\b[^.!?]{0,35}\b(?:brace|support|splint)\b|\b(?:brace|support|splint)\s+only\b/.test(story);
-    const wantsComplete = /\b(?:complete|everything|most comprehensive|full package)\b/.test(story) || /\b(?:gel|cream|patch|topical|biofreeze)\b/.test(story);
+    const wantsComplete = /\b(?:complete|everything|most comprehensive|full package)\b/.test(story) || /\b(?:cream|patch|topical|biofreeze|pain (?:relief )?gel)\b/.test(story);
     model.recommendedPlan = wantsOnlySupport ? 'core' : wantsComplete && model.comfortEligible ? 'complete' : 'recovery';
     model.selectedPlan = model.recommendedPlan;
     model.cart.cold.disposition = model.selectedPlan === 'core' ? 'OPTIONAL' : 'BUY';
@@ -395,6 +395,7 @@
 
   function statusText(disposition, id) {
     if (disposition === 'BUY') return id === 'support' ? 'Recommended' : 'Selected add-on';
+    if (disposition === 'REMOVE' && id === 'topical' && !model.comfortEligible) return 'Not available for this story';
     return { OPTIONAL: 'Optional add-on', REMOVE: 'Removed by you', REVIEW: 'Needs review before buying' }[disposition];
   }
 
