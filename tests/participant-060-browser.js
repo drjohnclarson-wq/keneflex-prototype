@@ -39,6 +39,28 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.waitForSelector('#solutionView:not(.hidden)');
   }
 
+  async function finishIntakeAndMeasure(value = '7.0', overrides = {}) {
+    const defaults = {
+      preciseLocation: 'It is centered on the palm side of my wrist.',
+      symptom: 'It feels sore and stiff.',
+      trigger: 'Typing, gripping, and using it make it worse.',
+      mechanism: 'It built up gradually without an injury.',
+      duration: 'It has been present for four weeks.',
+      laterality: 'It is on the right.',
+      sensoryDistribution: 'There is no numbness or tingling.'
+    };
+    for (let step = 0; step < 8 && await page.locator('#interaction #reply').count(); step += 1) {
+      const concept = await page.locator('#interaction').getAttribute('data-concept');
+      await page.fill('#reply', overrides[concept] || defaults[concept] || 'It is use-related and has been present for four weeks.');
+      await page.click('#send');
+      await page.waitForTimeout(30);
+    }
+    if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
+    await page.fill('#wristMeasure', value);
+    await page.click('#fitContinue');
+    await page.waitForSelector('#solutionView:not(.hidden)');
+  }
+
   async function content(selector) {
     return page.locator(selector).evaluate(node => node.textContent.trim());
   }
@@ -55,7 +77,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(initial.total, '$40.99');
     assert(initial.buy.includes('$40.99'));
     assert(initial.text.includes('Medium'));
-    assert(initial.text.includes('Find the right product for what’s bothering you'));
+    assert(initial.text.includes('The right product for what you described'));
     assert(!initial.text.includes('Core is enough to start'));
     assert(!initial.text.includes('optional additions'));
     assert.equal(await page.locator('.planTier').count(), 3);
@@ -715,7 +737,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('wrist-only-stiffness-selects-heat', 'I already know I want a wrist brace. My left wrist has been stiff and tight in the morning for four weeks, but my thumb is fine. It built up gradually and typing makes it worse. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
-    await clearSafetyAndMeasure('7.0');
+    await finishIntakeAndMeasure('7.0', { preciseLocation: 'It is centered on the palm side of my left wrist.' });
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
     assert((await content('#supportItem .planName')).includes('Adjustable'));
     assert((await content('#coldItem .planName')).includes('Moist Heat'));
@@ -724,7 +746,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('patch-preference-selects-complete', 'My right wrist and thumb are sore at the base of my thumb after golf for four weeks. It built up gradually. I want a brace and prefer a pain patch instead of cream. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
-    await clearSafetyAndMeasure('7.0');
+    await finishIntakeAndMeasure('7.0', { trigger: 'Golf, gripping, and twisting make it worse.' });
     assert((await content('#topicalItem .planName')).includes('Biofreeze Pain Relief Patch'));
     assert.equal(await content('#planName'), 'Complete');
     assert.equal(await page.locator('[data-plan="complete"]').getAttribute('aria-pressed'), 'true');
@@ -732,7 +754,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('known-want-support-only-selects-essential', 'I only want help choosing a wrist support. My right wrist has ached when I type for four weeks, and my thumb does not hurt. It built up gradually. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
-    await clearSafetyAndMeasure('7.0');
+    await finishIntakeAndMeasure('7.0', { preciseLocation: 'It is centered on the palm side of my right wrist.', symptom: 'My wrist aches with use, but my thumb does not hurt.' });
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
     assert.equal(await content('#planName'), 'Essential');
     assert.equal(await page.locator('[data-plan="core"]').getAttribute('aria-pressed'), 'true');
@@ -740,7 +762,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('minor-scrape-disables-comfort-tier', 'My right wrist and thumb are sore at the base of my thumb after tennis for four weeks. It built up gradually. I have a small superficial scrape on my wrist; the bleeding stopped and I washed and covered it. There was no fall or direct injury, numbness, swelling, weakness, or deformity.', async () => {
-    await clearSafetyAndMeasure('7.0');
+    await finishIntakeAndMeasure('7.0', { trigger: 'Tennis and gripping make it worse.' });
     assert.equal(await page.locator('[data-plan="complete"]').isDisabled(), true);
     assert.equal(await content('#topicalState'), 'Not available for this story');
     assert.equal(await content('#planName'), 'Recommended');
