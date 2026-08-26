@@ -383,7 +383,7 @@
     model.recommendation = recommendationFor(thread);
     model.cart.support.disposition = model.recommendation.eligible && model.fit.supportSku && !model.recommendation.provider ? 'BUY' : 'REVIEW';
     const story = fullStory();
-    const wantsOnlySupport = /\b(?:only|just)\s+(?:want|need|looking for)\b[^.!?]{0,35}\b(?:brace|support|splint)\b|\b(?:brace|support|splint)\s+only\b/.test(story);
+    const wantsOnlySupport = /\b(?:only|just)\s+(?:want|need|looking for)(?:\s+help\s+(?:choosing|finding))?\b[^.!?]{0,45}\b(?:brace|support|splint)\b|\b(?:brace|support|splint)\s+only\b/.test(story);
     const wantsComplete = /\b(?:complete|everything|most comprehensive|full package)\b/.test(story) || /\b(?:cream|patch|topical|biofreeze|pain (?:relief )?gel)\b/.test(story);
     model.recommendedPlan = wantsOnlySupport ? 'core' : wantsComplete && model.comfortEligible ? 'complete' : 'recovery';
     model.selectedPlan = model.recommendedPlan;
