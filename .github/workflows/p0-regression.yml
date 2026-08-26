@@ -19,6 +19,7 @@ jobs:
       - run: node tests/prototype-046-50-subjects.js
       - run: node tests/prototype-046-50-mutations.js
       - run: node tests/prototype-046-p0-critical.js
+      - run: node tests/ai-story-contract.js
       - run: node tests/prototype-047-50-visual-behavior.js
       - name: Run 500-subject story-engine gate
         run: node tests/prototype-050-500-subjects.js
