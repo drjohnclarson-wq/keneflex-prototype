@@ -740,7 +740,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(message.includes('may need professional evaluation'));
   });
 
-  await scenario('wrist-only-stiffness-selects-heat', 'I already know I want a wrist brace. The palm side of my left wrist has been stiff and tight in the morning for four weeks. It built up gradually and typing makes it worse. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
+  await scenario('wrist-only-stiffness-selects-heat', 'I already know I want a wrist brace. My left wrist is stiff and hurts in the morning. It has been present for four weeks, built up gradually, and typing makes it worse. Heat helps.', async () => {
     await finishIntakeAndMeasure('7.0', { preciseLocation: 'It is centered on the palm side of my left wrist.' });
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
     assert((await content('#supportItem .planName')).includes('Adjustable'));
@@ -749,7 +749,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await content('#total'), '$46.99');
   });
 
-  await scenario('patch-preference-selects-complete', 'My right wrist and thumb are sore at the base of my thumb after golf for four weeks. It built up gradually. I want a brace and prefer a pain patch instead of cream. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
+  await scenario('patch-preference-selects-complete', 'My right wrist and thumb are sore at the base of my thumb for four weeks. It built up gradually, and golf, gripping, and twisting make it worse. I want a brace and prefer a pain patch instead of cream.', async () => {
     await finishIntakeAndMeasure('7.0', { trigger: 'Golf, gripping, and twisting make it worse.' });
     assert((await content('#topicalItem .planName')).includes('Biofreeze Pain Relief Patch'));
     assert.equal(await content('#planName'), 'Complete');
@@ -757,7 +757,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await content('#total'), '$53.98');
   });
 
-  await scenario('known-want-support-only-selects-essential', 'I only want help choosing a wrist support. The palm side of my right wrist has hurt when I type for four weeks. It built up gradually. There was no fall or direct injury, open wound, numbness, swelling, weakness, or deformity.', async () => {
+  await scenario('known-want-support-only-selects-essential', 'I only want help choosing a wrist support. My right wrist has hurt for four weeks. It built up gradually, and typing makes it worse.', async () => {
     await finishIntakeAndMeasure('7.0', { preciseLocation: 'It is centered on the palm side of my right wrist.', symptom: 'My wrist aches with use, but my thumb does not hurt.' });
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
     assert.equal(await content('#planName'), 'Essential');
