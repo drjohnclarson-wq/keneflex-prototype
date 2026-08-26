@@ -4,17 +4,21 @@
 
 `participant-card.html` → `test.html` → `index.html`
 
-The `0.7.1` participant runtime intentionally has three explicit JavaScript files and two domain owners:
+The `0.8.0` participant runtime intentionally has three explicit JavaScript files and two domain owners:
 
 1. `prototype-046-conversation-engine.js` — pure story parsing, problem threads, known-fact detection, question selection, and adequacy.
 2. `prototype-046b-critical-state.js` — critical engine invariants for corrections, multiple problems, provider instructions, and owned products.
-3. `participant-controller.js` — participant flow, safety gate, recommendation presentation, personalized Essential/Recommended/Complete plan state, pricing, adjustment, cart, checkout, and the responsive topic-based Keneflex Plan with selective printing.
+3. `participant-controller.js` — participant flow, safety gate, launch catalog and role-based product selection, personalized Essential/Recommended/Complete plan state, pricing, adjustment, cart, checkout, and the responsive topic-based product guide with selective printing.
 
 `prototype-044.css` preserves the established visual shell. `participant-consolidated.css` contains only styles owned by the consolidated controller.
 
 ## State ownership
 
 `window.KeneflexParticipant.model` is the single participant state. Visible totals, cart lines, checkout lines, and the plan page derive from its cart dispositions. DOM text is output, never the source of commerce state.
+
+The stable commerce slots are `support`, `cold` (the recovery role), and `topical` (the comfort role). `model.selection` identifies the actual product assigned to each role. This preserves one cart and checkout path while allowing a story to select wrist-only or combined support, heat or cold, and gel or patch.
+
+The launch scope and retest protocol are maintained in `LAUNCH_PRODUCT_MATRIX.md` and `RETEST_GUIDE.md`.
 
 ## Legacy files
 

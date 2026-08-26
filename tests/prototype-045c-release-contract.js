@@ -32,10 +32,10 @@ check(!loader.includes('MutationObserver'), 'loader has no observer repair logic
 check(!loader.includes('setTimeout('), 'loader has no timing repair logic');
 
 check(route.includes('<title>Keneflex</title>'), 'participant route uses consumer-facing title');
-check(route.includes("searchParams.set('participant','071')"), 'participant route requests modular-plan release 0.7.1');
+check(route.includes("searchParams.set('participant','080')"), 'participant route requests launch-catalog release 0.8.0');
 check(route.includes("searchParams.set('build',String(stamp))") && route.includes("searchParams.set('cache','no-store')"), 'participant route uses unique no-store URL');
 check(route.includes('location.replace(u.href)'), 'participant route uses deterministic top-level navigation');
-check(html.includes('participant-consolidated.css?v=071'), 'participant route loads consolidated styles');
+check(html.includes('participant-consolidated.css?v=080'), 'participant route loads consolidated styles');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'duplicated inline commerce runtime is absent');
 
 check(engine.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"), 'hand family canonicalization retained');
@@ -47,10 +47,10 @@ check(critical.includes('correctionSide'), 'laterality corrections supported');
 check(critical.includes('threads.every(threadAdequate)'), 'multi-problem adequacy retained');
 
 check(participant.includes('const model ='), 'one authoritative participant model exists');
-check(participant.includes("release: '0.7.1'"), 'participant model identifies modular-plan release');
+check(participant.includes("release: '0.8.0'"), 'participant model identifies launch-catalog release');
 check(participant.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
 check(participant.includes('function safetyGate()'), 'safety gate has one controller owner');
-check(participant.includes("model.cart.support.disposition = 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
+check(participant.includes("model.cart.support.disposition = model.recommendation.eligible") && participant.includes("? 'BUY' : 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
 check(participant.includes('Provider direction protected'), 'provider direction appears in recommendation reasoning');
 check(!participant.includes('classifyOwnedProduct') && !participant.includes("'KEEP'"), 'unverified owned products cannot change recommendations');
 check(participant.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
@@ -60,7 +60,7 @@ check(participant.includes('function checkout()'), 'checkout has one controller 
 check(participant.includes('function openPlan()'), 'plan page has one controller owner');
 check(participant.includes('function applyConsumerCopy()'), 'consumer copy has one controller owner');
 check(participant.includes('<small>product total</small>'), 'controller distinguishes the product total from plan value');
-check(participant.includes('One plan. Open only what you need.'), 'controller owns the topic-based Keneflex Plan page');
+check(participant.includes('Use the products selected for you with confidence.'), 'controller owns the topic-based product guide page');
 check(!participant.includes("window.open('', '_blank')"), 'consumer plan does not open as about:blank');
 check(participant.includes('function selectPlan(plan)') && html.includes('data-plan="complete"'), 'plan tiers are explicit structured choices');
 check(!participant.includes('MutationObserver'), 'controller does not repair itself with DOM observers');
