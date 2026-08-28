@@ -1,4 +1,5 @@
 import { generateText, Output } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { z } from 'zod';
 
 const concept = z.enum(['where', 'side', 'symptom', 'preciseLocation', 'start', 'duration', 'trigger', 'timing', 'relief', 'function', 'sensoryMap']);
@@ -31,19 +32,15 @@ export default async function handler(request, response) {
     .slice(-16000);
   const openAIKey = process.env.OPENAI_API_KEY;
   try {
+    if (!openAIKey) throw new Error('OPENAI_API_KEY is not configured');
+    const openai = createOpenAI({ apiKey: openAIKey });
     const result = await generateText({
-      model: 'openai/gpt-5.6-luna',
+      model: openai('gpt-5.6-luna'),
       system: SYSTEM,
       prompt: transcript,
       output: Output.object({ schema: interpretationSchema, name: 'keneflex_story' }),
       maxOutputTokens: 1200,
-      abortSignal: AbortSignal.timeout(15000),
-      providerOptions: openAIKey ? {
-        gateway: {
-          byok: { openai: [{ apiKey: openAIKey }] },
-          tags: ['feature:story-interpretation', 'env:production']
-        }
-      } : undefined
+      abortSignal: AbortSignal.timeout(15000)
     });
     response.setHeader('Cache-Control', 'no-store');
     return response.status(200).json({ interpretation: result.output });
