@@ -20,9 +20,9 @@ check(interpreted.events.length === 3 && interpreted.ai.used, 'consumer transcri
 
 const api = fs.readFileSync('api/interpret-story.mjs', 'utf8');
 const controller = fs.readFileSync('participant-controller.js', 'utf8');
-check(api.includes("model: 'openai/gpt-5.6-luna'"), 'server uses the verified current model');
+check(api.includes("openai('gpt-5.6-luna')"), 'server uses the verified current model through the direct provider');
 check(api.includes('You do not diagnose, recommend products, or decide whether self-care is safe'), 'AI interpreter is prohibited from owning clinical or commerce decisions');
-check(api.includes("process.env.OPENAI_API_KEY"), 'provider-owned key can bypass Vercel-managed model billing');
+check(api.includes("createOpenAI({ apiKey: openAIKey })"), 'provider-owned key bypasses Vercel-managed model billing');
 check(api.includes('maxOutputTokens: 1200'), 'AI output is capped to control cost');
 check(api.includes('AbortSignal.timeout(15000)'), 'AI request has a firm execution timeout');
 check(api.includes('.slice(-16000)'), 'conversation input is capped');
