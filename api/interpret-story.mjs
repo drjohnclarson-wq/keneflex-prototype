@@ -25,13 +25,25 @@ export default async function handler(request, response) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method not allowed' });
   const turns = Array.isArray(request.body?.turns) ? request.body.turns.slice(-30) : [];
   if (!turns.length || turns.some(turn => typeof turn?.content !== 'string' || !['assistant', 'user'].includes(turn.role))) return response.status(400).json({ error: 'A valid conversation is required' });
-  const transcript = turns.map(turn => `${turn.role === 'assistant' ? 'Keneflex question' : 'Consumer'}: ${turn.content.slice(0, 2000)}`).join('\n');
+  const transcript = turns
+    .map(turn => `${turn.role === 'assistant' ? 'Keneflex question' : 'Consumer'}: ${turn.content.slice(0, 1200)}`)
+    .join('\n')
+    .slice(-16000);
+  const openAIKey = process.env.OPENAI_API_KEY;
   try {
     const result = await generateText({
       model: 'openai/gpt-5.6-luna',
       system: SYSTEM,
       prompt: transcript,
-      output: Output.object({ schema: interpretationSchema, name: 'keneflex_story' })
+      output: Output.object({ schema: interpretationSchema, name: 'keneflex_story' }),
+      maxOutputTokens: 1200,
+      abortSignal: AbortSignal.timeout(15000),
+      providerOptions: openAIKey ? {
+        gateway: {
+          byok: { openai: [{ apiKey: openAIKey }] },
+          tags: ['feature:story-interpretation', 'env:production']
+        }
+      } : undefined
     });
     response.setHeader('Cache-Control', 'no-store');
     return response.status(200).json({ interpretation: result.output });
