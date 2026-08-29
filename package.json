@@ -2,6 +2,11 @@
   "name": "keneflex-prototype",
   "version": "0.9.0",
   "private": true,
+  "scripts": {
+    "test": "node tests/participant-060-release-contract.js && node tests/prototype-046-50-subjects.js && node tests/prototype-046-50-mutations.js && node tests/prototype-046-p0-critical.js && node tests/ai-story-contract.js && node tests/conversation-quality-group.js && node tests/prototype-050-500-subjects.js && node tests/product-catalog-contract.js",
+    "test:quality": "node tests/conversation-quality-group.js",
+    "test:production": "node tests/production-ai-smoke.mjs"
+  },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.104",
     "ai": "^6.0.0"
