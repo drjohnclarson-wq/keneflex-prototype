@@ -10,6 +10,7 @@ function check(condition, message) {
 
 const loader = fs.readFileSync('prototype-044.js', 'utf8');
 const route = fs.readFileSync('test.html', 'utf8');
+check(route.includes("location.hostname.endsWith('github.io')") && route.includes('https://keneflex-prototype-ai.vercel.app/test.html'), 'legacy GitHub Pages test link redirects to the AI-enabled production host');
 const html = fs.readFileSync('index.html', 'utf8');
 const controller = fs.readFileSync('participant-controller.js', 'utf8');
 const critical = fs.readFileSync('prototype-046b-critical-state.js', 'utf8');
