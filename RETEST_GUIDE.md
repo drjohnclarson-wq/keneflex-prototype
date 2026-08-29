@@ -1,6 +1,8 @@
 # Keneflex prototype 0.8.0 retest guide
 
-Test URL: https://drjohnclarson-wq.github.io/keneflex-prototype/test.html
+Test URL: https://keneflex-prototype-ai.vercel.app/test.html
+
+The older GitHub Pages test link redirects here, but moderators should use the Vercel URL directly so the AI interpreter is exercised.
 
 ## What this round must answer
 
