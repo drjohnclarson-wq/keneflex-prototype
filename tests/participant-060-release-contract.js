@@ -15,6 +15,11 @@ const html = fs.readFileSync('index.html', 'utf8');
 const controller = fs.readFileSync('participant-controller.js', 'utf8');
 const critical = fs.readFileSync('prototype-046b-critical-state.js', 'utf8');
 const participantCss = fs.readFileSync('participant-consolidated.css', 'utf8');
+const openingSection = html.match(/<section class="shell">[\s\S]*?<\/section>/)?.[0] || '';
+check(openingSection.includes('What’s bothering you?') && openingSection.includes('Helpful details include'), 'opening invites relevant details in neutral body-part-independent language');
+check(!/pickleball|thumb side|right wrist|right brace|Include anything you already know/.test(openingSection), 'opening does not supply the old complaint or steer consumers toward a brace');
+check(openingSection.includes('already have a product in mind') && openingSection.includes('You don’t need to know what’s important'), 'opening supports known-product shoppers and reassures short-answer shoppers');
+check(openingSection.includes('aria-labelledby="openingLabel"') && openingSection.includes('aria-describedby="openingHelp openingReassurance"'), 'opening guidance stays visible and is associated with the input for assistive technology');
 
 const loadedScripts = [...loader.matchAll(/src=\"([^\"]+)/g)].map(match => match[1].split('?')[0]);
 check(loadedScripts.length === 3, 'participant loader has exactly three explicit runtime scripts');
