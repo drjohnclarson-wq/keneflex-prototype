@@ -18,6 +18,12 @@ check(E.nextQuestion(interpreted)?.concept !== 'duration', 'known AI duration is
 check(thread.negatives.includes('numbness') && !thread.symptoms.includes('numbness'), 'AI negatives remain distinct from symptoms');
 check(interpreted.events.length === 3 && interpreted.ai.used, 'consumer transcript and AI provenance are retained');
 
+const shortAnswerStore = E.createStore();
+E.ingest(shortAnswerStore, 'My right wrist has hurt for three weeks after pickleball. It started gradually.');
+E.recordContextAnswer(shortAnswerStore, 'function', 'Lift');
+check(E.known(E.activeThread(shortAnswerStore), 'function'), 'short answer is retained in the context of the question asked');
+check(E.activeThread(shortAnswerStore).functionEffects.includes('Lift'), 'short functional answer is stored as a functional effect rather than discarded');
+
 const api = fs.readFileSync('api/interpret-story.mjs', 'utf8');
 const controller = fs.readFileSync('participant-controller.js', 'utf8');
 check(api.includes("openai('gpt-5.6-luna')"), 'server uses the verified current model through the direct provider');
@@ -29,6 +35,9 @@ check(api.includes('.slice(-16000)'), 'conversation input is capped');
 check(controller.includes("model.interpretationMode = 'deterministic-fallback'"), 'deterministic fallback remains available');
 check(controller.includes('Engine.importInterpretation'), 'participant controller consumes structured AI facts');
 check(controller.includes("clarification?.question"), 'genuine AI ambiguity can produce a clarification');
+check(controller.includes('clarificationConcept === question.concept'), 'AI clarification wording cannot silently change the concept being asked');
+check(controller.includes('model.lastAnsweredConcept ==='), 'immediately repeated questions are suppressed');
+check(controller.includes('if (submitting) return'), 'a single answer cannot be submitted more than once');
 
 if (failed) { console.error(`\n${failed}/${total} AI story contracts failed`); process.exit(1); }
 console.log(`\n${total}/${total} AI story contracts passed`);
