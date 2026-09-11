@@ -47,7 +47,8 @@
       topical: { disposition: 'OPTIONAL' }
     },
     selectedPlan: 'core',
-    recommendedPlan: 'core'
+    recommendedPlan: 'core',
+    lastAnsweredConcept: null
   };
   const acknowledgedFamilies = new Set();
 
@@ -112,11 +113,14 @@
   }
 
   function composer(question) {
+    let submitting = false;
     const interaction = $('#interaction');
     interaction.innerHTML = '<textarea id="reply" aria-label="Your answer" placeholder="Answer in your own words."></textarea><div class="row"><button id="send" class="primary">Continue →</button></div>';
     const submit = async () => {
+      if (submitting) return;
       const value = $('#reply').value.trim();
       if (!value) return;
+      submitting = true;
       $('#send').disabled = true;
       addBubble('user', value);
       model.answers.push(value);
@@ -132,7 +136,13 @@
       const fallbackValue = question.concept === 'preciseLocation'
         ? value.replace(/\bback(?:\s+side)?\s+of\s+(?=(?:my|the)\s+(?:wrist|hand|thumb))/ig, 'posterior side of ')
         : value;
+      const answeredThread = activeProblem();
       await refreshInterpretation(fallbackValue);
+      const restoredThread = storyThreads().find(candidate => candidate.family === answeredThread?.family && (!answeredThread?.side || candidate.side === answeredThread.side));
+      if (restoredThread) model.story.active = threadKey(restoredThread);
+      const contextualConcept = Engine.questionConcept(question.text) || question.concept;
+      Engine.recordContextAnswer(model.story, contextualConcept, value);
+      model.lastAnsweredConcept = contextualConcept;
       if (question.concept === 'preciseLocation' && model.interpretationMode !== 'ai') {
         const thread = activeProblem();
         if (thread && !Engine.known(thread, 'preciseLocation')) thread.locations.push(value);
@@ -188,7 +198,13 @@
     const regional = family && !acknowledgedFamilies.has(family) ? regionalMessage(thread) : '';
     if (family) acknowledgedFamilies.add(family);
     const clarification = (model.story.ai?.clarifications || []).find(item => item.concept === question.concept);
-    if (clarification?.question) question = { ...question, text: clarification.question };
+    const clarificationConcept = clarification?.question ? Engine.questionConcept(clarification.question) : null;
+    if (clarification?.question && (!clarificationConcept || clarificationConcept === question.concept)) question = { ...question, text: clarification.question };
+    if (model.lastAnsweredConcept === (Engine.questionConcept(question.text) || question.concept)) {
+      Engine.recordContextAnswer(model.story, question.concept, 'answered');
+      question = Engine.nextQuestion(model.story);
+      if (!question) return advance();
+    }
     model.turns.push({ role: 'assistant', content: question.text });
     addBubble('ai', (regional ? '<p>' + escapeHtml(regional) + '</p>' : '') + '<p><b>' + escapeHtml(question.text) + '</b></p>', true);
     composer(question);
