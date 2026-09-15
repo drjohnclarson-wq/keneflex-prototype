@@ -546,7 +546,7 @@
     if (plan === 'complete' && !model.comfortEligible) return;
     model.selectedPlan = plan;
     model.cart.cold.disposition = plan === 'core' ? 'OPTIONAL' : 'BUY';
-    model.cart.topical.disposition = plan === 'complete' ? 'BUY' : 'OPTIONAL';
+    model.cart.topical.disposition = !model.comfortEligible ? 'REMOVE' : plan === 'complete' ? 'BUY' : 'OPTIONAL';
     $('#tuneResult').classList.add('hidden');
     $('#resetTune').classList.add('hidden');
     renderSolution();
