@@ -33,7 +33,7 @@ check(api.includes('maxOutputTokens: 1200'), 'AI output is capped to control cos
 check(api.includes('AbortSignal.timeout(15000)'), 'AI request has a firm execution timeout');
 check(api.includes('.slice(-16000)'), 'conversation input is capped');
 check(controller.includes("model.interpretationMode = 'deterministic-fallback'"), 'deterministic fallback remains available');
-check(controller.includes('Engine.importInterpretation'), 'participant controller consumes structured AI facts');
+check(controller.includes('Engine.mergeInterpretation'), 'participant controller merges structured AI facts into durable state');
 check(controller.includes("clarification?.question"), 'genuine AI ambiguity can produce a clarification');
 check(controller.includes('clarificationConcept === question.concept'), 'AI clarification wording cannot silently change the concept being asked');
 check(controller.includes('model.lastAnsweredConcept ==='), 'immediately repeated questions are suppressed');

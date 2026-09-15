@@ -16,9 +16,9 @@ const controller = fs.readFileSync('participant-controller.js', 'utf8');
 const critical = fs.readFileSync('prototype-046b-critical-state.js', 'utf8');
 const participantCss = fs.readFileSync('participant-consolidated.css', 'utf8');
 const openingSection = html.match(/<section class="shell">[\s\S]*?<\/section>/)?.[0] || '';
-check(openingSection.includes('What’s bothering you?') && openingSection.includes('Helpful details include'), 'opening invites relevant details in neutral body-part-independent language');
+check(openingSection.includes('What’s bothering you?') && openingSection.includes('Include anything you think matters'), 'opening invites relevant details in neutral body-part-independent language');
 check(!/pickleball|thumb side|right wrist|right brace|Include anything you already know/.test(openingSection), 'opening does not supply the old complaint or steer consumers toward a brace');
-check(openingSection.includes('already have a product in mind') && openingSection.includes('You don’t need to know what’s important'), 'opening supports known-product shoppers and reassures short-answer shoppers');
+check(html.includes('I know the type—help me choose') && openingSection.includes('A short answer is fine'), 'opening supports known-product shoppers and reassures short-answer shoppers');
 check(openingSection.includes('aria-labelledby="openingLabel"') && openingSection.includes('aria-describedby="openingHelp openingReassurance"'), 'opening guidance stays visible and is associated with the input for assistive technology');
 
 const loadedScripts = [...loader.matchAll(/src=\"([^\"]+)/g)].map(match => match[1].split('?')[0]);
@@ -50,9 +50,12 @@ check(!controller.includes("window.open('', '_blank')"), 'plan renders in the re
 check(controller.includes('function selectPlan(plan)') && html.includes('data-plan="core"'), 'core, recovery, and complete choices have one controller owner');
 check(html.includes('$19.99 <small>total</small>') && html.includes('$40.99 <small>total</small>') && html.includes('$52.98 <small>total</small>'), 'all plan cards state inclusive totals');
 check(html.includes('+$21.00:') && html.includes('+$11.99:'), 'higher plans distinguish incremental cost from total');
-check(controller.includes('Review my personalized product guide'), 'product guide action uses consumer language');
+check(controller.includes('See details and product-use guide'), 'product guide action uses consumer language');
 check(html.includes('personalized product guide'), 'product guide appears in the selected summary');
-check(html.includes('Most comprehensive') && html.includes('tierVisuals'), 'complete package and cumulative product visuals are explicit');
+check(controller.includes('Optional comfort') && html.includes('tierVisuals'), 'complete package and cumulative product visuals are explicit without an upsell claim');
+check(controller.includes('I can’t measure right now'), 'sizing offers a no-measurement path');
+check(controller.includes('safetyOptions') && controller.includes('None of these'), 'safety screening is a scannable choice list');
+check(html.includes('moreDetails') && html.includes('limited set of hand, wrist, and thumb products for adults'), 'subject-test scope and secondary details are clearly framed');
 check(!html.includes('Core is enough to start') && !html.includes('optional additions'), 'package presentation does not minimize recovery or comfort');
 check(controller.includes('function applyConsumerCopy()'), 'consumer copy is authored once without observer cleanup');
 check(!controller.includes('MutationObserver'), 'participant controller does not repair itself with DOM observers');

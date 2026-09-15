@@ -11,16 +11,18 @@ The primary question is: **After Keneflex says “I’d choose this one,” does
 Secondary questions:
 
 1. Can someone who already knows the product category get to the right item without feeling forced through a diagnosis flow?
-2. Do Essential, Recommended, and Complete read as useful purchase choices rather than good/better/best pressure?
+2. Do Support only, Support + recovery, and Add comfort relief read as useful purchase choices rather than an upsell ladder?
 3. Is it clear that the same roles can contain different products—for example, heat instead of cold or a patch instead of gel?
 4. Does the product guide add confidence without making Keneflex look like a rehabilitation provider?
 5. Can the tester explain why a product was selected and what would make them stop or reconsider it?
 
 ## Moderator opening prompt
 
-> Keneflex is designed to help you choose the right over-the-counter product when something is bothering you. Please use it as you naturally would. Think aloud, especially when a question feels unnecessary or when you become ready to buy. This is a prototype: no order will be placed and you will not be charged.
+> Keneflex is designed to help adults choose among a limited set of over-the-counter hand, wrist, and thumb products. Please use it as naturally as you can and think aloud, especially when a question feels unnecessary or when you feel ready to choose. This is a prototype: no order will be placed and you will not be charged.
 
-Do not explain the packages or point out the guide before the participant encounters them.
+The participant does not need to have an actual injury, use the word “injury,” know a diagnosis, or start with a complete story. Ask them to begin with whatever they would genuinely type if a hand, wrist, or thumb problem were bothering them. A short opening such as “My wrist has been bothering me and I need help figuring out what to buy” is acceptable, but do not require or read a scripted symptom history to them.
+
+Do not explain the packages, recommend details to include, or point out the guide before the participant encounters them. If the participant asks what to type, say only: “Describe the concern in your own words, the way you would normally ask for help.”
 
 ## Core scenarios
 
@@ -32,7 +34,7 @@ Opening text:
 
 > My right wrist hurts at the base of my thumb after pickleball. Gripping and twisting make it sore. I want help choosing the right brace.
 
-Expected result: Neo G combined support, Polar Soft Ice recovery, Recommended highlighted, gel available but not preselected. A 7.0-inch wrist resolves to Medium.
+Expected result: Neo G combined support, Polar Soft Ice recovery, Support + recovery highlighted, gel available but not preselected. A 7.0-inch wrist resolves to Medium.
 
 ### 2. Wrist-only stiffness and known product category
 
@@ -40,7 +42,7 @@ Opening text:
 
 > I already know I want a wrist brace. My left wrist is stiff and tight in the morning, but my thumb is fine. Help me pick the right one.
 
-Expected result: BraceAbility Volar Wrist Splint, moist heat recovery, Recommended highlighted, minimal repetition of facts already supplied.
+Expected result: BraceAbility Volar Wrist Splint, moist heat recovery, Support + recovery highlighted, minimal repetition of facts already supplied.
 
 ### 3. Patch preference
 
@@ -48,7 +50,7 @@ Opening text:
 
 > The thumb side of my right wrist gets sore after golf. I want a brace and I prefer a pain patch instead of a cream.
 
-Expected result: combined support, matched recovery, Biofreeze patch, Complete highlighted because the consumer explicitly asked for topical comfort.
+Expected result: combined support, matched recovery, Biofreeze patch, Add comfort relief highlighted because the consumer explicitly asked for topical comfort.
 
 ### 4. Support only
 
@@ -56,7 +58,7 @@ Opening text:
 
 > I only want help choosing a wrist support. My right wrist aches when I type and my thumb does not hurt.
 
-Expected result: wrist-only support, Essential highlighted; recovery and comfort remain optional.
+Expected result: wrist-only support, Support only highlighted; recovery and comfort remain optional.
 
 ### 5. Minor broken skin
 
@@ -64,7 +66,14 @@ Opening text:
 
 > My right wrist and thumb are sore after tennis. I also have a small superficial scrape on the wrist.
 
-Expected result: minor-wound protection message, support/recovery logic continues, Complete is disabled, and guide warns not to place support or topical product over unprotected broken skin.
+Expected result: minor-wound protection message, support/recovery logic continues, Add comfort relief is disabled, and guide warns not to place support or topical product over unprotected broken skin.
+
+## Sizing checks
+
+Test both paths:
+
+1. If the participant has a flexible tape, string, or paper strip and ruler, let them measure around the wrist using the on-screen instructions.
+2. If they cannot measure, use **I can’t measure right now**. The prototype may show the product recommendation, but must leave the size pending and disable checkout. It must not guess size from height, weight, glove size, or a photograph.
 
 ### 6. Altered feeling
 
