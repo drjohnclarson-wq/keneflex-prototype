@@ -38,7 +38,7 @@
     safetyCleared: false,
     woundAssessment: 'unknown',
     recommendation: null,
-    fit: { wristInches: null, supportSize: null, supportSku: null },
+    fit: { wristInches: null, supportSize: null, supportSku: null, pending: false },
     selection: { support: 'combined', recovery: 'cold', comfort: 'gel' },
     comfortEligible: true,
     cart: {
@@ -48,7 +48,9 @@
     },
     selectedPlan: 'core',
     recommendedPlan: 'core',
-    lastAnsweredConcept: null
+    lastAnsweredConcept: null,
+    questionBudget: 5,
+    questionsAsked: 0
   };
   const acknowledgedFamilies = new Set();
 
@@ -66,7 +68,7 @@
   function total() { return lines().reduce((sum, line) => sum + line.charged, 0); }
   function paidLines() { return lines().filter(line => line.disposition === 'BUY'); }
   function planLabel() {
-    return ({ core: 'Essential', recovery: 'Recommended', complete: 'Complete' })[model.selectedPlan] || 'Custom selection';
+    return ({ core: 'Support only', recovery: 'Support + recovery', complete: 'Add comfort relief' })[model.selectedPlan] || 'Custom selection';
   }
   function wornBraceExplanation() {
     const story = [model.opening, ...model.answers].join(' ').toLowerCase();
@@ -104,7 +106,7 @@
       if (!response.ok) throw new Error('interpretation unavailable');
       const payload = await response.json();
       if (!payload?.interpretation?.problems?.length) throw new Error('empty interpretation');
-      model.story = Engine.importInterpretation(payload.interpretation, model.turns.filter(turn => turn.role === 'user').map(turn => turn.content));
+      model.story = Engine.mergeInterpretation(model.story, payload.interpretation, model.turns.filter(turn => turn.role === 'user').map(turn => turn.content));
       model.interpretationMode = 'ai';
     } catch (_) {
       Engine.ingest(model.story, fallbackText);
@@ -184,6 +186,11 @@
       safetyGate();
       return;
     }
+    if (model.questionsAsked >= model.questionBudget) {
+      addBubble('ai', '<p><b>I do not have enough information to make a responsible product selection yet.</b></p><p>Please add the missing detail in a new session or ask a qualified professional for help. I will not keep asking questions without making progress.</p>', true);
+      $('#interaction').innerHTML = '';
+      return;
+    }
     let question = Engine.nextQuestion(model.story);
     if (!question) {
       const unresolved = storyThreads().find(candidate => !Engine.threadAdequate(candidate));
@@ -199,13 +206,14 @@
     if (family) acknowledgedFamilies.add(family);
     const clarification = (model.story.ai?.clarifications || []).find(item => item.concept === question.concept);
     const clarificationConcept = clarification?.question ? Engine.questionConcept(clarification.question) : null;
-    if (clarification?.question && (!clarificationConcept || clarificationConcept === question.concept)) question = { ...question, text: clarification.question };
+    if (clarification?.question && clarificationConcept === question.concept) question = { ...question, text: clarification.question };
     if (model.lastAnsweredConcept === (Engine.questionConcept(question.text) || question.concept)) {
       Engine.recordContextAnswer(model.story, question.concept, 'answered');
       question = Engine.nextQuestion(model.story);
       if (!question) return advance();
     }
     model.turns.push({ role: 'assistant', content: question.text });
+    model.questionsAsked += 1;
     addBubble('ai', (regional ? '<p>' + escapeHtml(regional) + '</p>' : '') + '<p><b>' + escapeHtml(question.text) + '</b></p>', true);
     composer(question);
   }
@@ -231,9 +239,6 @@
     if (!negative.has('numbness')) unresolved.push('loss of feeling');
     if (!negative.has('weakness')) unresolved.push('marked new weakness');
     if (deformityStatus === 'unknown') unresolved.splice(Math.min(1, unresolved.length), 0, 'visible deformity');
-    const list = unresolved.length === 1
-      ? unresolved[0]
-      : unresolved.slice(0, -1).join(', ') + ', or ' + unresolved[unresolved.length - 1];
     const minorWoundNotice = woundAssessment === 'minor'
       ? '<p><b>A minor scrape does not automatically require medical care.</b> Wash it with soap and water, cover it with a clean bandage, and watch for worsening redness, drainage, swelling, or pain. Do not place a brace or topical pain product directly over unprotected broken skin.</p>'
       : '';
@@ -243,8 +248,13 @@
       fitGate();
       return;
     }
-    addBubble('ai', minorWoundNotice + '<p><b>One safety check before I build the plan:</b> have you noticed ' + escapeHtml(list) + '?</p>', true);
-    interaction.innerHTML = '<div class="options"><button class="opt" data-safety="clear">No</button><button class="opt" data-safety="stop">Yes / I am not sure</button></div>';
+    const safetyChoices = [];
+    if (unresolved.some(item => /injury|deformity/.test(item))) safetyChoices.push('Major injury or visibly changed shape');
+    if (unresolved.some(item => /wound|bleeding|puncture|bite|infection/.test(item))) safetyChoices.push('Deep or dirty wound, uncontrolled bleeding, or infection signs');
+    if (unresolved.some(item => /swelling/.test(item))) safetyChoices.push('Rapidly increasing swelling');
+    if (unresolved.some(item => /feeling|weakness/.test(item))) safetyChoices.push('New loss of feeling or meaningful weakness');
+    addBubble('ai', minorWoundNotice + '<p><b>One safety check before I select a product:</b></p><p>Select anything you have noticed.</p>', true);
+    interaction.innerHTML = '<div class="options safetyOptions">' + safetyChoices.map(label => '<button class="opt" data-safety="stop">' + escapeHtml(label) + '</button>').join('') + '<button class="opt" data-safety="clear">None of these</button><button class="opt" data-safety="stop">I am not sure</button></div>';
     $$('[data-safety]', interaction).forEach(button => button.addEventListener('click', () => {
       addBubble('user', button.textContent.trim());
       interaction.innerHTML = '';
@@ -353,8 +363,18 @@
 
   function fitGate() {
     const interaction = $('#interaction');
-    addBubble('ai', '<p><b>One fit detail before I select a support:</b> measure around your wrist at the wrist crease. What is the circumference in inches?</p>', true);
-    interaction.innerHTML = '<input id="wristMeasure" inputmode="decimal" aria-label="Wrist circumference in inches" placeholder="For example, 7.0"><div class="row"><button id="fitContinue" class="primary">Continue →</button></div><p id="fitError" class="micro"></p>';
+    selectProducts(activeProblem());
+    addBubble('ai', '<p><b>One fit detail before I select a support:</b></p><p>If you know it, enter the circumference around your wrist crease. If not, I can show you how or save the product type with sizing still to confirm.</p>', true);
+    interaction.innerHTML = '<input id="wristMeasure" inputmode="decimal" aria-label="Wrist circumference in inches" placeholder="Wrist inches, for example 7.0"><div class="row fitActions"><button id="fitContinue" class="primary">Use this measurement</button><button id="fitHelp" class="opt">Help me measure</button><button id="fitPending" class="opt">I can’t measure right now</button></div><p id="fitError" class="micro"></p><p id="fitHelpText" class="help hidden">Wrap a flexible tape around the wrist crease. Without one, wrap a strip of paper or string around the wrist, mark where it overlaps, then compare that length with a ruler. Do not estimate from height, weight, glove size, or a photo.</p>';
+    $('#fitHelp').addEventListener('click', () => $('#fitHelpText').classList.remove('hidden'));
+    $('#fitPending').addEventListener('click', () => {
+      model.fit.pending = true;
+      model.fit.supportSize = 'Size pending';
+      model.fit.supportSku = null;
+      addBubble('user', 'I can’t measure right now');
+      interaction.innerHTML = '';
+      revealRecommendation();
+    });
     $('#fitContinue').addEventListener('click', () => {
       const value = Number(String($('#wristMeasure').value).replace(/[^0-9.]/g, ''));
       if (!Number.isFinite(value) || value < 4 || value > 12) {
@@ -362,6 +382,7 @@
         return;
       }
       model.fit.wristInches = value;
+      model.fit.pending = false;
       addBubble('user', value.toFixed(1) + ' inches');
       interaction.innerHTML = '';
       revealRecommendation();
@@ -382,7 +403,10 @@
     model.selection.comfort = /\b(?:patch|patches|hands[- ]?free|mess[- ]?free)\b/.test(story) ? 'patch' : 'gel';
     model.comfortEligible = model.woundAssessment !== 'minor' && !/\b(?:allerg(?:y|ic)|sensitive skin|no topical|don['’]?t want (?:a )?(?:cream|gel|patch|topical))\b/.test(story);
     const product = CATALOG.support[model.selection.support];
-    if (product.fit === 'universal' && model.fit.wristInches <= 9.5) {
+    if (model.fit.pending) {
+      model.fit.supportSize = 'Size pending';
+      model.fit.supportSku = null;
+    } else if (product.fit === 'universal' && Number.isFinite(model.fit.wristInches) && model.fit.wristInches <= 9.5) {
       model.fit.supportSize = 'Adjustable';
       model.fit.supportSku = product.sku;
     } else if (product.fit === 'sized') {
@@ -430,7 +454,7 @@
     model.cart.support.disposition = model.recommendation.eligible && model.fit.supportSku && !model.recommendation.provider ? 'BUY' : 'REVIEW';
     const story = fullStory();
     const wantsOnlySupport = /\b(?:only|just)\s+(?:want|need|looking for)(?:\s+help\s+(?:choosing|finding))?\b[^.!?]{0,45}\b(?:brace|support|splint)\b|\b(?:brace|support|splint)\s+only\b/.test(story);
-    const wantsComplete = /\b(?:complete|everything|most comprehensive|full package)\b/.test(story) || /\b(?:cream|patch|topical|biofreeze|pain (?:relief )?gel)\b/.test(story);
+    const wantsComplete = /\b(?:complete|everything|most comprehensive|full package)\b/.test(story) || /\b(?:want|prefer|looking for|asked for|need)\b[^.!?]{0,45}\b(?:cream|patch|topical|biofreeze|pain (?:relief )?gel)\b/.test(story);
     model.recommendedPlan = wantsOnlySupport ? 'core' : wantsComplete && model.comfortEligible ? 'complete' : 'recovery';
     model.selectedPlan = model.recommendedPlan;
     model.cart.cold.disposition = model.selectedPlan === 'core' ? 'OPTIONAL' : 'BUY';
@@ -470,15 +494,15 @@
     const recovery = productLine('cold');
     const comfort = productLine('topical');
     const definitions = [
-      { id: 'core', label: 'Essential', title: 'Support + product guide', products: [support], delta: 'The support Keneflex selected for you' },
-      { id: 'recovery', label: 'Recommended', title: 'Support + recovery + product guide', products: [support, recovery], delta: '<b>+' + money(recovery.price) + ':</b> adds ' + escapeHtml(recovery.role.toLowerCase()) },
-      { id: 'complete', label: 'Complete', title: 'Support + recovery + comfort + product guide', products: [support, recovery, comfort], delta: '<b>+' + money(comfort.price) + ':</b> adds ' + escapeHtml(comfort.role.toLowerCase()), disabled: !model.comfortEligible }
+      { id: 'core', label: 'Support only', title: 'Primary product', products: [support], delta: 'The support Keneflex selected for you' },
+      { id: 'recovery', label: 'Support + recovery', title: 'Matched functional support', products: [support, recovery], delta: '<b>+' + money(recovery.price) + ':</b> adds ' + escapeHtml(recovery.role.toLowerCase()) },
+      { id: 'complete', label: 'Add comfort relief', title: 'Includes temporary comfort', products: [support, recovery, comfort], delta: '<b>+' + money(comfort.price) + ':</b> adds ' + escapeHtml(comfort.role.toLowerCase()), disabled: !model.comfortEligible }
     ];
     $('.planTiers').innerHTML = definitions.map(tier => {
       const selected = tier.id === model.selectedPlan;
       const recommended = tier.id === model.recommendedPlan;
       const tierTotal = tier.products.reduce((sum, product) => sum + product.price, 0);
-      const badge = recommended ? 'Keneflex recommended' : tier.disabled ? 'Not appropriate for this story' : ({ core: 'Personalized foundation', recovery: 'Adds recovery', complete: 'Most comprehensive' })[tier.id];
+      const badge = recommended ? 'Keneflex recommended' : tier.disabled ? 'Not appropriate for this story' : ({ core: 'Primary product', recovery: 'Adds recovery', complete: 'Optional comfort' })[tier.id];
       const visuals = tier.products.map(product => '<span class="tierProduct"><img alt="' + escapeHtml(product.name) + '" src="' + product.image + '"/><small>' + escapeHtml(product.id === 'support' ? 'Support' : product.id === 'cold' ? 'Recovery' : 'Comfort') + '</small></span>').join('');
       const included = tier.products.map(product => '<span>✓ ' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</span>').join('');
       return '<button class="planTier' + (selected ? ' selected' : '') + (recommended ? ' featured' : '') + '" data-plan="' + tier.id + '" aria-pressed="' + selected + '"' + (tier.disabled ? ' disabled aria-disabled="true"' : '') + '><span class="tierTop"><span class="tierLabel">' + tier.label + '</span><span class="tierBadge' + (recommended ? ' recommendedBadge' : '') + '">' + badge + '</span></span><b>' + tier.title + '</b><div class="tierVisuals">' + visuals + '<span class="tierPlanIcon" aria-hidden="true"><i>K</i><small>Product guide</small></span></div><strong>' + money(tierTotal) + ' <small>total</small></strong><span class="tierDelta">' + tier.delta + '</span><span class="tierIncludes"><b>Your package includes:</b><span>✓ Personalized product guide</span>' + included + '</span><span class="tierChoice">' + (selected ? 'Selected' : tier.disabled ? 'Unavailable for this story' : 'Select ' + tier.label) + '</span></button>';
@@ -573,7 +597,7 @@
       plan = document.createElement('button');
       plan.id = 'kfxPlanBtn';
       plan.className = 'primary kfxPlanBtn';
-      plan.textContent = 'Review my personalized product guide →';
+      plan.textContent = 'See details and product-use guide →';
       plan.addEventListener('click', openPlan);
       totalBlock.appendChild(plan);
     }
@@ -730,6 +754,7 @@
       showStage('chat');
       openingButton.disabled = true;
       await refreshInterpretation(model.opening);
+      model.questionBudget = Engine.questionBudget(model.story);
       advance();
     });
     $('#planPreviewBtn')?.addEventListener('click', openPlan);
