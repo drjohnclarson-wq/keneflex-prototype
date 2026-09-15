@@ -66,4 +66,25 @@ assert(E.questionBudget(sparse) <= 5);
 // Wrist-only concerns do not need extra location detail to choose the launch SKU.
 assert.equal(E.needsPreciseLocation(E.activeThread(complete)), false);
 
+// AI-generated safety negatives are never accepted without explicit consumer support.
+let groundedSafety = E.createStore();
+const safetyTurns = [
+  'My right wrist is stiff in the morning and typing makes it worse. I want help choosing a wrist brace.',
+  'Gradually.',
+  'About four weeks.'
+];
+groundedSafety = E.mergeInterpretation(groundedSafety, interpretation({
+  side: 'right',
+  symptoms: ['stiffness'],
+  negatives: ['pain', 'numbness', 'tingling', 'swelling', 'redness', 'warmth', 'wound', 'weakness'],
+  patterns: ['morning'],
+  triggers: ['typing'],
+  onset: 'gradual',
+  duration: { value: 4, unit: 'week', raw: 'About four weeks' }
+}), safetyTurns);
+const groundedThread = E.activeThread(groundedSafety);
+assert(!groundedThread.negatives.includes('numbness'));
+assert(!groundedThread.negatives.includes('swelling'));
+assert(!groundedThread.negatives.includes('weakness'));
+
 console.log('PASS durable AI state, fallback recovery, corrections, uncertainty, and question budgets');
