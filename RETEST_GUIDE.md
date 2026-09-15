@@ -24,9 +24,19 @@ The participant does not need to have an actual injury, use the word “injury,�
 
 Do not explain the packages, recommend details to include, or point out the guide before the participant encounters them. If the participant asks what to type, say only: “Describe the concern in your own words, the way you would normally ask for help.”
 
-## Core scenarios
+## Subject sessions
 
-Use at least five scenarios per build. Scenarios 1–4 are the minimum launch regression set.
+For a five-person moderated round:
+
+- At least three participants should enter their own natural real or believable hand/wrist/thumb concern with no symptom script.
+- One participant may receive the light task: “Imagine you already know you want a wrist brace, but want help choosing which one.”
+- One participant may receive the light task: “Imagine you cannot measure your wrist right now.”
+
+Do not read any opening text from the internal scenarios below to a participant. The scripted scenarios are for internal regression only; they are not the consumer study protocol.
+
+## Internal regression scenarios
+
+Use at least five scenarios per build internally. Scenarios 1–4 are the minimum launch regression set.
 
 ### 1. Combined wrist/thumb after activity
 
@@ -157,5 +167,9 @@ Package comprehension (pass/fail + quote):
 Guide positioning (pass/fail + quote):
 Safety/checkout issues:
 Questions that felt unnecessary:
+Time to recommendation:
+Number of follow-up questions:
+Moderator assistance required:
+Abandoned or completed:
 What remains undecided:
 ```
