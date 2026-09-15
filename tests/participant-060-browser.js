@@ -77,6 +77,12 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     return page.locator(selector).evaluate(node => node.textContent.trim());
   }
 
+  async function safetyText() {
+    const prompt = await page.locator('#conversation .bubble.ai').last().innerText();
+    const choices = await page.locator('#interaction').innerText().catch(() => '');
+    return prompt + '\n' + choices;
+  }
+
   await scenario('complete-hand-path', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually. Phone use makes it worse. I have no numbness or swelling.', async () => {
     await clearSafetyAndMeasure();
     const initial = await page.evaluate(() => ({
@@ -189,7 +195,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('rich-owned-brace-replacement', "My right wrist and thumb have been hurting for about three weeks after playing pickleball. Gripping the paddle and twisting jars make it worse. There was no fall or direct injury. I don't have numbness, major swelling, or weakness. I own an old wrist brace, but it is stretched out and doesn't support my thumb.", async () => {
     const before = await page.locator('#conversation .bubble.ai').allInnerTexts().then(items => items.join(' '));
     assert(!/which side|how long|make it worse/i.test(before), 'known story facts were asked again');
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(!/major recent injury|swelling|loss of feeling|weakness/i.test(safety), 'known safety negatives were asked again');
     assert(/visibly changed shape|deep or dirty wound/i.test(safety));
     await clearSafetyAndMeasure();
@@ -220,7 +226,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('gradual-does-not-clear-later-injury', 'My right wrist has hurt for four weeks and built up gradually. Yesterday I had a major injury to it. Typing makes it worse.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Major injury or visibly changed shape'));
   });
 
@@ -262,12 +268,12 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('unrelated-negation-does-not-deny-fall', 'My right wrist hurts after a fall yesterday. No swelling. Typing makes it worse.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Major injury or visibly changed shape'));
   });
 
   await scenario('tingling-denial-does-not-deny-numbness', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no tingling.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('New loss of feeling'));
   });
 
@@ -284,7 +290,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('later-fall-overrides-earlier-denial', 'My right wrist has hurt for four weeks. There was no fall. Yesterday I fell and hurt it. Typing makes it worse.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Major injury or visibly changed shape'));
   });
 
@@ -296,7 +302,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('later-swelling-overrides-earlier-denial', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. There was no swelling yesterday. Today it is rapidly swelling.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Rapidly increasing swelling'));
   });
 
@@ -314,22 +320,22 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('contrast-stops-symptom-negation', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness but it is rapidly swelling.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Rapidly increasing swelling'));
   });
 
   await scenario('with-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness with rapidly increasing swelling.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Rapidly increasing swelling'));
   });
 
   await scenario('with-modifiers-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness with new rapidly increasing swelling.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Rapidly increasing swelling'));
   });
 
   await scenario('same-clause-later-injury-wins', 'My right wrist has hurt for four weeks. There was no fall, but yesterday I had a direct injury. Typing makes it worse.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Major injury or visibly changed shape'));
   });
 
@@ -362,31 +368,31 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('explicit-open-wound-denial-stays-denied', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no open wound.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(!safety.includes('open wound'));
   });
 
   await scenario('wound-pain-denial-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My open cut has no wound pain.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Self-care should pause here'));
     assert(safety.includes('may need professional evaluation'));
   });
 
   await scenario('cut-back-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and I cut back on typing because of the wrist pain.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
     assert(await page.locator('[data-safety="clear"]').count());
   });
 
   await scenario('cutting-back-is-not-another-body-region', 'My right wrist hurts for four weeks. It built up gradually and I have been cutting back on typing because of the wrist pain.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(await page.locator('[data-safety="clear"]').count());
   });
 
   await scenario('explicit-cut-denial-does-not-stop-intake', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I do not have a cut.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
     assert(!safety.includes('an open wound'));
@@ -400,13 +406,13 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('make-the-cut-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse after I did not make the cut for the team.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
   });
 
   await scenario('negated-transitive-cut-does-not-stop', 'My right wrist hurts for four weeks after I fell, but I did not cut my wrist. Typing makes it worse.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(!safety.includes('You reported an open wound'));
     assert(safety.includes('safety check'));
   });
@@ -423,7 +429,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('cut-short-idiom-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I cut my wrist exercises short because they hurt.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
   });
@@ -439,19 +445,19 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('therapy-cut-short-is-not-a-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I cut my wrist therapy short because it hurt.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
   });
 
   await scenario('healed-historical-cut-does-not-stop', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I had a cut on my wrist last year, but it healed.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
   });
 
   await scenario('exact-cut-correction-retracts-report', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I thought I cut my wrist, but I did not cut my wrist.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
   });
@@ -501,7 +507,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('relative-clause-healed-cut-does-not-stop', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have a wrist cut that has healed.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('safety check'));
     assert(!safety.includes('You reported an open wound'));
   });
@@ -561,7 +567,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Rapidly increasing swelling'));
   });
 
@@ -587,12 +593,12 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('fall-denial-does-not-clear-twist-injury', 'My right wrist hurts for four weeks after a sudden twist without a fall. Typing makes it worse.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Major injury or visibly changed shape'));
   });
 
   await scenario('burn-denial-does-not-clear-open-wound', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no burn.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Deep or dirty wound'));
   });
 
@@ -602,7 +608,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('later-same-clause-symptom-wins', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I had no swelling but now the swelling is rapidly increasing.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Rapidly increasing swelling'));
   });
 
@@ -614,12 +620,12 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('uncertain-numbness-remains-in-safety-check', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I am not sure whether my fingers are numb.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('New loss of feeling'));
   });
 
   await scenario('wound-dressing-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no wound dressing on the cut.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('Deep or dirty wound'));
   });
 
@@ -740,7 +746,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
 
   await scenario('affirmative-scrape-after-denial-remains-reported', 'My right wrist hurts for four weeks after typing. It built up gradually. I don’t have numbness or weakness, and I do have a small superficial scrape on my wrist. The bleeding stopped, and I washed and covered it.', async () => {
-    const safety = await page.locator('#conversation .bubble.ai').last().innerText();
+    const safety = await safetyText();
     assert(safety.includes('minor scrape does not automatically require medical care'));
     assert(safety.includes('unprotected broken skin'));
     assert(!safety.includes('Self-care should pause here'));
