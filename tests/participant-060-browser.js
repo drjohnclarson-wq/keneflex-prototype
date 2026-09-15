@@ -787,8 +787,42 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await finishIntakeAndMeasure('7.0', { trigger: 'Tennis and gripping make it worse.' });
     assert.equal(await page.locator('[data-plan="complete"]').isDisabled(), true);
     assert.equal(await content('#topicalState'), 'Not available for this story');
+    await page.click('[data-plan="core"]');
+    await page.click('[data-plan="recovery"]');
+    assert.equal(await content('#topicalState'), 'Not available for this story');
+    assert.equal(await page.evaluate(() => window.KeneflexParticipant.model.cart.topical.disposition), 'REMOVE');
     assert.equal(await content('#planName'), 'Support + recovery');
   });
+
+  await scenario('no-measurement-keeps-size-pending', 'My right wrist hurts for four weeks. It built up gradually, and typing makes it worse.', async () => {
+    if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
+    assert(await page.locator('#fitPending').count());
+    await page.click('#fitPending');
+    await page.waitForSelector('#solutionView:not(.hidden)');
+    assert((await content('#supportItem .planName')).includes('Size pending'));
+    assert((await content('#supportState')).includes('review'));
+    assert(await page.locator('.kfxBuy').isDisabled());
+  });
+
+  await page.route('**/api/interpret-story', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ interpretation: {
+      problems: [{
+        family: 'hand', side: 'right', areas: ['wrist'], locations: [], symptoms: ['stiffness'],
+        negatives: ['pain', 'numbness', 'tingling', 'swelling', 'redness', 'warmth', 'wound', 'weakness'],
+        qualities: ['stiff'], triggers: ['typing'], patterns: ['morning'], relievers: [], functionEffects: [], sensory: [],
+        onset: 'gradual', duration: { value: 4, unit: 'week', raw: 'about four weeks' }, provider: []
+      }],
+      clarifications: [], missingDecisionFacts: []
+    } })
+  }));
+  await scenario('ai-cannot-invent-safety-negatives', 'My right wrist is stiff in the morning and typing makes it worse. I want help choosing a wrist brace. It built up gradually for about four weeks.', async () => {
+    const safety = await safetyText();
+    assert(safety.includes('Rapidly increasing swelling'));
+    assert(safety.includes('New loss of feeling'));
+  });
+  await page.unroute('**/api/interpret-story');
 
   await browser.close();
   console.log(JSON.stringify({ scenarios: scenarioCount, failures }, null, 2));

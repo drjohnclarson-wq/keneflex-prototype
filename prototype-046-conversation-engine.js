@@ -51,13 +51,17 @@ function rekeyThread(store,t,side){const old=store.order.find(k0=>store.threads[
 function mergeInterpretation(store,result,events){
  if(!store||!store.threads)store=createStore();
  const incoming=importInterpretation(result,events);
+ const grounded=createStore();(events||[]).forEach(text=>ingest(grounded,text));
  store.events=incoming.events;store.turn=incoming.turn;
  incoming.order.forEach(incomingKey=>{
   const source=incoming.threads[incomingKey];
+  const groundedThreads=grounded.order.map(k0=>grounded.threads[k0]).filter(t=>t&&t.family===source.family&&(!source.side||!t.side||t.side===source.side));
+  const trustedNegatives=new Set(groundedThreads.flatMap(t=>t.negatives||[]));
+  source.negatives=(source.negatives||[]).filter(value=>trustedNegatives.has(value));
   let target=findThread(store,source.family,source.side)||ensureThread(store,source.family,source.side);
   if(source.side)rekeyThread(store,target,source.side);
   ['areas','locations','qualities','triggers','patterns','relievers','functionEffects','sensory','provider'].forEach(name=>mergeArray(target,name,source[name]));
-  mergeArray(target,'symptoms',source.symptoms);mergeArray(target,'negatives',source.negatives);
+  mergeArray(target,'symptoms',source.symptoms);mergeArray(target,'negatives',source.negatives);target.negatives=target.negatives.filter(value=>trustedNegatives.has(value));
   source.symptoms.forEach(value=>{target.negatives=target.negatives.filter(item=>item!==value)});
   source.negatives.forEach(value=>{target.symptoms=target.symptoms.filter(item=>item!==value)});
   if(source.onset)target.onset=source.onset;if(source.duration)target.duration=source.duration;
