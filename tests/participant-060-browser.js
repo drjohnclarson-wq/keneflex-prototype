@@ -99,14 +99,14 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert((await content('[data-plan="recovery"]')).includes('+$21.00: adds reusable flexible cold recovery'));
     assert((await content('[data-plan="complete"]')).includes('$52.98 total'));
     assert((await content('[data-plan="complete"]')).includes('+$11.99: adds temporary topical comfort'));
-    assert((await content('[data-plan="complete"]')).includes('Most comprehensive'));
+    assert((await content('[data-plan="complete"]')).includes('Optional comfort'));
     assert.equal(await page.locator('[data-plan="core"] .tierProduct img').count(), 1);
     assert.equal(await page.locator('[data-plan="recovery"] .tierProduct img').count(), 2);
     assert.equal(await page.locator('[data-plan="complete"] .tierProduct img').count(), 3);
     assert.equal(await page.locator('.tierPlanIcon').count(), 3);
     assert.equal(await page.locator('.tierIncludes span').filter({ hasText: 'Personalized product guide' }).count(), 3);
     assert(await page.evaluate(() => !!(document.querySelector('.planChooser').compareDocumentPosition(document.querySelector('.purchaseBlock')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'purchase action must follow plan cards');
-    assert.equal(await content('#planName'), 'Recommended');
+    assert.equal(await content('#planName'), 'Support + recovery');
     assert.equal(await content('#selectionCount'), '2 products + personalized product guide');
     assert.equal(initial.scripts.length, 4); // loader + engine + critical invariants + controller
     assert(!initial.observers, 'legacy observer runtime is active');
@@ -114,14 +114,14 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
     await page.click('[data-plan="recovery"]');
     assert.equal(await page.locator('#total').innerText(), '$40.99');
-    assert.equal(await content('#planName'), 'Recommended');
+    assert.equal(await content('#planName'), 'Support + recovery');
     assert.equal(await content('#selectionCount'), '2 products + personalized product guide');
     assert((await page.locator('.kfxBuy').innerText()).includes('$40.99'));
 
     await page.click('#kfxPlanBtn');
     assert(await page.locator('.kfxPlanOverlay').count());
     assert((await page.locator('.kfxPlanPage').innerText()).includes('Biofreeze') === false);
-    assert.equal(await content('.finalSelection h2'), 'Recommended');
+    assert.equal(await content('.finalSelection h2'), 'Support + recovery');
     assert((await content('.finalSelection')).includes('$40.99'));
     assert.equal(await page.locator('.finalSelection .planLine').count(), 3);
     assert((await content('.finalSelection .planIncluded')).includes('Personalized product guide'));
@@ -187,12 +187,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('rich-owned-brace-replacement', "My right wrist and thumb have been hurting for about three weeks after playing pickleball. Gripping the paddle and twisting jars make it worse. There was no fall or direct injury. I don't have numbness, major swelling, or weakness. I own an old wrist brace, but it is stretched out and doesn't support my thumb.", async () => {
-    assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
     const before = await page.locator('#conversation .bubble.ai').allInnerTexts().then(items => items.join(' '));
     assert(!/which side|how long|make it worse/i.test(before), 'known story facts were asked again');
-    await page.fill('#reply', 'It is centered at the base of my thumb and thumb side of my wrist.');
-    await page.click('#send');
-    await waitForIntakeSettled();
     const safety = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(!/major recent injury|swelling|loss of feeling|weakness/i.test(safety), 'known safety negatives were asked again');
     assert(/visible deformity|open wound/i.test(safety));
@@ -256,7 +252,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(warning.includes('clean, dry skin'));
   });
 
-  await scenario('free-form-precise-location-is-accepted', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+  await scenario('free-form-precise-location-is-accepted', 'My right hand hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
     assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
     await page.fill('#reply', 'On the palm side near the thumb knuckle.');
     await page.click('#send');
@@ -337,7 +333,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(safety.includes('major recent injury'));
   });
 
-  await scenario('precise-location-nonanswer-stays-unresolved', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+  await scenario('precise-location-nonanswer-stays-unresolved', 'My right hand hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
     assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
     await page.fill('#reply', "I don't know.");
     await page.click('#send');
@@ -350,7 +346,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(await page.locator('[data-safety="clear"]').count());
   });
 
-  await scenario('no-idea-location-stays-unresolved', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+  await scenario('no-idea-location-stays-unresolved', 'My right hand hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
     assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
     await page.fill('#reply', 'I have no idea.');
     await page.click('#send');
@@ -358,7 +354,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0);
   });
 
-  await scenario('uncertainty-with-location-is-accepted', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+  await scenario('uncertainty-with-location-is-accepted', 'My right hand hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
     await page.fill('#reply', 'I have no idea what the spot is called, but it is on the palm side near my thumb knuckle.');
     await page.click('#send');
     await waitForIntakeSettled();
@@ -529,7 +525,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.deepEqual(families, ['hand']);
   });
 
-  await scenario('generic-location-with-uncertainty-stays-unresolved', 'My right wrist and thumb hurt for four weeks. It built up gradually and typing makes it worse.', async () => {
+  await scenario('generic-location-with-uncertainty-stays-unresolved', 'My right hand hurts for four weeks. It built up gradually and typing makes it worse.', async () => {
     await page.fill('#reply', "I'm not sure where on my hand.");
     await page.click('#send');
     assert(await page.locator('#interaction[data-concept="preciseLocation"] #reply').count());
@@ -678,11 +674,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
 
   await scenario('list-style-open-wound-denial-continues', 'My right wrist and thumb have been hurting for about three weeks after playing pickleball. Gripping the paddle and twisting jars make it worse. There was no fall or direct injury. I don’t have numbness, major swelling, weakness, deformity, or an open wound. I own an old wrist brace, but it is stretched out and doesn’t support my thumb.', async () => {
-    assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'preciseLocation');
     assert(!(await page.locator('#conversation .bubble.ai').last().innerText()).includes('Self-care should pause here'));
-    await page.fill('#reply', 'At the base of my thumb and along the thumb side of my wrist.');
-    await page.click('#send');
-    await waitForIntakeSettled();
     assert.equal(await page.locator('[data-safety="clear"]').count(), 0, 'fully denied warning signs were asked again');
     assert(await page.locator('#wristMeasure').count());
     await page.fill('#wristMeasure', '7');
@@ -764,14 +756,14 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
     assert((await content('#supportItem .planName')).includes('Adjustable'));
     assert((await content('#coldItem .planName')).includes('Moist Heat'));
-    assert.equal(await content('#planName'), 'Recommended');
+    assert.equal(await content('#planName'), 'Support + recovery');
     assert.equal(await content('#total'), '$46.99');
   });
 
   await scenario('patch-preference-selects-complete', 'My right wrist and thumb are sore at the base of my thumb for four weeks. It built up gradually, and golf, gripping, and twisting make it worse. I want a brace and prefer a pain patch instead of cream.', async () => {
     await finishIntakeAndMeasure('7.0', { trigger: 'Golf, gripping, and twisting make it worse.' });
     assert((await content('#topicalItem .planName')).includes('Biofreeze Pain Relief Patch'));
-    assert.equal(await content('#planName'), 'Complete');
+    assert.equal(await content('#planName'), 'Add comfort relief');
     assert.equal(await page.locator('[data-plan="complete"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await content('#total'), '$53.98');
   });
@@ -779,7 +771,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('known-want-support-only-selects-essential', 'I only want help choosing a wrist support. My right wrist has hurt for four weeks. It built up gradually, and typing makes it worse.', async () => {
     await finishIntakeAndMeasure('7.0', { preciseLocation: 'It is centered on the palm side of my right wrist.', symptom: 'My wrist aches with use, but my thumb does not hurt.' });
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
-    assert.equal(await content('#planName'), 'Essential');
+    assert.equal(await content('#planName'), 'Support only');
     assert.equal(await page.locator('[data-plan="core"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await content('#total'), '$24.99');
   });
@@ -788,7 +780,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await finishIntakeAndMeasure('7.0', { trigger: 'Tennis and gripping make it worse.' });
     assert.equal(await page.locator('[data-plan="complete"]').isDisabled(), true);
     assert.equal(await content('#topicalState'), 'Not available for this story');
-    assert.equal(await content('#planName'), 'Recommended');
+    assert.equal(await content('#planName'), 'Support + recovery');
   });
 
   await browser.close();
