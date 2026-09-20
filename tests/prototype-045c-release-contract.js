@@ -51,7 +51,7 @@ check(participant.includes("release: '0.8.0'"), 'participant model identifies la
 check(participant.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
 check(participant.includes('function safetyGate()'), 'safety gate has one controller owner');
 check(participant.includes('medianSensoryPattern') && participant.includes('needsNeuroReview') && participant.includes("? 'BUY' : 'REVIEW'"), 'median-side nerve symptoms can select a neutral wrist support while unmatched patterns remain under review');
-check(participant.includes('Sudden numbness or weakness with face, speech, balance, or whole-arm changes') && participant.includes('Worsening loss of feeling, repeated dropping, or unable to grip normally'), 'neurologic safety language distinguishes common symptoms from true escalation findings');
+check(participant.includes('sudden face drooping, trouble speaking, or new weakness affecting one side of the body') && participant.includes('I have read this. None of these apply.'), 'safety language uses an acknowledgment with unmistakable emergency signs');
 check(participant.includes('Provider direction protected'), 'provider direction appears in recommendation reasoning');
 check(!participant.includes('classifyOwnedProduct') && !participant.includes("'KEEP'"), 'unverified owned products cannot change recommendations');
 check(participant.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
