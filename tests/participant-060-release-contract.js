@@ -39,7 +39,8 @@ check(controller.includes('function checkout()'), 'checkout has one controller o
 check(controller.includes('function openPlan()'), 'plan page has one controller owner');
 check(controller.includes('function adjust(kind)'), 'solution adjustment has one controller owner');
 check(controller.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
-check(controller.includes("model.cart.support.disposition = model.recommendation.eligible") && controller.includes("? 'BUY' : 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
+check(controller.includes('medianSensoryPattern') && controller.includes('needsNeuroReview') && controller.includes("? 'BUY' : 'REVIEW'"), 'common median-side nerve symptoms can select a neutral wrist support while unmatched patterns remain under review');
+check(controller.includes('Sudden numbness or weakness with face, speech, balance, or whole-arm changes') && controller.includes('Worsening loss of feeling, repeated dropping, or unable to grip normally'), 'neurologic safety choices distinguish common symptoms from urgent or progressive loss');
 check(controller.includes('Provider direction protected'), 'provider direction is visible in recommendation reasoning');
 check(!controller.includes('classifyOwnedProduct') && !controller.includes("'KEEP'"), 'unverified owned products cannot change recommendations');
 check(html.includes('Remove the wrist/thumb support') && html.includes('Remove the cold wrap') && html.includes('Remove the topical gel'), 'consumer can remove each recommended item');
