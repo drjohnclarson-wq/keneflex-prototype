@@ -177,6 +177,7 @@
       $('#interaction').innerHTML = '';
       return;
     }
+    if (stopForNeurologicRisk(thread, $('#interaction'))) return;
     if (Engine.adequate(model.story)) {
       if (!thread || hasUnsupportedRegion()) {
         addBubble('ai', '<p><b>I have enough of the story to understand the concern.</b></p><p>This participant build currently completes product recommendations only for the hand, wrist, and thumb pathway. I will not substitute a hand product for a ' + (thread?.family || 'different') + ' problem.</p>', true);
@@ -224,6 +225,7 @@
     const thread = activeProblem();
     const negative = new Set(thread?.negatives || []);
     const unresolved = [];
+    if (stopForNeurologicRisk(thread, interaction)) return;
     const deformityStatus = latestDeformityStatus();
     if (deformityStatus === 'reported') {
       addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>You reported visible deformity or that the area looks crooked, misshapen, or out of place. That can change what is safe, so seek an appropriate in-person medical evaluation before choosing a support or continuing this plan.</p>', true);
@@ -236,8 +238,8 @@
     if (!injuryDenied) unresolved.push('a major recent injury');
     if (woundAssessment === 'unknown') unresolved.push('a deep or gaping wound, bleeding that will not stop, a puncture, bite, or dirty wound, or signs of infection');
     if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
-    if (!negative.has('numbness')) unresolved.push('loss of feeling');
-    if (!negative.has('weakness')) unresolved.push('marked new weakness');
+    if (!negative.has('numbness') || !negative.has('weakness')) unresolved.push('sudden broader neurologic change');
+    if (!negative.has('numbness') || !negative.has('weakness')) unresolved.push('progressive hand-function loss');
     if (deformityStatus === 'unknown') unresolved.splice(Math.min(1, unresolved.length), 0, 'visible deformity');
     const minorWoundNotice = woundAssessment === 'minor'
       ? '<p><b>A minor scrape does not automatically require medical care.</b> Wash it with soap and water, cover it with a clean bandage, and watch for worsening redness, drainage, swelling, or pain. Do not place a brace or topical pain product directly over unprotected broken skin.</p>'
@@ -252,7 +254,8 @@
     if (unresolved.some(item => /injury|deformity/.test(item))) safetyChoices.push('Major injury or visibly changed shape');
     if (unresolved.some(item => /wound|bleeding|puncture|bite|infection/.test(item))) safetyChoices.push('Deep or dirty wound, uncontrolled bleeding, or infection signs');
     if (unresolved.some(item => /swelling/.test(item))) safetyChoices.push('Rapidly increasing swelling');
-    if (unresolved.some(item => /feeling|weakness/.test(item))) safetyChoices.push('New loss of feeling or meaningful weakness');
+    if (unresolved.some(item => /neurologic/.test(item))) safetyChoices.push('Sudden numbness or weakness with face, speech, balance, or whole-arm changes');
+    if (unresolved.some(item => /hand-function/.test(item))) safetyChoices.push('Worsening loss of feeling, repeated dropping, or unable to grip normally');
     addBubble('ai', minorWoundNotice + '<p><b>One safety check before I select a product:</b></p><p>Select anything you have noticed.</p>', true);
     interaction.innerHTML = '<div class="options safetyOptions">' + safetyChoices.map(label => '<button class="opt" data-safety="stop">' + escapeHtml(label) + '</button>').join('') + '<button class="opt" data-safety="clear">None of these</button><button class="opt" data-safety="stop">I am not sure</button></div>';
     $$('[data-safety]', interaction).forEach(button => button.addEventListener('click', () => {
@@ -265,6 +268,34 @@
       model.safetyCleared = true;
       fitGate();
     }));
+  }
+
+  function stopForNeurologicRisk(thread, interaction) {
+    const neurologicRisk = neurologicRiskFor(thread);
+    if (neurologicRisk === 'urgent') {
+      addBubble('ai', '<p><b>Seek urgent medical help now.</b></p><p>Sudden hand or arm numbness or weakness together with face, speech, balance, coordination, or whole-arm changes is not a product-selection situation.</p>', true);
+      interaction.innerHTML = '';
+      return true;
+    }
+    if (neurologicRisk === 'evaluation') {
+      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>Worsening loss of feeling, repeatedly dropping ordinary objects, being unable to grip normally, or progressive loss of hand control should be evaluated in person before choosing a support.</p>', true);
+      interaction.innerHTML = '';
+      return true;
+    }
+    return false;
+  }
+
+  function neurologicRiskFor(thread) {
+    const story = fullStory();
+    const hasNeurologicSymptom = (thread?.symptoms || []).some(value => value === 'numbness' || value === 'tingling' || value === 'weakness');
+    if (!hasNeurologicSymptom) return 'routine';
+    const sudden = /\b(?:sudden(?:ly)?|all at once|just started|within (?:minutes?|hours?))\b/.test(story);
+    const broaderChange = /\b(?:face|facial|speech|speaking|slurred|balance|coordination|whole arm|entire arm|one side of (?:my |the )?body)\b/.test(story);
+    if (sudden && broaderChange) return 'urgent';
+    const functionalLoss = /\b(?:(?:keep|kept|repeatedly|unexpectedly|started|starting|often)\s+dropp(?:ing|ed)|(?:cannot|can't|unable to|no longer able to)\s+(?:grip|grasp|hold)|loss of (?:hand )?(?:control|function)|muscle wasting|muscle atrophy)\b/.test(story);
+    const progressive = /\b(?:worsening|getting worse|progressive(?:ly)?|spreading|increasing)\b[^.!?;]{0,80}\b(?:numb|loss of feeling|weak|hand control|grip)\w*\b|\b(?:numb|loss of feeling|weak|hand control|grip)\w*\b[^.!?;]{0,80}\b(?:worsening|getting worse|progressive(?:ly)?|spreading|increasing)\b/.test(story);
+    if (functionalLoss || progressive || (sudden && /\b(?:numb|loss of feeling|weak)\w*\b/.test(story))) return 'evaluation';
+    return 'routine';
   }
 
   function latestDeformityStatus() {
@@ -395,10 +426,12 @@
     const story = fullStory();
     const areas = thread.areas || [];
     const thumbDenied = /\b(?:thumb (?:is|feels) fine|thumb (?:does not|doesn['’]?t) hurt|no thumb (?:pain|problem|symptoms)|not (?:in |at )?(?:my |the )?thumb)\b/.test(story);
+    const sensory = thread.sensory || [];
+    const medianSensoryPattern = sensory.some(value => value === 'thumb' || value === 'index' || value === 'middle') && !sensory.includes('pinky');
     const combined = areas.includes('wrist') && areas.includes('thumb') && !thumbDenied;
     const thumbLanguage = /\b(?:thumb|base of (?:my |the )?thumb|thumb side)\b/.test(story);
     const wristOnly = areas.includes('wrist') && (thumbDenied || (!areas.includes('thumb') && !thumbLanguage));
-    model.selection.support = wristOnly ? 'wrist' : 'combined';
+    model.selection.support = medianSensoryPattern || wristOnly ? 'wrist' : 'combined';
     model.selection.recovery = /\b(?:heat|warmth|warming|stiff|stiffness|tight|tightness|morning|chronic)\b/.test(story) && !/\b(?:cold|ice|icing|swollen|swelling|after (?:activity|exercise|playing))\b/.test(story) ? 'heat' : 'cold';
     model.selection.comfort = /\b(?:patch|patches|hands[- ]?free|mess[- ]?free)\b/.test(story) ? 'patch' : 'gel';
     model.comfortEligible = model.woundAssessment !== 'minor' && !/\b(?:allerg(?:y|ic)|sensitive skin|no topical|don['’]?t want (?:a )?(?:cream|gel|patch|topical))\b/.test(story);
@@ -421,6 +454,11 @@
 
   function recommendationFor(thread) {
     const neuro = thread.symptoms.some(value => value === 'numbness' || value === 'tingling');
+    const sensory = thread.sensory || [];
+    const medianSensoryPattern = sensory.some(value => value === 'thumb' || value === 'index' || value === 'middle') && !sensory.includes('pinky');
+    const neuroRisk = neurologicRiskFor(thread);
+    const neuroEligible = neuro && medianSensoryPattern && neuroRisk === 'routine';
+    const needsNeuroReview = neuro && !neuroEligible;
     const locationText = thread.locations.join(', ') || thread.areas.join(', ') || 'hand/wrist area';
     const locations = thread.side ? thread.side + ' — ' + locationText : locationText;
     const provider = (thread.provider || []).join(' ');
@@ -437,12 +475,15 @@
       neuro,
       locations,
       provider,
-      eligible: !neuro,
-      supportReason: neuro
-        ? 'The altered-feeling pattern needs a separate positioning and nerve-safety requirement. A combined wrist/thumb support is not automatically eligible simply because it covers both areas.'
+      eligible: !neuro || neuroEligible,
+      needsNeuroReview,
+      supportReason: neuroEligible
+        ? 'The gradual numbness or tingling pattern you described involves the thumb, index, or middle-finger side of the hand. A neutral-position wrist support is a closer product match than automatically adding thumb immobilization.'
+        : needsNeuroReview
+          ? 'The altered-feeling pattern does not match the current neutral-wrist-support pathway closely enough for Keneflex to complete the product choice.'
         : supportReason,
-      lead: neuro
-        ? 'Keneflex found an altered-feeling pattern as well as pain. The plan must satisfy both requirements before a support can be treated as selected.'
+      lead: needsNeuroReview
+        ? 'Keneflex found nerve-type symptoms, but the available product pathway does not match them closely enough to complete this purchase decision.'
         : 'A conservative plan built around the location, activity pattern, and safety information you provided.'
     };
   }
@@ -516,8 +557,10 @@
     $('#solutionView .solHero h1').textContent = hasReview ? 'Review this before buying.' : 'The right product for what you described.';
     $('#solutionLead').textContent = hasReview ? rec.lead : 'Keneflex compares the relevant options and recommends what to buy, what to keep, or when buying something is not the right next step.';
     const wornBrace = wornBraceExplanation();
-    $('#confidenceCopy').textContent = rec.neuro
-      ? 'A product should not be treated as selected until it satisfies the altered-feeling pattern as well as the pain and activity requirements.'
+    $('#confidenceCopy').textContent = rec.needsNeuroReview
+      ? 'A product should not be treated as selected until it matches the location and behavior of the nerve-type symptoms.'
+      : rec.neuro
+        ? 'The selected neutral-position wrist support matches the gradual nerve-type symptom pattern you described. Stop using it if symptoms increase or the fit creates pressure or altered feeling.'
       : wornBrace
         ? wornBrace
         : 'Your recommendation connects the selected products with practical guidance for fit, use, care, and knowing when the choice should be reconsidered.';
@@ -525,7 +568,7 @@
     const why = $('#whyRows');
     why.innerHTML = [
       ['Location carried forward', rec.locations],
-      ['Pattern considered', rec.neuro ? 'Pain plus altered feeling' : 'Use-related pain without an identified altered-feeling pattern'],
+      ['Pattern considered', rec.needsNeuroReview ? 'Nerve-type symptoms requiring product review' : rec.neuro ? 'Gradual nerve-type symptoms matching the neutral-wrist-support pathway' : 'Use-related pain without an identified altered-feeling pattern'],
       ['What changed the product decision', rec.supportReason],
       ...(rec.provider ? [['Provider direction protected', rec.provider + ' Keneflex will not recommend a conflicting use pattern.']] : []),
       ...(model.woundAssessment === 'minor' ? [['Skin protection', 'Clean and cover the minor scrape. Do not place a brace or topical pain product directly over unprotected broken skin.']] : [])
@@ -668,7 +711,7 @@
       id: 'safety',
       title: 'Safety and when to stop',
       summary: 'The warning signs that change the self-care plan.',
-      body: (model.woundAssessment === 'minor' ? '<div class="kfxPlanNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a support or topical pain product directly over unprotected broken skin.</div>' : '') + '<div class="kfxPlanStop"><b>Pause self-care and seek appropriate evaluation</b> for meaningful new weakness, loss of feeling, major or rapidly increasing swelling, deformity, a concerning wound, or significant worsening.</div>'
+      body: (model.woundAssessment === 'minor' ? '<div class="kfxPlanNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a support or topical pain product directly over unprotected broken skin.</div>' : '') + '<div class="kfxPlanStop"><b>Pause self-care and seek appropriate evaluation</b> if numbness or weakness becomes persistent or worsening, you repeatedly drop ordinary objects or cannot grip normally, or you develop major swelling, deformity, a concerning wound, or significant worsening. Seek urgent help for sudden weakness or numbness with face, speech, balance, coordination, or whole-arm changes.</div>'
     });
     return modules;
   }
