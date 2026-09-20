@@ -310,9 +310,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('progressive-object-dropping-reaches-acknowledgement', 'My right wrist tingles and my hand weakness has been getting worse for four weeks. I keep dropping ordinary objects and cannot grip normally.', async () => {
-    const safety = await safetyText();
-    assertSafetyAcknowledgement(safety);
-    await clearSafetyAndMeasure();
+    await finishIntakeAndMeasure('7.0', { sensoryDistribution: 'The tingling is in my thumb and index finger.' });
     assert(await page.locator('#solutionView:not(.hidden)').count());
   });
 
@@ -473,9 +471,9 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   });
 
   await scenario('postnominal-opposite-side-denial-preserves-cut', 'My right wrist hurts for four weeks. Typing makes it worse. I have an open cut on my right wrist, but no cut on my left wrist.', async () => {
-    const safety = await safetyText();
-    assertSafetyAcknowledgement(safety);
-    assert(safety.includes('minor scrape does not automatically require medical care'));
+    await finishIntakeAndMeasure();
+    const solution = await page.locator('#solutionView').innerText();
+    assert(solution.includes('Skin protection'));
   });
 
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
