@@ -145,11 +145,12 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert((await content('.kfxCheckout .planIncluded')).includes('Included'));
   });
 
-  await scenario('altered-feeling-gate', 'My left wrist and thumb hurt and my thumb and index finger tingle after typing for 3 weeks. It built up gradually.', async () => {
+  await scenario('gradual-median-side-tingling-selects-neutral-wrist-support', 'My left wrist and thumb hurt and my thumb and index finger tingle after typing for 3 weeks. It built up gradually.', async () => {
     await clearSafetyAndMeasure();
-    assert(await page.locator('.kfxBuy').isDisabled());
-    assert((await page.locator('#supportState').innerText()).includes('review'));
-    assert((await page.locator('#solutionView').innerText()).includes('altered-feeling pattern'));
+    assert.equal(await page.locator('.kfxBuy').isDisabled(), false);
+    assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
+    assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
+    assert((await page.locator('#solutionView').innerText()).includes('neutral-position wrist support'));
   });
 
   await scenario('regional-firewall', 'My right knee hurts under the kneecap for 3 weeks going downstairs. It built up gradually.', async () => {
@@ -274,7 +275,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('tingling-denial-does-not-deny-numbness', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no tingling.', async () => {
     const safety = await safetyText();
-    assert(safety.includes('New loss of feeling'));
+    assert(safety.includes('Worsening loss of feeling'));
   });
 
   await scenario('neighbors-product-is-not-owned', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. My neighbor has a cold pack that works well.', async () => {
@@ -283,7 +284,36 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('#total').innerText(), '$45.99');
   });
 
-  await scenario('owned-support-cannot-clear-neuro-review', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and typing makes it worse. My thumb and index finger tingle. My wrist and thumb brace is in good condition, fits well, and covers both areas.', async () => {
+  await scenario('owned-support-does-not-override-matched-neutral-wrist-selection', 'My right wrist and thumb hurt at the base of my thumb for four weeks. It built up gradually and typing makes it worse. My thumb and index finger tingle. My wrist and thumb brace is in good condition, fits well, and covers both areas.', async () => {
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
+    assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
+    assert.equal(await page.locator('.kfxBuy').isDisabled(), false);
+  });
+
+  await scenario('gradual-pain-limited-weakness-does-not-stop-self-care', 'My right wrist has felt sore and a little weak for four weeks after computer use. It built up gradually. Gripping hurts, but I can still hold ordinary objects normally.', async () => {
+    const safety = await safetyText();
+    assert(!safety.includes('Self-care should pause here'));
+    assert(!safety.includes('meaningful weakness'));
+    assert(safety.includes('unable to grip normally'));
+    await clearSafetyAndMeasure();
+    assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
+  });
+
+  await scenario('progressive-object-dropping-pauses-product-selection', 'My right wrist tingles and my hand weakness has been getting worse for four weeks. I keep dropping ordinary objects and cannot grip normally.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Self-care should pause here'));
+    assert(message.includes('dropping ordinary objects'));
+    assert.equal(await page.locator('#wristMeasure').count(), 0);
+  });
+
+  await scenario('sudden-broader-neurologic-change-is-urgent', 'My right hand and whole arm suddenly became numb and weak, my face feels different, and my speech is slurred.', async () => {
+    const message = await page.locator('#conversation .bubble.ai').last().innerText();
+    assert(message.includes('Seek urgent medical help now'));
+    assert.equal(await page.locator('#wristMeasure').count(), 0);
+  });
+
+  await scenario('pinky-side-tingling-stays-under-product-review', 'My right wrist tingles into my pinky at night for four weeks. It built up gradually.', async () => {
     await clearSafetyAndMeasure();
     assert.equal(await page.locator('#supportState').innerText(), 'Needs review before buying');
     assert(await page.locator('.kfxBuy').isDisabled());
@@ -621,7 +651,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
 
   await scenario('uncertain-numbness-remains-in-safety-check', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I am not sure whether my fingers are numb.', async () => {
     const safety = await safetyText();
-    assert(safety.includes('New loss of feeling'));
+    assert(safety.includes('Worsening loss of feeling'));
   });
 
   await scenario('wound-dressing-does-not-deny-cut', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no wound dressing on the cut.', async () => {
@@ -820,7 +850,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('ai-cannot-invent-safety-negatives', 'My right wrist is stiff in the morning and typing makes it worse. I want help choosing a wrist brace. It built up gradually for about four weeks.', async () => {
     const safety = await safetyText();
     assert(safety.includes('Rapidly increasing swelling'));
-    assert(safety.includes('New loss of feeling'));
+    assert(safety.includes('Worsening loss of feeling'));
   });
   await page.unroute('**/api/interpret-story');
 
