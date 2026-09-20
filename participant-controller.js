@@ -10,19 +10,19 @@
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
   const money = value => '$' + Number(value || 0).toFixed(2);
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
-  const placeholder = (label, color) => 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="30" fill="' + color + '"/><text x="120" y="110" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="white">' + label + '</text><text x="120" y="142" text-anchor="middle" font-family="Arial" font-size="15" fill="white">PRODUCT</text></svg>');
+  const productFallback = (label, color) => 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="30" fill="#f5f7f4"/><path d="M55 76c0-12 10-22 22-22h86c12 0 22 10 22 22v88c0 12-10 22-22 22H77c-12 0-22-10-22-22z" fill="' + color + '"/><path d="M75 98h90M75 121h90M75 144h65" stroke="white" stroke-width="9" stroke-linecap="round" opacity=".88"/><text x="120" y="214" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#143f43">' + label + '</text></svg>');
   const CATALOG = Object.freeze({
     support: Object.freeze({
-      combined: { id: 'support', sku: 'NEOG-AIRFLOW-WT', name: 'Neo G Airflow Wrist & Thumb Support', price: 19.99, role: 'Flexible wrist and thumb support', image: 'https://www.neo-g.com/cdn/shop/files/722-13-Box_R_1080x.png?v=1725268865', fit: 'sized', guide: 'Apply it only to clean, intact, dry skin with no gel, cream, or ointment underneath. Confirm that it supports without uncomfortable pressure, altered feeling, color change, or circulation concerns. Do not wear it for prolonged periods such as while sleeping. Follow the label for positioning, wear time, and cleaning.' },
-      wrist: { id: 'support', sku: 'BRACEABILITY-11H11', name: 'BraceAbility Volar Wrist Splint', price: 24.99, role: 'Neutral-position wrist support', image: placeholder('WRIST SPLINT', '#143f43'), fit: 'universal', guide: 'Use the adjustable straps to hold the wrist in a comfortable neutral position. The fingers should remain free and the brace should not create pressure, altered feeling, color change, or circulation concerns. Follow the label for use, stay removal, and hand washing.' }
+      combined: { id: 'support', sku: 'NEOG-AIRFLOW-WT', name: 'Neo G Airflow Wrist & Thumb Support', price: 19.99, role: 'Flexible wrist and thumb support', image: 'https://www.neo-g.com/cdn/shop/files/722-13-Box_R_1080x.png?v=1725268865', fallback: productFallback('WRIST + THUMB SUPPORT', '#143f43'), fit: 'sized', guide: 'Apply it only to clean, intact, dry skin with no gel, cream, or ointment underneath. Confirm that it supports without uncomfortable pressure, altered feeling, color change, or circulation concerns. Do not wear it for prolonged periods such as while sleeping. Follow the label for positioning, wear time, and cleaning.' },
+      wrist: { id: 'support', sku: 'BRACEABILITY-11H11', name: 'BraceAbility Volar Wrist Splint', price: 24.99, role: 'Neutral-position wrist support', image: 'https://www.braceability.com/cdn/shop/files/11h11-braceability-volar-wrist-splint.jpg?v=1710426144&width=800', fallback: productFallback('VOLAR WRIST SPLINT', '#143f43'), fit: 'universal', guide: 'Use the adjustable straps to hold the wrist in a comfortable neutral position. The fingers should remain free and the brace should not create pressure, altered feeling, color change, or circulation concerns. Follow the label for use, stay removal, and hand washing.' }
     }),
     recovery: Object.freeze({
-      cold: { id: 'cold', sku: 'POLAR-SPW8', name: 'Polar Soft Ice Wrist Wrap', price: 21.00, role: 'Reusable flexible cold recovery', image: 'https://trkmedicalproducts.com/cdn/shop/products/41_999x.jpg?v=1626891716', guide: 'Use after an aggravating activity or when cold feels helpful. Protect the skin, use only for the label-directed time, and stop for skin changes, excessive numbness, or worsening symptoms.' },
-      heat: { id: 'cold', sku: 'POLAR-MHW', name: 'Polar Thera-Temp Moist Heat Wrist & Hand Wrap', price: 22.00, role: 'Reusable moist heat for stiffness or tightness', image: placeholder('MOIST HEAT', '#8b4c2f'), guide: 'Use when warmth feels helpful for stiffness or muscle tightness. Check temperature before applying, use only for the label-directed time, and never use while sleeping or on skin with reduced sensation.' }
+      cold: { id: 'cold', sku: 'POLAR-SPW8', name: 'Polar Soft Ice Wrist Wrap', price: 21.00, role: 'Reusable flexible cold recovery', image: 'https://trkmedicalproducts.com/cdn/shop/products/41_999x.jpg?v=1626891716', fallback: productFallback('COLD WRIST WRAP', '#356d85'), guide: 'Use after an aggravating activity or when cold feels helpful. Protect the skin, use only for the label-directed time, and stop for skin changes, excessive numbness, or worsening symptoms.' },
+      heat: { id: 'cold', sku: 'POLAR-MHW', name: 'Polar Thera-Temp Moist Heat Wrist & Hand Wrap', price: 22.00, role: 'Reusable moist heat for stiffness or tightness', image: 'https://polarproducts.com/cdn/shop/files/MHW-1.jpg?width=800', fallback: productFallback('MOIST HEAT WRAP', '#8b4c2f'), guide: 'Use when warmth feels helpful for stiffness or muscle tightness. Check temperature before applying, use only for the label-directed time, and never use while sleeping or on skin with reduced sensation.' }
     }),
     comfort: Object.freeze({
-      gel: { id: 'topical', sku: 'BIOFREEZE-GEL-4', name: 'Biofreeze Pain Relief Gel, menthol 4%', price: 11.99, role: 'Temporary topical comfort gel', image: 'https://biofreeze.com/static/a06132b8965c43644a3e10fc5aae7a80/7b187/en-US-bf_retailgeltubegreen.png', guide: 'Apply only as directed on intact skin. Wash hands after use unless treating the hands. Do not bandage tightly, use with a heating device, or place the support over the gel.' },
-      patch: { id: 'topical', sku: 'BIOFREEZE-PATCH-5', name: 'Biofreeze Pain Relief Patch, menthol 5%', price: 12.99, role: 'Temporary hands-free comfort patch', image: placeholder('PAIN PATCH', '#356d58'), guide: 'Adults and children 12 and older: apply only as directed to clean, dry, intact skin and remove within 8 hours. Do not use more than 3 to 4 times daily, bandage tightly, use with a heating device, or place the support over the patch. For children under 12, consult a physician.' }
+      gel: { id: 'topical', sku: 'BIOFREEZE-GEL-4', name: 'Biofreeze Pain Relief Gel, menthol 4%', price: 11.99, role: 'Temporary topical comfort gel', image: 'https://biofreeze.com/static/a06132b8965c43644a3e10fc5aae7a80/7b187/en-US-bf_retailgeltubegreen.png', fallback: productFallback('PAIN RELIEF GEL', '#356d58'), guide: 'Apply only as directed on intact skin. Wash hands after use unless treating the hands. Do not bandage tightly, use with a heating device, or place the support over the gel.' },
+      patch: { id: 'topical', sku: 'BIOFREEZE-PATCH-5', name: 'Biofreeze Pain Relief Patch, menthol 5%', price: 12.99, role: 'Temporary hands-free comfort patch', image: 'https://biofreeze.com/static/925bb5a95dc398c4ef44bdd3bb475e1c/d55e2/en-US-3210136_bf_retaillargepatchretailcarton_left_5_2.png', fallback: productFallback('PAIN RELIEF PATCH', '#356d58'), guide: 'Adults and children 12 and older: apply only as directed to clean, dry, intact skin and remove within 8 hours. Do not use more than 3 to 4 times daily, bandage tightly, use with a heating device, or place the support over the patch. For children under 12, consult a physician.' }
     })
   });
   const PRODUCTS = Object.freeze({ support: CATALOG.support.combined, cold: CATALOG.recovery.cold, topical: CATALOG.comfort.gel });
@@ -223,8 +223,6 @@
     if (model.safetyCleared) return revealRecommendation();
     const interaction = $('#interaction');
     const thread = activeProblem();
-    const negative = new Set(thread?.negatives || []);
-    const unresolved = [];
     if (stopForNeurologicRisk(thread, interaction)) return;
     const deformityStatus = latestDeformityStatus();
     if (deformityStatus === 'reported') {
@@ -232,37 +230,23 @@
       interaction.innerHTML = '';
       return;
     }
-    const injuryDenied = latestInjuryStatus() === 'denied';
     const woundAssessment = latestWoundAssessment();
     model.woundAssessment = woundAssessment;
-    if (!injuryDenied) unresolved.push('a major recent injury');
-    if (woundAssessment === 'unknown') unresolved.push('a deep or gaping wound, bleeding that will not stop, a puncture, bite, or dirty wound, or signs of infection');
-    if (!negative.has('swelling')) unresolved.push('rapidly increasing swelling');
-    if (!negative.has('numbness') || !negative.has('weakness')) unresolved.push('sudden broader neurologic change');
-    if (!negative.has('numbness') || !negative.has('weakness')) unresolved.push('progressive hand-function loss');
-    if (deformityStatus === 'unknown') unresolved.splice(Math.min(1, unresolved.length), 0, 'visible deformity');
+    if (woundAssessment === 'concerning') {
+      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>You described an open injury with a serious feature such as uncontrolled bleeding, exposed tissue, a bite or puncture, contamination, or signs of infection. Seek appropriate in-person medical care before choosing a product.</p>', true);
+      interaction.innerHTML = '';
+      return;
+    }
     const minorWoundNotice = woundAssessment === 'minor'
       ? '<p><b>A minor scrape does not automatically require medical care.</b> Wash it with soap and water, cover it with a clean bandage, and watch for worsening redness, drainage, swelling, or pain. Do not place a brace or topical pain product directly over unprotected broken skin.</p>'
       : '';
-    if (!unresolved.length) {
-      if (minorWoundNotice) addBubble('ai', minorWoundNotice, true);
-      model.safetyCleared = true;
-      fitGate();
-      return;
-    }
-    const safetyChoices = [];
-    if (unresolved.some(item => /injury|deformity/.test(item))) safetyChoices.push('Major injury or visibly changed shape');
-    if (unresolved.some(item => /wound|bleeding|puncture|bite|infection/.test(item))) safetyChoices.push('Deep or dirty wound, uncontrolled bleeding, or infection signs');
-    if (unresolved.some(item => /swelling/.test(item))) safetyChoices.push('Rapidly increasing swelling');
-    if (unresolved.some(item => /neurologic/.test(item))) safetyChoices.push('Sudden numbness or weakness with face, speech, balance, or whole-arm changes');
-    if (unresolved.some(item => /hand-function/.test(item))) safetyChoices.push('Worsening loss of feeling, repeated dropping, or unable to grip normally');
-    addBubble('ai', minorWoundNotice + '<p><b>One safety check before I select a product:</b></p><p>Select anything you have noticed.</p>', true);
-    interaction.innerHTML = '<div class="options safetyOptions">' + safetyChoices.map(label => '<button class="opt" data-safety="stop">' + escapeHtml(label) + '</button>').join('') + '<button class="opt" data-safety="clear">None of these</button><button class="opt" data-safety="stop">I am not sure</button></div>';
+    addBubble('ai', minorWoundNotice + '<p><b>Please read this before continuing.</b></p><p>Keneflex is for minor, non-emergency concerns. Do not continue here if you have:</p><ul><li>an injury with exposed bone, a joint clearly out of place, or bleeding that will not stop;</li><li>a hand or fingers that turned blue, very pale, or cold after an injury; or</li><li>sudden face drooping, trouble speaking, or new weakness affecting one side of the body.</li></ul><p>If your symptoms are getting worse or are not improving with self-care, contact an appropriate healthcare professional.</p>', true);
+    interaction.innerHTML = '<div class="options safetyOptions"><button class="opt safetyAck" data-safety="clear">I have read this. None of these apply.</button><button class="opt" data-safety="stop">One of these applies</button></div>';
     $$('[data-safety]', interaction).forEach(button => button.addEventListener('click', () => {
       addBubble('user', button.textContent.trim());
       interaction.innerHTML = '';
       if (button.dataset.safety === 'stop') {
-        addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>Those details can change what is safe. Seek an appropriate in-person medical evaluation before choosing a support or continuing this plan.</p>', true);
+        addBubble('ai', '<p><b>Do not continue with product selection.</b></p><p>Seek appropriate urgent or emergency medical care for the warning sign you recognized.</p>', true);
         return;
       }
       model.safetyCleared = true;
@@ -277,11 +261,6 @@
       interaction.innerHTML = '';
       return true;
     }
-    if (neurologicRisk === 'evaluation') {
-      addBubble('ai', '<p><b>Self-care should pause here.</b></p><p>Worsening loss of feeling, repeatedly dropping ordinary objects, being unable to grip normally, or progressive loss of hand control should be evaluated in person before choosing a support.</p>', true);
-      interaction.innerHTML = '';
-      return true;
-    }
     return false;
   }
 
@@ -292,9 +271,6 @@
     const sudden = /\b(?:sudden(?:ly)?|all at once|just started|within (?:minutes?|hours?))\b/.test(story);
     const broaderChange = /\b(?:face|facial|speech|speaking|slurred|balance|coordination|whole arm|entire arm|one side of (?:my |the )?body)\b/.test(story);
     if (sudden && broaderChange) return 'urgent';
-    const functionalLoss = /\b(?:(?:keep|kept|repeatedly|unexpectedly|started|starting|often)\s+dropp(?:ing|ed)|(?:cannot|can't|unable to|no longer able to)\s+(?:grip|grasp|hold)|loss of (?:hand )?(?:control|function)|muscle wasting|muscle atrophy)\b/.test(story);
-    const progressive = /\b(?:worsening|getting worse|progressive(?:ly)?|spreading|increasing)\b[^.!?;]{0,80}\b(?:numb|loss of feeling|weak|hand control|grip)\w*\b|\b(?:numb|loss of feeling|weak|hand control|grip)\w*\b[^.!?;]{0,80}\b(?:worsening|getting worse|progressive(?:ly)?|spreading|increasing)\b/.test(story);
-    if (functionalLoss || progressive || (sudden && /\b(?:numb|loss of feeling|weak)\w*\b/.test(story))) return 'evaluation';
     return 'routine';
   }
 
@@ -389,7 +365,10 @@
     const text = model.story.events.map(event => String(event.text || '').replace(/[’‘]/g, "'")).join(' ');
     const concerning = /\b(?:deep|gaping|puncture|punctured|bite|bitten|dirty|contaminated|embedded|foreign (?:body|object)|exposed (?:bone|tendon)|pus|drainage|red streaks?|spreading redness|uncontrolled bleeding|severe bleeding|persistent bleeding|keeps? bleeding|continues? (?:to bleed|bleeding)|bleeding (?:continues?|persists?|will not|won't|cannot|can't) stop?|still bleeding|fever)\b/i.test(text);
     const minor = /\b(?:(?:(?:minor|small|superficial|shallow)\s+)+(?:scrape|abrasion|cut)|skinned\s+(?:my\s+)?(?:hand|wrist|thumb|finger|knee|elbow))\b/i.test(text);
-    return concerning ? 'concerning' : minor ? 'minor' : 'concerning';
+    // A generic mention of a cut or scrape is not enough to stop product
+    // selection. Only explicit serious wound features trigger the hard stop;
+    // otherwise treat the area as minor broken skin and apply protection rules.
+    return concerning ? 'concerning' : 'minor';
   }
 
   function fitGate() {
@@ -523,7 +502,7 @@
     $('.planName', item).textContent = line.name;
     $('.planRole', item).textContent = id === 'support' ? 'Primary support' : id === 'cold' ? 'Matched recovery' : 'Optional comfort';
     const image = $('img', item);
-    if (image) { image.src = line.image; image.alt = line.name; }
+    if (image) { image.src = line.image; image.alt = line.name; image.dataset.fallback = line.fallback; }
     if (id === 'support' && !model.fit.supportSku) $('.planCopy', item).textContent = 'The available support size is not verified for your measurement, so this item remains under review and cannot be purchased yet.';
     else if (id !== 'support') $('.planCopy', item).textContent = line.role + '. ' + (id === 'topical' ? 'Use only on intact skin and separately from the support.' : 'Follow the product label for timing and skin protection.');
     const removeButton = $('[data-tune="' + id + '"]');
@@ -544,7 +523,7 @@
       const recommended = tier.id === model.recommendedPlan;
       const tierTotal = tier.products.reduce((sum, product) => sum + product.price, 0);
       const badge = recommended ? 'Keneflex recommended' : tier.disabled ? 'Not appropriate for this story' : ({ core: 'Primary product', recovery: 'Adds recovery', complete: 'Optional comfort' })[tier.id];
-      const visuals = tier.products.map(product => '<span class="tierProduct"><img alt="' + escapeHtml(product.name) + '" src="' + product.image + '"/><small>' + escapeHtml(product.id === 'support' ? 'Support' : product.id === 'cold' ? 'Recovery' : 'Comfort') + '</small></span>').join('');
+      const visuals = tier.products.map(product => '<span class="tierProduct"><img alt="' + escapeHtml(product.name) + '" src="' + product.image + '" data-fallback="' + product.fallback + '"/><small>' + escapeHtml(product.id === 'support' ? 'Support' : product.id === 'cold' ? 'Recovery' : 'Comfort') + '</small></span>').join('');
       const included = tier.products.map(product => '<span>✓ ' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</span>').join('');
       return '<button class="planTier' + (selected ? ' selected' : '') + (recommended ? ' featured' : '') + '" data-plan="' + tier.id + '" aria-pressed="' + selected + '"' + (tier.disabled ? ' disabled aria-disabled="true"' : '') + '><span class="tierTop"><span class="tierLabel">' + tier.label + '</span><span class="tierBadge' + (recommended ? ' recommendedBadge' : '') + '">' + badge + '</span></span><b>' + tier.title + '</b><div class="tierVisuals">' + visuals + '<span class="tierPlanIcon" aria-hidden="true"><i>K</i><small>Product guide</small></span></div><strong>' + money(tierTotal) + ' <small>total</small></strong><span class="tierDelta">' + tier.delta + '</span><span class="tierIncludes"><b>Your package includes:</b><span>✓ Personalized product guide</span>' + included + '</span><span class="tierChoice">' + (selected ? 'Selected' : tier.disabled ? 'Unavailable for this story' : 'Select ' + tier.label) + '</span></button>';
     }).join('');
@@ -704,14 +683,14 @@
       id: 'followup',
       title: 'Check whether it is working',
       summary: 'How to judge the product fit and when the recommendation should be reconsidered.',
-      body: '<div class="planSteps"><div class="planStep"><b>Good fit</b><p>The product performs its intended role without creating new pressure, skin, movement, or circulation problems.</p></div><div class="planStep"><b>Needs adjustment</b><p>Recheck sizing, placement, wear time, and whether you are using it for the situation it was selected for.</p></div><div class="planStep"><b>Not helping</b><p>Reassess the product match rather than automatically adding more products. Professional evaluation may be the better next step.</p></div></div>'
+      body: '<div class="planSteps"><div class="planStep"><b>Good fit</b><p>The product performs its intended role without creating new pressure, skin, movement, or circulation problems.</p></div><div class="planStep"><b>Needs adjustment</b><p>Recheck sizing, placement, wear time, and whether you are using it for the situation it was selected for.</p></div><div class="planStep"><b>Not improving</b><p>If symptoms are getting worse or are not improving with self-care, contact an appropriate healthcare professional rather than automatically adding more products.</p></div></div>'
     });
 
     modules.push({
       id: 'safety',
       title: 'Safety and when to stop',
       summary: 'The warning signs that change the self-care plan.',
-      body: (model.woundAssessment === 'minor' ? '<div class="kfxPlanNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a support or topical pain product directly over unprotected broken skin.</div>' : '') + '<div class="kfxPlanStop"><b>Pause self-care and seek appropriate evaluation</b> if numbness or weakness becomes persistent or worsening, you repeatedly drop ordinary objects or cannot grip normally, or you develop major swelling, deformity, a concerning wound, or significant worsening. Seek urgent help for sudden weakness or numbness with face, speech, balance, coordination, or whole-arm changes.</div>'
+      body: (model.woundAssessment === 'minor' ? '<div class="kfxPlanNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a support or topical pain product directly over unprotected broken skin.</div>' : '') + '<div class="kfxPlanStop"><b>Get urgent help</b> for exposed bone, a joint clearly out of place, bleeding that will not stop, blue/pale/cold fingers after an injury, or sudden face drooping, speech trouble, or one-sided weakness. If symptoms are getting worse or are not improving with self-care, contact an appropriate healthcare professional.</div>'
     });
     return modules;
   }
@@ -785,6 +764,12 @@
 
   function bind() {
     document.title = 'Keneflex';
+    document.addEventListener('error', event => {
+      const image = event.target;
+      if (image?.tagName !== 'IMG' || !image.dataset.fallback || image.dataset.fallbackApplied === 'true') return;
+      image.dataset.fallbackApplied = 'true';
+      image.src = image.dataset.fallback;
+    }, true);
     $('#intro .hero .eyebrow')?.classList.add('hidden');
     applyConsumerCopy();
     const opening = $('#opening');
