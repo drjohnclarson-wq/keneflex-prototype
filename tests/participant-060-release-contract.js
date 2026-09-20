@@ -40,11 +40,11 @@ check(controller.includes('function openPlan()'), 'plan page has one controller 
 check(controller.includes('function adjust(kind)'), 'solution adjustment has one controller owner');
 check(controller.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
 check(controller.includes('medianSensoryPattern') && controller.includes('needsNeuroReview') && controller.includes("? 'BUY' : 'REVIEW'"), 'common median-side nerve symptoms can select a neutral wrist support while unmatched patterns remain under review');
-check(controller.includes('Sudden numbness or weakness with face, speech, balance, or whole-arm changes') && controller.includes('Worsening loss of feeling, repeated dropping, or unable to grip normally'), 'neurologic safety choices distinguish common symptoms from urgent or progressive loss');
+check(controller.includes('sudden face drooping, trouble speaking, or new weakness affecting one side of the body') && !controller.includes('Worsening loss of feeling, repeated dropping, or unable to grip normally'), 'safety acknowledgment uses unmistakable emergency signs without classifying common nerve symptoms as emergencies');
 check(controller.includes('Provider direction protected'), 'provider direction is visible in recommendation reasoning');
 check(!controller.includes('classifyOwnedProduct') && !controller.includes("'KEEP'"), 'unverified owned products cannot change recommendations');
 check(html.includes('Remove the wrist/thumb support') && html.includes('Remove the cold wrap') && html.includes('Remove the topical gel'), 'consumer can remove each recommended item');
-check(controller.includes("negative.has('swelling')") && controller.includes("negative.has('weakness')"), 'safety gate suppresses facts already supplied as negatives');
+check(controller.includes('I have read this. None of these apply.') && controller.includes('not improving with self-care'), 'safety boundary is a concise acknowledgment with follow-up guidance');
 check(critical.includes('needsPreciseHandLocation'), 'combined wrist/thumb stories require decision-changing location detail');
 check(participantCss.includes('@media(max-width:650px)') && participantCss.includes('.planTiers{grid-template-columns:1fr}'), 'mobile decision plans use one primary reading column');
 check(!controller.includes("window.open('', '_blank')"), 'plan renders in the responsive Keneflex shell instead of about:blank');
@@ -55,7 +55,8 @@ check(controller.includes('See details and product-use guide'), 'product guide a
 check(html.includes('personalized product guide'), 'product guide appears in the selected summary');
 check(controller.includes('Optional comfort') && html.includes('tierVisuals'), 'complete package and cumulative product visuals are explicit without an upsell claim');
 check(controller.includes('I can’t measure right now'), 'sizing offers a no-measurement path');
-check(controller.includes('safetyOptions') && controller.includes('None of these'), 'safety screening is a scannable choice list');
+check(controller.includes('safetyOptions') && controller.includes('Please read this before continuing.'), 'safety boundary is a scannable acknowledgment');
+check(controller.includes('data-fallback') && controller.includes('11h11-braceability-volar-wrist-splint') && controller.includes('retaillargepatchretailcarton'), 'recommendations use product photography with visible fallbacks');
 check(html.includes('moreDetails') && html.includes('limited set of hand, wrist, and thumb products for adults'), 'subject-test scope and secondary details are clearly framed');
 check(!html.includes('Core is enough to start') && !html.includes('optional additions'), 'package presentation does not minimize recovery or comfort');
 check(controller.includes('function applyConsumerCopy()'), 'consumer copy is authored once without observer cleanup');
