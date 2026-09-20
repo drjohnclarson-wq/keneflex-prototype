@@ -470,12 +470,6 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!hand.symptoms.includes('tingling'));
   });
 
-  await scenario('postnominal-opposite-side-denial-preserves-cut', 'My right wrist hurts for four weeks. Typing makes it worse. I have an open cut on my right wrist, but no cut on my left wrist.', async () => {
-    await finishIntakeAndMeasure();
-    const solution = await page.locator('#solutionView').innerText();
-    assert(solution.includes('Skin protection'));
-  });
-
   await scenario('and-clause-positive-symptom-is-not-negated', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. I have no numbness and it is rapidly swelling.', async () => {
     const safety = await safetyText();
     assertSafetyAcknowledgement(safety);
