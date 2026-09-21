@@ -33,7 +33,8 @@ Do not show this entire list to the participant.
 - Safety: no significant fall/direct blow, obvious deformity, open wound, persistent numbness, or marked weakness.
 - Provider: no healthcare provider has specified a product or specific use directions.
 - Existing items for the initial case: no suitable wrist/thumb support, cold/recovery product, or topical intended for this scenario.
-- Wrist circumference: 7.0 inches.
+- Build description: average wrist.
+- Wrist circumference if the participant chooses to measure: 7.0 inches.
 
 ## Opening script
 
@@ -45,7 +46,7 @@ Say:
 
 - Do not explain what Keneflex is supposed to do.
 - Do not tell the participant what to click.
-- Do not volunteer scenario facts before Keneflex asks.
+- Do not volunteer scenario facts before Keneflex asks. When the recommendation appears, let the participant choose fit from their own description; provide the 7.0-inch measurement only if they choose the measurement path.
 - Do not rescue Keneflex if it misses an important question.
 - Do not praise positive comments or defend negative comments.
 - Do not ask the participant to read **How It Works** or **Our Approach** during the initial experience.
