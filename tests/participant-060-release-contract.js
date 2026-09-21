@@ -30,7 +30,7 @@ check((loader.match(/<script defer/g) || []).length === 3, 'consolidated runtime
 check(!/prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/.test(loader), 'legacy patch stack is absent from production loader');
 check(route.includes("searchParams.set('participant','080')"), 'participant route matches launch-catalog release');
 check(route.includes("searchParams.set('build',String(stamp))"), 'participant route cache-busts each launch');
-check(html.includes('participant-consolidated.css?v=080'), 'consolidated stylesheet is loaded');
+check(html.includes('participant-consolidated.css?v=081'), 'consolidated stylesheet is loaded');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'legacy inline commerce runtime is removed');
 check(controller.includes('const model ='), 'one authoritative participant model exists');
 check(controller.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
