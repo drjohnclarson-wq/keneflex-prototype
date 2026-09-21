@@ -50,7 +50,8 @@ check(participant.includes('const model ='), 'one authoritative participant mode
 check(participant.includes("release: '0.8.0'"), 'participant model identifies launch-catalog release');
 check(participant.includes("thread.family !== 'hand'"), 'unsupported regions cannot receive a hand recommendation');
 check(participant.includes('function safetyGate()'), 'safety gate has one controller owner');
-check(participant.includes("model.cart.support.disposition = model.recommendation.eligible") && participant.includes("? 'BUY' : 'REVIEW'"), 'altered-feeling pattern blocks automatic support checkout');
+check(participant.includes('medianSensoryPattern') && participant.includes('needsNeuroReview') && participant.includes("? 'BUY' : 'REVIEW'"), 'median-side nerve symptoms can select a neutral wrist support while unmatched patterns remain under review');
+check(participant.includes('sudden face drooping, trouble speaking, or new weakness affecting one side of the body') && participant.includes('I have read this. None of these apply.'), 'safety language uses an acknowledgment with unmistakable emergency signs');
 check(participant.includes('Provider direction protected'), 'provider direction appears in recommendation reasoning');
 check(!participant.includes('classifyOwnedProduct') && !participant.includes("'KEEP'"), 'unverified owned products cannot change recommendations');
 check(participant.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
