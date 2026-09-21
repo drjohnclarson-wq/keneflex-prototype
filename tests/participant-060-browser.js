@@ -137,6 +137,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     const productImages = await page.locator('.tierProduct img').evaluateAll(images => images.map(image => ({ src: image.currentSrc || image.src, width: image.naturalWidth, height: image.naturalHeight })));
     assert(productImages.every(image => image.src && image.width > 0 && image.height > 0), 'every recommended product must show a visible image or fallback');
     assert.equal(await page.locator('.tierPlanIcon').count(), 3);
+    assert.equal(await page.locator('.guideCover').count(), 3);
+    assert.equal(await page.locator('.guideCoverTitle').filter({ hasText: 'YOUR PRODUCT GUIDE' }).count(), 3);
     assert.equal(await page.locator('.tierIncludes span').filter({ hasText: 'Personalized product guide' }).count(), 3);
     assert(await page.evaluate(() => !!(document.querySelector('.planChooser').compareDocumentPosition(document.querySelector('.purchaseBlock')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'purchase action must follow plan cards');
     assert.equal(await content('#planName'), 'Support + recovery');
@@ -253,6 +255,8 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(reasons.includes('Neo G Airflow Wrist & Thumb Support'));
     assert(reasons.includes('wrist and thumb'));
     assert(reasons.includes('Polar Soft Ice Wrist Wrap'));
+    assert(reasons.includes('Biofreeze Pain Relief Gel'));
+    assert(reasons.includes('Optional comfort'));
   });
 
   await scenario('not-sure-opens-package-chart', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and gripping makes it worse.', async () => {
