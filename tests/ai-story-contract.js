@@ -36,7 +36,8 @@ check(controller.includes("model.interpretationMode = 'deterministic-fallback'")
 check(controller.includes('Engine.mergeInterpretation'), 'participant controller merges structured AI facts into durable state');
 check(controller.includes("clarification?.question"), 'genuine AI ambiguity can produce a clarification');
 check(controller.includes('clarificationConcept === question.concept'), 'AI clarification wording cannot silently change the concept being asked');
-check(controller.includes('model.lastAnsweredConcept ==='), 'immediately repeated questions are suppressed');
+check(controller.includes('model.lastAnswered?.concept') && controller.includes('model.lastAnswered.threadKey'), 'immediately repeated questions are suppressed only within the answered problem thread');
+check(!controller.includes("recordContextAnswer(model.story, question.concept, 'answered')"), 'repeat suppression never fabricates a consumer answer');
 check(controller.includes('if (submitting) return'), 'a single answer cannot be submitted more than once');
 
 if (failed) { console.error(`\n${failed}/${total} AI story contracts failed`); process.exit(1); }

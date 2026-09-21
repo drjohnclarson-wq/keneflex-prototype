@@ -15,6 +15,8 @@ Secondary questions:
 3. Is it clear that the same roles can contain different products—for example, heat instead of cold or a patch instead of gel?
 4. Does the product guide add confidence without making Keneflex look like a rehabilitation provider?
 5. Can the tester explain why a product was selected and what would make them stop or reconsider it?
+6. Can the tester choose or confirm a plausible product size without being required to own a tape measure?
+7. Does the optional “Why each item was selected” explanation increase trust without adding visual clutter?
 
 ## Moderator opening prompt
 
@@ -44,7 +46,7 @@ Opening text:
 
 > My right wrist hurts at the base of my thumb after pickleball. Gripping and twisting make it sore. I want help choosing the right brace.
 
-Expected result: Neo G combined support, Polar Soft Ice recovery, Support + recovery highlighted, gel available but not preselected. A 7.0-inch wrist resolves to Medium.
+Expected result: Neo G combined support appears before sizing, Polar Soft Ice recovery, Support + recovery highlighted, and gel available but not preselected. The participant can choose Smaller/slender, Average, Larger/broader, or Not sure. A 7.0-inch wrist resolves to Medium.
 
 ### 2. Wrist-only stiffness and known product category
 
@@ -52,7 +54,7 @@ Opening text:
 
 > I already know I want a wrist brace. My left wrist is stiff and tight in the morning, but my thumb is fine. Help me pick the right one.
 
-Expected result: BraceAbility Volar Wrist Splint, moist heat recovery, Support + recovery highlighted, minimal repetition of facts already supplied.
+Expected result: BraceAbility Volar Wrist Splint, moist heat recovery, Support + recovery highlighted, minimal repetition of facts already supplied, and no measurement request. The consumer confirms that the wrist is within the adjustable adult range listed up to 9.5 inches; “Not sure or larger” holds checkout.
 
 ### 3. Patch preference
 
@@ -80,10 +82,13 @@ Expected result: minor-wound protection message, support/recovery logic continue
 
 ## Sizing checks
 
-Test both paths:
+Test all relevant paths after the recommendation appears:
 
-1. If the participant has a flexible tape, string, or paper strip and ruler, let them measure around the wrist using the on-screen instructions.
-2. If they cannot measure, use **I can’t measure right now**. The prototype may show the product recommendation, but must leave the size pending and disable checkout. It must not guess size from height, weight, glove size, or a photograph.
+1. Let the participant choose Smaller/slender, Average, Larger/broader, or Not sure without moderator coaching.
+2. A body-build choice is only an estimated starting size. The package chart opens and checkout remains disabled until the participant confirms the estimate.
+3. If the participant wants to measure, the on-screen instructions allow a flexible tape or a string/paper strip plus a ruler. Measurement is optional.
+4. Measurements at 6.3 or 7.5 inches show both adjacent package ranges and require the participant to choose and confirm one; they are not silently assigned.
+5. Wrist-only BraceAbility recommendations skip size selection while visibly stating the manufacturer’s adult-wrist limit.
 
 ### 6. Altered feeling
 
@@ -118,6 +123,8 @@ Ask the participant to:
 3. Open the personalized product guide and find the most relevant use direction.
 4. Change to a different package, remove an item, and return to the recommendation.
 5. Start checkout and confirm the correct products and total; remind them no order is placed.
+6. Choose or confirm support fit naturally. Do not suggest measuring unless the participant opens the chart or asks for help.
+7. Open “Why each item was selected” and explain whether its reasons feel specific and credible.
 
 ## Post-task questions
 
@@ -142,6 +149,12 @@ Record each as pass/fail and add the participant's exact words.
 | Known-want efficiency | Participant who names a category does not report that the flow ignored what they already knew |
 | Safety clarity | Finds the relevant stop/use-separately warning without moderator explanation |
 | Commerce accuracy | Checkout names and total match the selected package |
+| Sizing completion | Participant selects or confirms fit without moderator coaching and understands where the package chart is located |
+| Selection rationale | Participant can connect each selected item to a distinct role after opening the optional explanation |
+
+## Catalog boundary for this test
+
+This round is adults-only. Do not infer that an adult Small is appropriate for a child. Pediatric sizing requires separately selected manufacturer-labeled pediatric products and caregiver-facing fit guidance before it is tested.
 
 ## Release acceptance threshold
 

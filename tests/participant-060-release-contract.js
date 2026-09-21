@@ -54,9 +54,9 @@ check(html.includes('+$21.00:') && html.includes('+$11.99:'), 'higher plans dist
 check(controller.includes('See details and product-use guide'), 'product guide action uses consumer language');
 check(html.includes('personalized product guide'), 'product guide appears in the selected summary');
 check(controller.includes('Optional comfort') && html.includes('tierVisuals'), 'complete package and cumulative product visuals are explicit without an upsell claim');
-check(controller.includes('I can’t measure right now'), 'sizing offers a no-measurement path');
+check(controller.includes('data-fit-unsure') && controller.includes('Which best describes your wrist?'), 'sizing starts without requiring a measurement');
 check(controller.includes('safetyOptions') && controller.includes('Please read this before continuing.'), 'safety boundary is a scannable acknowledgment');
-check(controller.includes('data-fallback') && controller.includes('11h11-braceability-volar-wrist-splint') && controller.includes('retaillargepatchretailcarton'), 'recommendations use product photography with visible fallbacks');
+check(controller.includes('data-fallback') && controller.includes('11h11-braceability-volar-wrist-splint') && controller.includes('PAIN RELIEF PATCH'), 'recommendations use product photography with visible fallbacks');
 check(html.includes('moreDetails') && html.includes('limited set of hand, wrist, and thumb products for adults'), 'subject-test scope and secondary details are clearly framed');
 check(!html.includes('Core is enough to start') && !html.includes('optional additions'), 'package presentation does not minimize recovery or comfort');
 check(controller.includes('function applyConsumerCopy()'), 'consumer copy is authored once without observer cleanup');
@@ -72,6 +72,16 @@ check(controller.includes("model.selection.recovery") && controller.includes("? 
 check(controller.includes("model.selection.comfort") && controller.includes("? 'patch' : 'gel'"), 'comfort selection can choose patch or gel');
 check(controller.includes("wantsOnlySupport") && controller.includes("model.recommendedPlan"), 'known-want support-only stories can use the Essential path');
 check(controller.includes('disabled aria-disabled="true"') && controller.includes('model.comfortEligible'), 'ineligible topical comfort cannot be selected');
+check(!controller.includes('function fitGate()') && controller.includes('function renderFitChooser()'), 'sizing follows product selection instead of blocking intake');
+check(controller.includes('Smaller / slender') && controller.includes('Larger / broader'), 'sized products offer plain-language fit starting points');
+check(controller.includes('See the package size chart or measure') && controller.includes('string or strip of paper'), 'sized products include package ranges and a no-tape workaround');
+check(controller.includes("product.fit === 'universal'") && controller.includes('No size choice needed') && controller.includes('maxWrist.toFixed(1)'), 'adjustable products skip unnecessary measurement while stating the fit limit');
+check(controller.includes('data-fit-universal-confirm') && controller.includes('data-fit-universal-review') && controller.includes('Fit still needs confirmation'), 'adjustable fit requires one-tap range confirmation and safely holds uncertainty');
+check(controller.includes('data-fit-unsure') && controller.includes('Estimated starting size:') && controller.includes('fitEstimateConfirm'), 'plain-language sizing remains an estimate until confirmed against the chart');
+check(controller.includes('purchaseBlocked = hasReview || fitPending()') && controller.includes('if (fitPending() || lines().some'), 'unresolved fit blocks both guide and direct checkout');
+check(controller.includes('Why each item was selected') && controller.includes("lines().filter(product => product.disposition === 'BUY'") && participantCss.includes('.selectionReasons'), 'quiet item rationales follow the actual selected cart');
+check(!html.includes('FUTURO Deluxe Thumb Stabilizer') && !html.includes('Mueller Reversible Thumb Stabilizer'), 'legacy story-specific comparison claims are absent');
+check(controller.includes('model.lastAnswered?.concept') && controller.includes('model.lastAnswered.threadKey') && !controller.includes("recordContextAnswer(model.story, question.concept, 'answered')"), 'repeat protection is thread-scoped and never fabricates an answer');
 
 console.log(`\n${total - failed}/${total} consolidated release assertions passed`);
 process.exit(failed ? 1 : 0);

@@ -35,9 +35,18 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
       await waitForIntakeSettled();
     }
     if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
-    await page.fill('#wristMeasure', value);
-    await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
+    if (await page.locator('#fitMeasure').count()) {
+      if (!(await page.locator('.fitDetails').getAttribute('open'))) await page.click('.fitDetails summary');
+      await page.fill('#fitMeasure', value);
+      await page.click('#fitMeasureContinue');
+      if (await page.locator('#fitMeasureError').count() && (await page.locator('#fitMeasureError').innerText()).includes('two adjacent')) {
+        await page.click('[data-fit-size="M"]');
+        await page.click('.fitEstimateConfirm');
+      }
+    } else if (await page.locator('[data-fit-universal-confirm]').count()) {
+      await page.click('[data-fit-universal-confirm]');
+    }
   }
 
   async function waitForIntakeSettled() {
@@ -57,7 +66,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
       laterality: 'It is on the right.',
       sensoryDistribution: 'There is no numbness or tingling.'
     };
-    for (let step = 0; step < 12 && !(await page.locator('#wristMeasure').count()); step += 1) {
+    for (let step = 0; step < 12 && !(await page.locator('#solutionView:not(.hidden)').count()); step += 1) {
       if (await page.locator('#interaction #reply').count()) {
         const concept = await page.locator('#interaction').getAttribute('data-concept');
         await page.fill('#reply', overrides[concept] || defaults[concept] || 'It is use-related and has been present for four weeks.');
@@ -67,10 +76,18 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
       }
       await page.waitForTimeout(40);
     }
-    assert(await page.locator('#wristMeasure').count(), 'intake did not reach the fit step');
-    await page.fill('#wristMeasure', value);
-    await page.click('#fitContinue');
-    await page.waitForSelector('#solutionView:not(.hidden)');
+    assert(await page.locator('#solutionView:not(.hidden)').count(), 'intake did not reach the recommendation');
+    if (await page.locator('#fitMeasure').count()) {
+      await page.click('.fitDetails summary');
+      await page.fill('#fitMeasure', value);
+      await page.click('#fitMeasureContinue');
+      if (await page.locator('#fitMeasureError').count() && (await page.locator('#fitMeasureError').innerText()).includes('two adjacent')) {
+        await page.click('[data-fit-size="M"]');
+        await page.click('.fitEstimateConfirm');
+      }
+    } else if (await page.locator('[data-fit-universal-confirm]').count()) {
+      await page.click('[data-fit-universal-confirm]');
+    }
   }
 
   async function content(selector) {
@@ -170,6 +187,16 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(await page.locator('#solutionView.hidden').count());
   });
 
+  await scenario('uncertain-answer-is-not-fabricated', 'My wrist hurts.', async () => {
+    assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'side');
+    await page.fill('#reply', 'Not sure');
+    await page.click('#send');
+    await waitForIntakeSettled();
+    const hand = await page.evaluate(() => Object.values(window.KeneflexParticipant.model.story.threads).find(thread => thread.family === 'hand'));
+    assert(!hand.side);
+    assert.equal(await page.locator('#interaction').getAttribute('data-concept'), 'side');
+  });
+
   const mediumBoundaries = [
     ['below-medium-boundary', '6.29', 'Small'],
     ['medium-lower-boundary', '6.30', 'Medium'],
@@ -188,7 +215,64 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
   await scenario('unsupported-size-hold', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and typing makes it worse.', async () => {
     await clearSafetyAndMeasure('9.2');
     assert(await page.locator('.kfxBuy').isDisabled());
-    assert((await page.locator('#supportState').innerText()).includes('review'));
+    assert.equal(await page.locator('#supportState').innerText(), 'Choose size');
+    assert((await page.locator('#fitMeasureError').innerText()).includes('5.1 to 9.1 inches'));
+  });
+
+  await scenario('overlapping-package-boundary-requires-choice', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and typing makes it worse.', async () => {
+    if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
+    await page.waitForSelector('#solutionView:not(.hidden)');
+    await page.click('.fitDetails summary');
+    await page.fill('#fitMeasure', '6.3');
+    await page.click('#fitMeasureContinue');
+    assert((await content('#fitMeasureError')).includes('two adjacent package ranges'));
+    assert(await page.locator('.kfxBuy').isDisabled());
+    await page.click('[data-fit-size="M"]');
+    assert(await page.locator('.fitDetails').evaluate(element => element.open));
+    await page.click('.fitEstimateConfirm');
+    assert.equal(await page.locator('.kfxBuy').isDisabled(), false);
+    assert((await content('#supportItem .planName')).includes('Medium'));
+  });
+
+  await scenario('fit-estimate-requires-confirmation-and-explains-selection', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and gripping makes it worse.', async () => {
+    if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
+    await page.waitForSelector('#solutionView:not(.hidden)');
+    assert(await page.locator('.kfxBuy').isDisabled());
+    assert.equal(await content('#supportState'), 'Choose size');
+    await page.click('[data-fit-size="M"]');
+    assert((await content('.fitSelection')).includes('Estimated starting size'));
+    assert(await page.locator('.kfxBuy').isDisabled());
+    await page.click('#kfxPlanBtn');
+    assert(await page.locator('.kfxFinalBuy').isDisabled());
+    assert((await content('.kfxFinalBuy')).includes('Choose your support size'));
+    await page.click('[data-plan-close]');
+    await page.click('.fitEstimateConfirm');
+    assert.equal(await page.locator('.kfxBuy').isDisabled(), false);
+    await page.click('.selectionReasons summary');
+    const reasons = await content('.selectionReasonBody');
+    assert(reasons.includes('Neo G Airflow Wrist & Thumb Support'));
+    assert(reasons.includes('wrist and thumb'));
+    assert(reasons.includes('Polar Soft Ice Wrist Wrap'));
+  });
+
+  await scenario('not-sure-opens-package-chart', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and gripping makes it worse.', async () => {
+    if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
+    await page.waitForSelector('#solutionView:not(.hidden)');
+    await page.click('[data-fit-unsure]');
+    assert(await page.locator('.fitDetails').evaluate(element => element.open));
+    assert(await page.locator('#fitMeasure').evaluate(element => document.activeElement === element));
+    assert((await content('.fitChart')).includes('5.1–6.3'));
+  });
+
+  await scenario('invalid-new-measurement-clears-old-size', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and gripping makes it worse.', async () => {
+    await clearSafetyAndMeasure('8.0');
+    assert((await content('#supportItem .planName')).includes('Large'));
+    await page.click('.fitDetails summary');
+    await page.fill('#fitMeasure', '9.2');
+    await page.click('#fitMeasureContinue');
+    assert(await page.locator('.kfxBuy').isDisabled());
+    assert.equal(await content('#supportState'), 'Choose size');
+    assert(!(await content('#supportItem .planName')).includes('Large'));
   });
 
   await scenario('provider-direction-hold', 'My doctor told me to wear a wrist brace at night. My right wrist hurts for 4 weeks. It built up gradually and typing makes it worse.', async () => {
@@ -554,11 +638,19 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.click('[data-tune="support"]');
     assert.equal(await page.locator('#supportState').innerText(), 'Removed by you');
     assert.equal(await page.locator('#total').innerText(), '$32.99');
+    let rationale = await content('.selectionReasonBody');
+    assert(!rationale.includes('Neo G Airflow Wrist & Thumb Support'));
+    assert(rationale.includes('Polar Soft Ice Wrist Wrap'));
+    assert(rationale.includes('Biofreeze Pain Relief Gel'));
     await page.click('#resetTune');
     await page.click('[data-plan="complete"]');
     await page.click('[data-tune="cold"]');
     assert.equal(await page.locator('#coldState').innerText(), 'Removed by you');
     assert.equal(await page.locator('#total').innerText(), '$36.98');
+    rationale = await content('.selectionReasonBody');
+    assert(rationale.includes('BraceAbility Volar Wrist Splint'));
+    assert(!rationale.includes('Polar Soft Ice Wrist Wrap'));
+    assert(rationale.includes('Biofreeze Pain Relief Gel'));
   });
 
 
@@ -588,10 +680,14 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!(await page.locator('#conversation .bubble.ai').last().innerText()).includes('Self-care should pause here'));
     assert.equal(await page.locator('[data-safety="clear"]').count(), 1);
     await page.click('[data-safety="clear"]');
-    assert(await page.locator('#wristMeasure').count());
-    await page.fill('#wristMeasure', '7');
-    await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
+    if (await page.locator('[data-fit-universal-confirm]').count()) {
+      await page.click('[data-fit-universal-confirm]');
+    } else {
+      await page.click('.fitDetails summary');
+      await page.fill('#fitMeasure', '7');
+      await page.click('#fitMeasureContinue');
+    }
     assert.equal(await page.locator('#supportState').innerText(), 'Recommended');
     assert.equal(await page.locator('#supportPrice').innerText(), '$19.99');
     assert.equal(await page.locator('#total').innerText(), '$40.99');
@@ -604,19 +700,19 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
     assert(message.includes('visible deformity'));
-    assert.equal(await page.locator('#wristMeasure').count(), 0);
+    assert.equal(await page.locator('#solutionView:not(.hidden)').count(), 0);
   });
 
   await scenario('reported-misshapen-area-pauses-self-care', 'My right wrist hurts after a fall yesterday and the area looks misshapen. Gripping makes it worse.', async () => {
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
-    assert.equal(await page.locator('#wristMeasure').count(), 0);
+    assert.equal(await page.locator('#solutionView:not(.hidden)').count(), 0);
   });
 
   await scenario('reported-odd-angle-pauses-self-care', 'My right wrist hurts after a fall yesterday and it appears to be at an odd angle. Gripping makes it worse.', async () => {
     const message = await page.locator('#conversation .bubble.ai').last().innerText();
     assert(message.includes('Self-care should pause here'));
-    assert.equal(await page.locator('#wristMeasure').count(), 0);
+    assert.equal(await page.locator('#solutionView:not(.hidden)').count(), 0);
   });
 
   await scenario('explicit-deformed-denial-does-not-stop', 'My right wrist hurts for four weeks. It built up gradually and typing makes it worse. It does not look deformed.', async () => {
@@ -630,9 +726,14 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(safety.includes('Do not place a brace or topical pain product directly over unprotected broken skin'));
     assert(!safety.includes('Self-care should pause here'));
     if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
-    await page.fill('#wristMeasure', '7');
-    await page.click('#fitContinue');
     await page.waitForSelector('#solutionView:not(.hidden)');
+    if (await page.locator('[data-fit-universal-confirm]').count()) {
+      await page.click('[data-fit-universal-confirm]');
+    } else {
+      await page.click('.fitDetails summary');
+      await page.fill('#fitMeasure', '7');
+      await page.click('#fitMeasureContinue');
+    }
     const solution = await content('#solutionView');
     assert(solution.includes('Skin protection'));
     assert(solution.includes('Do not place a brace or topical pain product directly over unprotected broken skin'));
@@ -699,14 +800,20 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await content('#planName'), 'Support + recovery');
   });
 
-  await scenario('no-measurement-keeps-size-pending', 'My right wrist hurts for four weeks. It built up gradually, and typing makes it worse.', async () => {
+  await scenario('adjustable-wrist-support-skips-sizing', 'My right wrist hurts for four weeks. My thumb is fine. It built up gradually, and typing makes it worse.', async () => {
     if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
-    assert(await page.locator('#fitPending').count());
-    await page.click('#fitPending');
     await page.waitForSelector('#solutionView:not(.hidden)');
-    assert((await content('#supportItem .planName')).includes('Size pending'));
-    assert((await content('#supportState')).includes('review'));
+    assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
+    assert.equal(await page.locator('#fitMeasure').count(), 0);
+    assert((await content('.fitChooser')).includes('No size choice needed'));
+    assert((await content('.fitChooser')).includes('9.5 inches'));
+    assert((await page.locator('#supportItem img').getAttribute('src')).includes('braceability.com'));
     assert(await page.locator('.kfxBuy').isDisabled());
+    await page.click('[data-fit-universal-review]');
+    assert((await content('.fitChooser')).includes('Fit still needs confirmation'));
+    assert(await page.locator('.kfxBuy').isDisabled());
+    await page.click('[data-fit-universal-confirm]');
+    assert.equal(await page.locator('.kfxBuy').isDisabled(), false);
   });
 
   await page.route('**/api/interpret-story', route => route.fulfill({
