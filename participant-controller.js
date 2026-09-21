@@ -597,11 +597,11 @@
       const badge = recommended ? 'Keneflex recommended' : tier.disabled ? 'Not appropriate for this story' : ({ core: 'Primary product', recovery: 'Adds recovery', complete: 'Optional comfort' })[tier.id];
       const visuals = tier.products.map(product => '<span class="tierProduct"><img alt="' + escapeHtml(product.name) + '" src="' + product.image + '" data-fallback="' + product.fallback + '"/><small>' + escapeHtml(product.id === 'support' ? 'Support' : product.id === 'cold' ? 'Recovery' : 'Comfort') + '</small></span>').join('');
       const included = tier.products.map(product => '<span>✓ ' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</span>').join('');
-      return '<button class="planTier' + (selected ? ' selected' : '') + (recommended ? ' featured' : '') + '" data-plan="' + tier.id + '" aria-pressed="' + selected + '"' + (tier.disabled ? ' disabled aria-disabled="true"' : '') + '><span class="tierTop"><span class="tierLabel">' + tier.label + '</span><span class="tierBadge' + (recommended ? ' recommendedBadge' : '') + '">' + badge + '</span></span><b>' + tier.title + '</b><div class="tierVisuals">' + visuals + '<span class="tierPlanIcon" aria-hidden="true"><i>K</i><small>Product guide</small></span></div><strong>' + money(tierTotal) + ' <small>total</small></strong><span class="tierDelta">' + tier.delta + '</span><span class="tierIncludes"><b>Your package includes:</b><span>✓ Personalized product guide</span>' + included + '</span><span class="tierChoice">' + (selected ? 'Selected' : tier.disabled ? 'Unavailable for this story' : 'Select ' + tier.label) + '</span></button>';
+      return '<button class="planTier' + (selected ? ' selected' : '') + (recommended ? ' featured' : '') + '" data-plan="' + tier.id + '" aria-pressed="' + selected + '"' + (tier.disabled ? ' disabled aria-disabled="true"' : '') + '><span class="tierTop"><span class="tierLabel">' + tier.label + '</span><span class="tierBadge' + (recommended ? ' recommendedBadge' : '') + '">' + badge + '</span></span><b>' + tier.title + '</b><div class="tierVisuals">' + visuals + '<span class="tierPlanIcon" aria-hidden="true"><span class="guideCover"><span class="guideWordmark">KENEFLEX</span><span class="guideCoverTitle">YOUR PRODUCT GUIDE</span><span class="guideCoverLines"></span><span class="guideCoverCheck">✓</span></span><small>Product guide</small></span></div><strong>' + money(tierTotal) + ' <small>total</small></strong><span class="tierDelta">' + tier.delta + '</span><span class="tierIncludes"><b>Your package includes:</b><span>✓ Personalized product guide</span>' + included + '</span><span class="tierChoice">' + (selected ? 'Selected' : tier.disabled ? 'Unavailable for this story' : 'Select ' + tier.label) + '</span></button>';
     }).join('');
     $$('[data-plan]', $('.planTiers')).forEach(button => button.addEventListener('click', () => selectPlan(button.dataset.plan)));
     $('.selectionReasons')?.remove();
-    const selectedProducts = lines().filter(product => product.disposition === 'BUY' || product.disposition === 'REVIEW');
+    const suggestedProducts = lines().filter(product => product.disposition !== 'REMOVE');
     const reasonFor = product => {
       if (product.id === 'support') return model.recommendation.supportReason;
       if (product.id === 'cold' && model.selection.recovery === 'heat') return 'Heat was matched to the stiffness, tightness, morning, or longer-running pattern in your story. It supports comfort and recovery; it does not replace the primary support.';
@@ -609,9 +609,15 @@
       if (model.selection.comfort === 'patch') return 'A patch was matched to the hands-free or mess-free format preference you described. It is optional temporary comfort, not the primary solution.';
       return 'A gel was included as optional temporary comfort because you did not identify a patch preference or topical limitation. It is not the primary solution.';
     };
+    const roleFor = product => {
+      if (product.disposition === 'REVIEW') return 'Confirm before purchase';
+      if (product.id === 'support') return 'Primary product';
+      if (product.id === 'cold') return product.disposition === 'BUY' ? 'Selected recovery' : 'Optional recovery';
+      return product.disposition === 'BUY' ? 'Selected comfort' : 'Optional comfort';
+    };
     const details = document.createElement('details');
     details.className = 'selectionReasons';
-    details.innerHTML = '<summary>Why each item was selected</summary><div class="selectionReasonBody"><p class="selectionReasonLead">Keneflex matches each product to a specific role using what you described, product fit, and product limitations—not popularity.</p>' + (selectedProducts.length ? selectedProducts.map(product => '<article><img src="' + product.image + '" alt=""><div><b>' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</b><p>' + escapeHtml(reasonFor(product)) + '</p></div></article>').join('') : '<p>No products are currently selected.</p>') + '</div>';
+    details.innerHTML = '<summary>Why each item was suggested</summary><div class="selectionReasonBody"><p class="selectionReasonLead">Keneflex matches each product to a specific role using what you described, product fit, and product limitations—not popularity. Optional items are explained even when they are not in your selected package.</p>' + (suggestedProducts.length ? suggestedProducts.map(product => '<article><img src="' + product.image + '" alt=""><div><span class="selectionReasonRole">' + escapeHtml(roleFor(product)) + '</span><b>' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</b><p>' + escapeHtml(reasonFor(product)) + '</p></div></article>').join('') : '<p>No products are currently suggested.</p>') + '</div>';
     $('.planTiers').after(details);
   }
 
