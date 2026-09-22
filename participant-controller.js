@@ -603,11 +603,32 @@
     $('.selectionReasons')?.remove();
     const suggestedProducts = lines().filter(product => product.disposition !== 'REMOVE');
     const reasonFor = product => {
-      if (product.id === 'support') return model.recommendation.supportReason;
-      if (product.id === 'cold' && model.selection.recovery === 'heat') return 'Heat was matched to the stiffness, tightness, morning, or longer-running pattern in your story. It supports comfort and recovery; it does not replace the primary support.';
-      if (product.id === 'cold') return 'Cold was matched to the activity-related soreness, swelling language, or absence of a stronger heat pattern in your story. It supports recovery after aggravating use.';
-      if (model.selection.comfort === 'patch') return 'A patch was matched to the hands-free or mess-free format preference you described. It is optional temporary comfort, not the primary solution.';
-      return 'A gel was included as optional temporary comfort because you did not identify a patch preference or topical limitation. It is not the primary solution.';
+      if (product.id === 'support' && model.selection.support === 'combined') return {
+        claim: 'Neo G says this flexible support helps support injured, weak, or arthritic wrists and thumbs during everyday, work, or sporting activities.',
+        fit: 'You described symptoms involving both your wrist and thumb, so one flexible support covers both areas while preserving useful movement.'
+      };
+      if (product.id === 'support') return {
+        claim: 'BraceAbility says this volar splint holds the wrist and forearm in a resting, neutral position while leaving the fingers free.',
+        fit: model.recommendation.neuro
+          ? 'You described gradual numbness or tingling on the thumb, index, or middle-finger side of the hand, so a neutral-position wrist support is a closer match than adding thumb restriction.'
+          : 'You described a concern centered at the wrist, so this targets the wrist without adding thumb coverage you may not need.'
+      };
+      if (product.id === 'cold' && model.selection.recovery === 'heat') return {
+        claim: 'Polar says this microwaveable wrap provides moist heat intended to soothe muscle tightness, joint discomfort, and stiff joints.',
+        fit: 'You described stiffness or tightness, so targeted warmth is a closer recovery match than automatically choosing cold.'
+      };
+      if (product.id === 'cold') return {
+        claim: 'Polar says this reusable wrap delivers targeted hot or cold therapy with a snug, supportive fit. Used cold, it is intended to soothe aches and help reduce swelling.',
+        fit: 'You described soreness that worsens with use, so the wrap offers a hands-free way to apply cold to the wrist after an aggravating activity.'
+      };
+      if (model.selection.comfort === 'patch') return {
+        claim: 'Biofreeze says its cooling menthol patch provides temporary relief for minor muscle and joint aches in a hands-free, mess-free format.',
+        fit: 'You indicated that you prefer a patch or mess-free option, so this is offered for optional temporary comfort—not as the primary support.'
+      };
+      return {
+        claim: 'Biofreeze says its cooling menthol gel provides fast-acting relief for sore muscles and joints and can be applied to small or large areas.',
+        fit: 'This is offered as an optional way to add temporary comfort around the sore area. It does not replace the primary support or recovery product.'
+      };
     };
     const roleFor = product => {
       if (product.disposition === 'REVIEW') return 'Confirm before purchase';
@@ -617,7 +638,7 @@
     };
     const details = document.createElement('details');
     details.className = 'selectionReasons';
-    details.innerHTML = '<summary>Why each item was suggested</summary><div class="selectionReasonBody"><p class="selectionReasonLead">Keneflex matches each product to a specific role using what you described, product fit, and product limitations—not popularity. Optional items are explained even when they are not in your selected package.</p>' + (suggestedProducts.length ? suggestedProducts.map(product => '<article><img src="' + product.image + '" alt=""><div><span class="selectionReasonRole">' + escapeHtml(roleFor(product)) + '</span><b>' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</b><p>' + escapeHtml(reasonFor(product)) + '</p></div></article>').join('') : '<p>No products are currently suggested.</p>') + '</div>';
+    details.innerHTML = '<summary>Why Keneflex suggested these products</summary><div class="selectionReasonBody"><p class="selectionReasonLead">Manufacturer descriptions explain what each product is designed to do. Keneflex then connects that role to what you told us. Optional items are labeled clearly.</p>' + (suggestedProducts.length ? suggestedProducts.map(product => { const reason = reasonFor(product); return '<article><img src="' + product.image + '" alt=""><div><span class="selectionReasonRole">' + escapeHtml(roleFor(product)) + '</span><b>' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</b><p><strong>What it is designed to do:</strong> ' + escapeHtml(reason.claim) + '</p><p><strong>Why it fits what you told us:</strong> ' + escapeHtml(reason.fit) + '</p></div></article>'; }).join('') : '<p>No products are currently suggested.</p>') + '</div>';
     $('.planTiers').after(details);
   }
 

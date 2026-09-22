@@ -30,7 +30,7 @@ check((loader.match(/<script defer/g) || []).length === 3, 'consolidated runtime
 check(!/prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/.test(loader), 'legacy patch stack is absent from production loader');
 check(route.includes("searchParams.set('participant','080')"), 'participant route matches launch-catalog release');
 check(route.includes("searchParams.set('build',String(stamp))"), 'participant route cache-busts each launch');
-check(html.includes('participant-consolidated.css?v=081'), 'consolidated stylesheet is loaded');
+check(html.includes('participant-consolidated.css?v=082'), 'consolidated stylesheet is loaded');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'legacy inline commerce runtime is removed');
 check(controller.includes('const model ='), 'one authoritative participant model exists');
 check(controller.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
@@ -79,7 +79,7 @@ check(controller.includes("product.fit === 'universal'") && controller.includes(
 check(controller.includes('data-fit-universal-confirm') && controller.includes('data-fit-universal-review') && controller.includes('Fit still needs confirmation'), 'adjustable fit requires one-tap range confirmation and safely holds uncertainty');
 check(controller.includes('data-fit-unsure') && controller.includes('Estimated starting size:') && controller.includes('fitEstimateConfirm'), 'plain-language sizing remains an estimate until confirmed against the chart');
 check(controller.includes('purchaseBlocked = hasReview || fitPending()') && controller.includes('if (fitPending() || lines().some'), 'unresolved fit blocks both guide and direct checkout');
-check(controller.includes('Why each item was suggested') && controller.includes("lines().filter(product => product.disposition !== 'REMOVE')") && controller.includes('Optional comfort') && participantCss.includes('.selectionReasonRole'), 'quiet item rationales explain selected and eligible optional products');
+check(controller.includes('Why Keneflex suggested these products') && controller.includes('What it is designed to do:') && controller.includes('Why it fits what you told us:') && controller.includes("lines().filter(product => product.disposition !== 'REMOVE')") && controller.includes('Optional comfort') && participantCss.includes('.selectionReasonRole'), 'customer-facing rationales combine manufacturer purpose with personalized fit');
 check(controller.includes('guideCover') && controller.includes('YOUR PRODUCT GUIDE') && !controller.includes('<i>K</i>') && participantCss.includes('.guideCoverCheck'), 'product guide uses a recognizable branded cover instead of a generic K tile');
 check(!html.includes('FUTURO Deluxe Thumb Stabilizer') && !html.includes('Mueller Reversible Thumb Stabilizer'), 'legacy story-specific comparison claims are absent');
 check(controller.includes('model.lastAnswered?.concept') && controller.includes('model.lastAnswered.threadKey') && !controller.includes("recordContextAnswer(model.story, question.concept, 'answered')"), 'repeat protection is thread-scoped and never fabricates an answer');

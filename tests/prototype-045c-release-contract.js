@@ -35,7 +35,7 @@ check(route.includes('<title>Keneflex</title>'), 'participant route uses consume
 check(route.includes("searchParams.set('participant','080')"), 'participant route requests launch-catalog release 0.8.0');
 check(route.includes("searchParams.set('build',String(stamp))") && route.includes("searchParams.set('cache','no-store')"), 'participant route uses unique no-store URL');
 check(route.includes('location.replace(u.href)'), 'participant route uses deterministic top-level navigation');
-check(html.includes('participant-consolidated.css?v=081'), 'participant route loads consolidated styles');
+check(html.includes('participant-consolidated.css?v=082'), 'participant route loads consolidated styles');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'duplicated inline commerce runtime is absent');
 
 check(engine.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"), 'hand family canonicalization retained');
