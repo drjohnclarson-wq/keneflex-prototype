@@ -257,6 +257,10 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(reasons.includes('Polar Soft Ice Wrist Wrap'));
     assert(reasons.includes('Biofreeze Pain Relief Gel'));
     assert(reasons.includes('Optional comfort'));
+    assert(reasons.includes('What it is designed to do:'));
+    assert(reasons.includes('Why it fits what you told us:'));
+    assert(!reasons.includes('absence of a stronger heat pattern'));
+    assert(!reasons.includes('did not identify a patch preference'));
   });
 
   await scenario('not-sure-opens-package-chart', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and gripping makes it worse.', async () => {
