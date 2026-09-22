@@ -10,7 +10,7 @@ const checks=[
   [controller.includes('such as while sleeping'),'Neo G guide carries forward the prolonged-wear warning'],
   [controller.includes("descriptor: 'Smaller / slender'") && controller.includes("descriptor: 'Average'") && controller.includes("descriptor: 'Larger / broader'"),'Neo G fit flow offers consumer-friendly starting descriptions'],
   [controller.includes('min: 5.1, max: 6.3') && controller.includes('min: 6.3, max: 7.5') && controller.includes('min: 7.5, max: 9.1'),'Neo G package size ranges and their boundary overlap remain exact'],
-  [controller.includes("fitLabel: 'Adjustable fit'") && controller.includes('maxWrist: 9.5') && controller.includes('No size choice needed'),'adjustable wrist support does not impose a tape-measure step and states its adult fit limit'],
+  [controller.includes("fitLabel: 'Adjustable fit'") && controller.includes('maxWrist: 9.5') && controller.includes('One adjustable adult size'),'adjustable wrist support does not impose a tape-measure step and states its adult fit limit'],
   [controller.includes('11h11-braceability-volar-wrist-splint.jpg'),'BraceAbility recommendation uses the actual product image'],
   [controller.includes('MHW_Wrist_02_WEB.jpg') && !controller.includes("placeholder('MOIST HEAT'"),'moist heat recommendation uses an actual product photo'],
   [controller.includes('Biofreeze-Pain-Relief-Patches') && !controller.includes("placeholder('PAIN PATCH'"),'pain patch recommendation uses an actual product photo'],

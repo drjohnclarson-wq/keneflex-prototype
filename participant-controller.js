@@ -414,8 +414,8 @@
       model.fit.supportSize = product.fitLabel || 'Adjustable';
       model.fit.wristInches = null;
       if (model.fit.supportSku !== product.sku) {
-        model.fit.supportSku = null;
-        model.fit.method = null;
+        model.fit.supportSku = product.sku;
+        model.fit.method = 'adjustable';
       }
     } else if (!model.fit.supportSku || !model.fit.supportSku.startsWith(product.sku + '-')) {
       model.fit.supportSize = null;
@@ -513,43 +513,26 @@
     const panel = document.createElement('section');
     panel.className = 'fitChooser';
     if (product.fit === 'universal') {
-      const confirmed = model.fit.supportSku === product.sku;
-      const uncertain = model.fit.method === 'adjustable-review';
-      panel.innerHTML = '<div class="fitChooserTop"><div><div class="eyebrow">Fit</div><h3>No size choice needed</h3></div><span class="fitConfirmed">Adjustable</span></div><p>This one-size support uses adjustable straps and is listed for adult wrists up to ' + product.maxWrist.toFixed(1) + ' inches.</p>' + (confirmed ? '<p class="fitSelection"><b>Fit range confirmed.</b> Choose a package below.</p>' : '<div class="fitUniversalActions"><button type="button" class="primary" data-fit-universal-confirm>My wrist is within 9.5 inches</button><button type="button" class="secondary" data-fit-universal-review>Not sure or larger</button></div>') + (uncertain ? '<p class="fitSelection"><b>Fit still needs confirmation.</b> This available product cannot be purchased unless you confirm that your wrist is within the package limit.</p>' : '');
+      panel.innerHTML = '<div class="fitChooserTop"><div><div class="eyebrow">Fit</div><h3>One adjustable adult size</h3></div><span class="fitConfirmed">No size choice</span></div><p>This support uses adjustable straps. BraceAbility lists the adult fit for wrists up to ' + product.maxWrist.toFixed(1) + ' inches.</p><p class="fitSelection"><b>You can continue without measuring.</b> If you already know your wrist is larger than the listed limit, this product may not fit.</p>';
       item.after(panel);
-      $('[data-fit-universal-confirm]', panel)?.addEventListener('click', () => {
-        model.fit.supportSku = product.sku;
-        model.fit.method = 'adjustable-confirmed';
-        renderSolution();
-      });
-      $('[data-fit-universal-review]', panel)?.addEventListener('click', () => {
-        model.fit.supportSku = null;
-        model.fit.method = 'adjustable-review';
-        renderSolution();
-      });
       return;
     }
     const selected = model.fit.supportSize;
     const chart = product.sizes.map(size => '<div class="fitChartRow' + (selected === size.name ? ' selected' : '') + '"><b>' + size.name + '</b><span>' + size.min.toFixed(1) + '–' + size.max.toFixed(1) + ' in</span></div>').join('');
     const choices = product.sizes.map(size => '<button type="button" class="fitChoice' + (selected === size.name ? ' selected' : '') + '" data-fit-size="' + size.code + '" aria-pressed="' + (selected === size.name) + '"><b>' + size.descriptor + '</b><span>Estimate ' + size.name + '</span></button>').join('') + '<button type="button" class="fitChoice" data-fit-unsure><b>Not sure</b><span>Open the size chart</span></button>';
-    const estimated = selected && model.fit.method === 'self-description' && !model.fit.supportSku;
-    const confirmation = selected ? '<p class="fitSelection"><b>' + (estimated ? 'Estimated starting size: ' : '') + escapeHtml(selected) + '.</b> ' + (model.fit.method === 'measurement' ? 'Based on your ' + model.fit.wristInches.toFixed(1) + '-inch wrist measurement.' : estimated ? 'Review the product chart, then confirm this estimate to continue.' : 'Size confirmed.') + '</p>' + (estimated ? '<button class="primary fitEstimateConfirm" type="button">I reviewed the chart—use ' + escapeHtml(selected) + '</button>' : '') : '<p class="fitSelection"><b>Choose the description closest to you.</b> We will show an estimated starting size for you to confirm against the product chart.</p>';
+    const confirmation = selected ? '<p class="fitSelection"><b>Starting size: ' + escapeHtml(selected) + '.</b> ' + (model.fit.method === 'measurement' ? 'Based on your ' + model.fit.wristInches.toFixed(1) + '-inch wrist measurement.' : 'Based on the body-build description you selected. You can continue now, or check the exact package chart below if you are unsure or near a boundary.') + '</p>' : '<p class="fitSelection"><b>Choose the description closest to you.</b> We will select a practical starting size. The exact package chart remains available below.</p>';
     const nextStep = model.fit.supportSku ? '<button class="secondary fitNext" type="button">Size set—choose a package below ↓</button>' : '';
-    panel.innerHTML = '<div class="fitChooserTop"><div><div class="eyebrow">Choose your fit</div><h3>Which best describes your wrist?</h3></div>' + (selected ? '<span class="fitConfirmed">' + escapeHtml(selected) + '</span>' : '') + '</div><div class="fitChoices">' + choices + '</div>' + confirmation + nextStep + '<details class="fitDetails"' + (estimated ? ' open' : '') + '><summary>See the package size chart or measure</summary><div class="fitDetailsBody"><p><b>Measure around the wrist crease.</b> No soft tape? Wrap a string or strip of paper around the wrist, mark where it meets, then place it against a ruler.</p><div class="fitChart" aria-label="Product package wrist size chart">' + chart + '</div><div class="fitMeasureRow"><label for="fitMeasure">Wrist circumference in inches</label><div><input id="fitMeasure" inputmode="decimal" aria-describedby="fitMeasureError" placeholder="For example, 7.0"><button id="fitMeasureContinue" class="secondary" type="button">Use measurement</button></div><p id="fitMeasureError" class="micro" aria-live="polite"></p></div></div></details><p class="fitFinePrint">The exact package ranges overlap at 6.3 and 7.5 inches. If your measurement is on a boundary, compare the adjacent sizes and confirm the fit after delivery. Body-build descriptions are only a quick starting point.</p>';
+    panel.innerHTML = '<div class="fitChooserTop"><div><div class="eyebrow">Choose your fit</div><h3>Which best describes your wrist?</h3></div>' + (selected ? '<span class="fitConfirmed">' + escapeHtml(selected) + '</span>' : '') + '</div><div class="fitChoices">' + choices + '</div>' + confirmation + nextStep + '<details class="fitDetails"><summary>See the exact package size chart or measure</summary><div class="fitDetailsBody"><p><b>Measure around the wrist crease.</b> No soft tape? Wrap a string or strip of paper around the wrist, mark where it meets, then place it against a ruler.</p><div class="fitChart" aria-label="Product package wrist size chart">' + chart + '</div><div class="fitMeasureRow"><label for="fitMeasure">Wrist circumference in inches</label><div><input id="fitMeasure" inputmode="decimal" aria-describedby="fitMeasureError" placeholder="For example, 7.0"><button id="fitMeasureContinue" class="secondary" type="button">Use measurement</button></div><p id="fitMeasureError" class="micro" aria-live="polite"></p></div></div></details><p class="fitFinePrint">Body-build descriptions provide a practical starting size. Compare the exact package ranges if you are unsure, and confirm comfort and fit when the product arrives.</p>';
     item.after(panel);
     $$('[data-fit-size]', panel).forEach(button => button.addEventListener('click', () => {
       const size = product.sizes.find(candidate => candidate.code === button.dataset.fitSize);
-      setSupportFit(size, 'self-description');
+      setSupportFit(size, 'self-description', null, true);
     }));
     $('[data-fit-unsure]', panel).addEventListener('click', () => {
       const details = $('.fitDetails', panel);
       details.open = true;
       details.scrollIntoView({ block: 'nearest' });
       $('#fitMeasure', panel).focus();
-    });
-    $('.fitEstimateConfirm', panel)?.addEventListener('click', () => {
-      const size = product.sizes.find(candidate => candidate.name === model.fit.supportSize);
-      setSupportFit(size, 'self-description', null, true);
     });
     $('#fitMeasureContinue', panel).addEventListener('click', () => {
       const value = Number(String($('#fitMeasure', panel).value).replace(/[^0-9.]/g, ''));
@@ -597,7 +580,7 @@
       const badge = recommended ? 'Keneflex recommended' : tier.disabled ? 'Not appropriate for this story' : ({ core: 'Primary product', recovery: 'Adds recovery', complete: 'Optional comfort' })[tier.id];
       const visuals = tier.products.map(product => '<span class="tierProduct"><img alt="' + escapeHtml(product.name) + '" src="' + product.image + '" data-fallback="' + product.fallback + '"/><small>' + escapeHtml(product.id === 'support' ? 'Support' : product.id === 'cold' ? 'Recovery' : 'Comfort') + '</small></span>').join('');
       const included = tier.products.map(product => '<span>✓ ' + escapeHtml(product.name.replace(/ — .+$/, '')) + '</span>').join('');
-      return '<button class="planTier' + (selected ? ' selected' : '') + (recommended ? ' featured' : '') + '" data-plan="' + tier.id + '" aria-pressed="' + selected + '"' + (tier.disabled ? ' disabled aria-disabled="true"' : '') + '><span class="tierTop"><span class="tierLabel">' + tier.label + '</span><span class="tierBadge' + (recommended ? ' recommendedBadge' : '') + '">' + badge + '</span></span><b>' + tier.title + '</b><div class="tierVisuals">' + visuals + '<span class="tierPlanIcon" aria-hidden="true"><span class="guideCover"><span class="guideWordmark">KENEFLEX</span><span class="guideCoverTitle">YOUR PRODUCT GUIDE</span><span class="guideCoverLines"></span><span class="guideCoverCheck">✓</span></span><small>Product guide</small></span></div><strong>' + money(tierTotal) + ' <small>total</small></strong><span class="tierDelta">' + tier.delta + '</span><span class="tierIncludes"><b>Your package includes:</b><span>✓ Personalized product guide</span>' + included + '</span><span class="tierChoice">' + (selected ? 'Selected' : tier.disabled ? 'Unavailable for this story' : 'Select ' + tier.label) + '</span></button>';
+      return '<button class="planTier' + (selected ? ' selected' : '') + (recommended ? ' featured' : '') + '" data-plan="' + tier.id + '" aria-pressed="' + selected + '"' + (tier.disabled ? ' disabled aria-disabled="true"' : '') + '><span class="tierTop"><span class="tierLabel">' + tier.label + '</span><span class="tierBadge' + (recommended ? ' recommendedBadge' : '') + '">' + badge + '</span></span><b>' + tier.title + '</b><div class="tierVisuals">' + visuals + '</div><span class="tierMatchReport"><span aria-hidden="true">+</span><span><b>Your Keneflex Product Match Report</b><small>Why these products fit · sizing · how to use them</small></span></span><strong>' + money(tierTotal) + ' <small>total</small></strong><span class="tierDelta">' + tier.delta + '</span><span class="tierIncludes"><b>Your package includes:</b><span>✓ Keneflex Product Match Report</span>' + included + '</span><span class="tierChoice">' + (selected ? 'Selected' : tier.disabled ? 'Unavailable for this story' : 'Select ' + tier.label) + '</span></button>';
     }).join('');
     $$('[data-plan]', $('.planTiers')).forEach(button => button.addEventListener('click', () => selectPlan(button.dataset.plan)));
     $('.selectionReasons')?.remove();
@@ -666,9 +649,9 @@
     }
     const fitConfidence = $('.confcard span');
     if (fitConfidence) fitConfidence.textContent = selectedProduct.fit === 'universal'
-      ? (model.fit.supportSku ? 'You confirmed that your wrist is within this product’s adjustable adult range, listed up to ' + selectedProduct.maxWrist.toFixed(1) + ' inches.' : 'This product has one adjustable adult size listed up to ' + selectedProduct.maxWrist.toFixed(1) + ' inches; confirm that range before checkout.')
+      ? 'This product has one adjustable adult size, listed for wrists up to ' + selectedProduct.maxWrist.toFixed(1) + ' inches; no size selection is required.'
       : model.fit.supportSku
-        ? (model.fit.method === 'measurement' ? 'Your measurement sits within the selected package size range.' : 'You confirmed an estimated size after reviewing the package chart.')
+        ? (model.fit.method === 'measurement' ? 'Your measurement sits within the selected package size range.' : 'Your body-build description was used to select a practical starting size; the exact package chart remains available.')
         : 'Choose an estimated starting size or use the product’s package chart before checkout.';
     const sourceCopy = $('.sourceCopy');
     if (sourceCopy) sourceCopy.textContent = 'Product specifications and sizing come from manufacturer information for ' + selectedProduct.name + '. Recovery-product information comes from Polar Products, and topical ingredient and label warnings come from Biofreeze.';
@@ -687,8 +670,8 @@
     $('#planName').textContent = planLabel();
     const summaryCount = lines().filter(line => line.disposition === 'BUY' || line.disposition === 'REVIEW').length;
     $('#selectionCount').textContent = hasReview
-      ? summaryCount + (summaryCount === 1 ? ' product awaiting review' : ' products awaiting review') + ' + personalized product guide'
-      : summaryCount + (summaryCount === 1 ? ' product' : ' products') + ' + personalized product guide';
+      ? summaryCount + (summaryCount === 1 ? ' product awaiting review' : ' products awaiting review') + ' + Product Match Report'
+      : summaryCount + (summaryCount === 1 ? ' product' : ' products') + ' + Product Match Report';
     ensureCommerceControls();
   }
 
@@ -750,7 +733,7 @@
       plan = document.createElement('button');
       plan.id = 'kfxPlanBtn';
       plan.className = 'primary kfxPlanBtn';
-      plan.textContent = 'See details and product-use guide →';
+      plan.textContent = 'View your Product Match Report →';
       plan.addEventListener('click', openPlan);
       totalBlock.appendChild(plan);
     }
@@ -768,7 +751,7 @@
     const woundWarning = model.woundAssessment === 'minor'
       ? '<div class="kfxSafetyNotice"><b>Protect the scrape.</b> Clean and cover it. Do not place a brace or topical pain product directly over unprotected broken skin.</div>'
       : '';
-    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your Keneflex purchase</h2><div class="rowx planIncluded"><span>Personalized product guide</span><b>Included</b></div>' + woundWarning + combinationWarning + '<div>' +
+    overlay.innerHTML = '<section class="kfxCheckout" role="dialog" aria-modal="true"><h2>Review your Keneflex purchase</h2><div class="rowx planIncluded"><span>Keneflex Product Match Report</span><b>Included</b></div>' + woundWarning + combinationWarning + '<div>' +
       selected.map(line => '<div class="rowx"><span>' + line.name + '</span><b>' + money(line.price) + '</b></div>').join('') +
       '</div><div class="totalx"><span>Total</span><span>' + money(total()) + '</span></div><div class="actions"><button class="primary" data-checkout-complete>Continue →</button><button class="secondary" data-checkout-close>Go back</button></div><p class="micro">This test will not place an order or charge you.</p></section>';
     document.body.appendChild(overlay);
@@ -791,7 +774,7 @@
       title: 'Your recommendation',
       summary: 'What Keneflex selected and the role each product is meant to perform.',
       body: '<p><b>Area:</b> ' + escapeHtml(model.recommendation.locations || 'the area you described') + '</p>' +
-        '<ol class="planChecklist"><li>Use only the products selected for the situation you described.</li><li>Follow the product-specific fit and use guidance in this guide.</li><li>Follow the manufacturer label and any professional instructions if they differ.</li><li>Reassess if the product does not fit, creates new symptoms, or is not helping as expected.</li></ol>' +
+        '<ol class="planChecklist"><li>Use only the products selected for the situation you described.</li><li>Follow the product-specific fit and use guidance in this report.</li><li>Follow the manufacturer label and any professional instructions if they differ.</li><li>Reassess if the product does not fit, creates new symptoms, or is not helping as expected.</li></ol>' +
         (provider ? '<div class="kfxPlanNotice"><b>Provider direction controls.</b> ' + escapeHtml(provider) + ' Keneflex will not substitute a conflicting product or use schedule.</div>' : '')
     });
 
@@ -847,7 +830,7 @@
     overlay.className = 'kfxPlanOverlay';
     const hasReview = selected.some(line => line.disposition === 'REVIEW');
     const purchaseBlocked = hasReview || fitPending();
-    overlay.innerHTML = '<div class="kfxPlanPage"><header><div class="logo">KENEFLEX</div><div class="planHeaderActions"><button class="secondary" type="button" data-plan-print>Print product guide</button><button class="secondary" type="button" data-plan-close>Back to recommendation</button></div></header><main><section class="planHero"><div class="eyebrow">Your personalized Keneflex product guide</div><h1>Use the products selected for you with confidence.</h1><p>See the directions that matter most for your situation, while keeping the manufacturer label and any professional instructions in control.</p></section><section class="card planAtGlance"><h2>Your guide at a glance</h2><p><b>Area:</b> ' + escapeHtml(model.recommendation.locations || 'as described') + '</p><div class="planTopicNav">' + modules.map(module => '<button type="button" data-plan-jump="' + escapeHtml(module.id) + '">' + escapeHtml(module.title) + '</button>').join('') + '</div></section><section class="planModules">' + modules.map(renderPlanModule).join('') + '</section><section class="card finalSelection"><div class="finalSelectionTop"><div><div class="eyebrow">Your selected purchase</div><h2>' + escapeHtml(planLabel()) + '</h2><p>Your personalized product guide is included with the products selected for you.</p></div><div class="finalTotal">' + money(total()) + '<small>product total</small></div></div><div class="finalProducts"><div class="planLine planIncluded"><span>Personalized product guide</span><b>Included</b></div>' + selected.map(line => '<div class="planLine"><span>' + escapeHtml(line.name) + '</span><b>' + (line.disposition === 'BUY' ? money(line.price) : 'Review') + '</b></div>').join('') + '</div><button class="primary kfxFinalBuy"' + (purchaseBlocked ? ' disabled' : '') + '>' + (fitPending() ? 'Choose your support size before checkout' : hasReview ? 'Review needed before checkout' : 'Buy the ' + escapeHtml(planLabel()) + ' plan — ' + money(total()) + ' total') + '</button></section></main></div>';
+    overlay.innerHTML = '<div class="kfxPlanPage"><header><div class="logo">KENEFLEX</div><div class="planHeaderActions"><button class="secondary" type="button" data-plan-print>Print Match Report</button><button class="secondary" type="button" data-plan-close>Back to recommendation</button></div></header><main><section class="planHero"><div class="eyebrow">Your Keneflex Product Match Report</div><h1>Why these products fit—and how to use them.</h1><p>See why each item was matched to what you described, confirm fit and sizing, and review the use and safety details that matter most.</p></section><section class="card planAtGlance"><h2>Your report at a glance</h2><p><b>Area:</b> ' + escapeHtml(model.recommendation.locations || 'as described') + '</p><div class="planTopicNav">' + modules.map(module => '<button type="button" data-plan-jump="' + escapeHtml(module.id) + '">' + escapeHtml(module.title) + '</button>').join('') + '</div></section><section class="planModules">' + modules.map(renderPlanModule).join('') + '</section><section class="card finalSelection"><div class="finalSelectionTop"><div><div class="eyebrow">Your selected purchase</div><h2>' + escapeHtml(planLabel()) + '</h2><p>Your Keneflex Product Match Report is included with the products selected for you.</p></div><div class="finalTotal">' + money(total()) + '<small>product total</small></div></div><div class="finalProducts"><div class="planLine planIncluded"><span>Keneflex Product Match Report</span><b>Included</b></div>' + selected.map(line => '<div class="planLine"><span>' + escapeHtml(line.name) + '</span><b>' + (line.disposition === 'BUY' ? money(line.price) : 'Review') + '</b></div>').join('') + '</div><button class="primary kfxFinalBuy"' + (purchaseBlocked ? ' disabled' : '') + '>' + (fitPending() ? 'Choose your support size before checkout' : hasReview ? 'Review needed before checkout' : 'Buy the ' + escapeHtml(planLabel()) + ' plan — ' + money(total()) + ' total') + '</button></section></main></div>';
     document.body.appendChild(overlay);
     $('[data-plan-close]', overlay).addEventListener('click', () => overlay.remove());
     $('[data-plan-print]', overlay).addEventListener('click', () => printPlan(overlay, 'all'));
@@ -871,18 +854,9 @@
   }
 
   function applyConsumerCopy() {
-    const guideNames = {
-      core: 'Support + product guide',
-      recovery: 'Support + recovery + product guide',
-      complete: 'Support + recovery + comfort + product guide'
-    };
     $$('.planTier').forEach(card => {
-      const title = $(':scope > b', card);
-      const iconLabel = $('.tierPlanIcon small', card);
       const includedGuide = $('.tierIncludes span', card);
-      if (title) title.textContent = guideNames[card.dataset.plan];
-      if (iconLabel) iconLabel.textContent = 'Product guide';
-      if (includedGuide) includedGuide.textContent = '✓ Personalized product guide';
+      if (includedGuide) includedGuide.textContent = '✓ Keneflex Product Match Report';
     });
     const trust = $('#solutionView .integrity');
     if (trust) trust.innerHTML = '<h2>Why trust this recommendation?</h2><p class="help">Keneflex compares what you described with product function, fit, safety, limitations, and reasonable non-product options before recommending what to buy.</p><p class="micro"><b>How Keneflex makes money:</b> Keneflex may earn money when some recommended products are purchased. That does not determine which product is recommended.</p>';

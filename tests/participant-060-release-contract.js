@@ -30,7 +30,7 @@ check((loader.match(/<script defer/g) || []).length === 3, 'consolidated runtime
 check(!/prototype-04(?:4[bc-dh-z]?|5[a-c]?|7)|prototype-050|prototype-052/.test(loader), 'legacy patch stack is absent from production loader');
 check(route.includes("searchParams.set('participant','080')"), 'participant route matches launch-catalog release');
 check(route.includes("searchParams.set('build',String(stamp))"), 'participant route cache-busts each launch');
-check(html.includes('participant-consolidated.css?v=082'), 'consolidated stylesheet is loaded');
+check(html.includes('participant-consolidated.css?v=083'), 'consolidated stylesheet is loaded');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'legacy inline commerce runtime is removed');
 check(controller.includes('const model ='), 'one authoritative participant model exists');
 check(controller.includes("disposition: 'BUY'"), 'commerce disposition is explicit');
@@ -51,8 +51,8 @@ check(!controller.includes("window.open('', '_blank')"), 'plan renders in the re
 check(controller.includes('function selectPlan(plan)') && html.includes('data-plan="core"'), 'core, recovery, and complete choices have one controller owner');
 check(html.includes('$19.99 <small>total</small>') && html.includes('$40.99 <small>total</small>') && html.includes('$52.98 <small>total</small>'), 'all plan cards state inclusive totals');
 check(html.includes('+$21.00:') && html.includes('+$11.99:'), 'higher plans distinguish incremental cost from total');
-check(controller.includes('See details and product-use guide'), 'product guide action uses consumer language');
-check(html.includes('personalized product guide'), 'product guide appears in the selected summary');
+check(controller.includes('View your Product Match Report'), 'match report action communicates added value');
+check(html.includes('Keneflex Product Match Report'), 'match report appears in every package');
 check(controller.includes('Optional comfort') && html.includes('tierVisuals'), 'complete package and cumulative product visuals are explicit without an upsell claim');
 check(controller.includes('data-fit-unsure') && controller.includes('Which best describes your wrist?'), 'sizing starts without requiring a measurement');
 check(controller.includes('safetyOptions') && controller.includes('Please read this before continuing.'), 'safety boundary is a scannable acknowledgment');
@@ -62,8 +62,8 @@ check(!html.includes('Core is enough to start') && !html.includes('optional addi
 check(controller.includes('function applyConsumerCopy()'), 'consumer copy is authored once without observer cleanup');
 check(!controller.includes('MutationObserver'), 'participant controller does not repair itself with DOM observers');
 check(!controller.includes('setTimeout('), 'participant controller does not use timing patches for synchronization');
-check(!controller.includes("'Exercises and stretches'") && !controller.includes("title: 'Workspace and device setup'"), 'product guide excludes rehabilitation and ergonomics programming');
-check(controller.includes('data-print-module') && controller.includes('Print product guide'), 'product guide and individual topics are printable');
+check(!controller.includes("'Exercises and stretches'") && !controller.includes("title: 'Workspace and device setup'"), 'match report excludes rehabilitation and ergonomics programming');
+check(controller.includes('data-print-module') && controller.includes('Print Match Report'), 'match report and individual topics are printable');
 check(controller.includes('Only products actually selected and currently offered by Keneflex appear here'), 'guide is limited to selected launch offerings');
 check(!/investigat/i.test(controller), 'consumer controller no longer uses investigate terminology');
 check(html.includes('data-plan="recovery"') && html.includes('Keneflex recommended'), 'middle option supports an honest Keneflex recommendation treatment');
@@ -74,13 +74,13 @@ check(controller.includes("wantsOnlySupport") && controller.includes("model.reco
 check(controller.includes('disabled aria-disabled="true"') && controller.includes('model.comfortEligible'), 'ineligible topical comfort cannot be selected');
 check(!controller.includes('function fitGate()') && controller.includes('function renderFitChooser()'), 'sizing follows product selection instead of blocking intake');
 check(controller.includes('Smaller / slender') && controller.includes('Larger / broader'), 'sized products offer plain-language fit starting points');
-check(controller.includes('See the package size chart or measure') && controller.includes('string or strip of paper'), 'sized products include package ranges and a no-tape workaround');
-check(controller.includes("product.fit === 'universal'") && controller.includes('No size choice needed') && controller.includes('maxWrist.toFixed(1)'), 'adjustable products skip unnecessary measurement while stating the fit limit');
-check(controller.includes('data-fit-universal-confirm') && controller.includes('data-fit-universal-review') && controller.includes('Fit still needs confirmation'), 'adjustable fit requires one-tap range confirmation and safely holds uncertainty');
-check(controller.includes('data-fit-unsure') && controller.includes('Estimated starting size:') && controller.includes('fitEstimateConfirm'), 'plain-language sizing remains an estimate until confirmed against the chart');
+check(controller.includes('See the exact package size chart or measure') && controller.includes('string or strip of paper'), 'sized products include package ranges and a no-tape workaround');
+check(controller.includes("product.fit === 'universal'") && controller.includes('One adjustable adult size') && controller.includes('You can continue without measuring') && controller.includes('maxWrist.toFixed(1)'), 'adjustable products skip unnecessary measurement while stating the package limit');
+check(!controller.includes('data-fit-universal-confirm') && !controller.includes('Fit still needs confirmation'), 'adjustable products do not create a contradictory measurement gate');
+check(controller.includes('data-fit-unsure') && controller.includes('Starting size:') && !controller.includes('fitEstimateConfirm'), 'plain-language sizing chooses a practical starting size in one step while retaining the exact chart');
 check(controller.includes('purchaseBlocked = hasReview || fitPending()') && controller.includes('if (fitPending() || lines().some'), 'unresolved fit blocks both guide and direct checkout');
 check(controller.includes('Why Keneflex suggested these products') && controller.includes('What it is designed to do:') && controller.includes('Why it fits what you told us:') && controller.includes("lines().filter(product => product.disposition !== 'REMOVE')") && controller.includes('Optional comfort') && participantCss.includes('.selectionReasonRole'), 'customer-facing rationales combine manufacturer purpose with personalized fit');
-check(controller.includes('guideCover') && controller.includes('YOUR PRODUCT GUIDE') && !controller.includes('<i>K</i>') && participantCss.includes('.guideCoverCheck'), 'product guide uses a recognizable branded cover instead of a generic K tile');
+check(controller.includes('tierMatchReport') && controller.includes('Why these products fit · sizing · how to use them') && !controller.includes('tierPlanIcon') && participantCss.includes('.tierMatchReport'), 'match report is a full-width benefit below the product images rather than a cropped product tile');
 check(!html.includes('FUTURO Deluxe Thumb Stabilizer') && !html.includes('Mueller Reversible Thumb Stabilizer'), 'legacy story-specific comparison claims are absent');
 check(controller.includes('model.lastAnswered?.concept') && controller.includes('model.lastAnswered.threadKey') && !controller.includes("recordContextAnswer(model.story, question.concept, 'answered')"), 'repeat protection is thread-scoped and never fabricates an answer');
 

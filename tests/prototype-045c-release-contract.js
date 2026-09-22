@@ -61,7 +61,7 @@ check(participant.includes('function checkout()'), 'checkout has one controller 
 check(participant.includes('function openPlan()'), 'plan page has one controller owner');
 check(participant.includes('function applyConsumerCopy()'), 'consumer copy has one controller owner');
 check(participant.includes('<small>product total</small>'), 'controller distinguishes the product total from plan value');
-check(participant.includes('Use the products selected for you with confidence.'), 'controller owns the topic-based product guide page');
+check(participant.includes('Why these products fit—and how to use them.'), 'controller owns the topic-based Product Match Report page');
 check(!participant.includes("window.open('', '_blank')"), 'consumer plan does not open as about:blank');
 check(participant.includes('function selectPlan(plan)') && html.includes('data-plan="complete"'), 'plan tiers are explicit structured choices');
 check(!participant.includes('MutationObserver'), 'controller does not repair itself with DOM observers');
