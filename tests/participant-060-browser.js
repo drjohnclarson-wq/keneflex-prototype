@@ -42,10 +42,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
       await page.click('#fitMeasureContinue');
       if (await page.locator('#fitMeasureError').count() && (await page.locator('#fitMeasureError').innerText()).includes('two adjacent')) {
         await page.click('[data-fit-size="M"]');
-        await page.click('.fitEstimateConfirm');
       }
-    } else if (await page.locator('[data-fit-universal-confirm]').count()) {
-      await page.click('[data-fit-universal-confirm]');
     }
   }
 
@@ -83,10 +80,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
       await page.click('#fitMeasureContinue');
       if (await page.locator('#fitMeasureError').count() && (await page.locator('#fitMeasureError').innerText()).includes('two adjacent')) {
         await page.click('[data-fit-size="M"]');
-        await page.click('.fitEstimateConfirm');
       }
-    } else if (await page.locator('[data-fit-universal-confirm]').count()) {
-      await page.click('[data-fit-universal-confirm]');
     }
   }
 
@@ -136,13 +130,12 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-plan="complete"] .tierProduct img').count(), 3);
     const productImages = await page.locator('.tierProduct img').evaluateAll(images => images.map(image => ({ src: image.currentSrc || image.src, width: image.naturalWidth, height: image.naturalHeight })));
     assert(productImages.every(image => image.src && image.width > 0 && image.height > 0), 'every recommended product must show a visible image or fallback');
-    assert.equal(await page.locator('.tierPlanIcon').count(), 3);
-    assert.equal(await page.locator('.guideCover').count(), 3);
-    assert.equal(await page.locator('.guideCoverTitle').filter({ hasText: 'YOUR PRODUCT GUIDE' }).count(), 3);
-    assert.equal(await page.locator('.tierIncludes span').filter({ hasText: 'Personalized product guide' }).count(), 3);
+    assert.equal(await page.locator('.tierMatchReport').count(), 3);
+    assert.equal(await page.locator('.tierMatchReport').filter({ hasText: 'Your Keneflex Product Match Report' }).count(), 3);
+    assert.equal(await page.locator('.tierIncludes span').filter({ hasText: 'Keneflex Product Match Report' }).count(), 3);
     assert(await page.evaluate(() => !!(document.querySelector('.planChooser').compareDocumentPosition(document.querySelector('.purchaseBlock')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'purchase action must follow plan cards');
     assert.equal(await content('#planName'), 'Support + recovery');
-    assert.equal(await content('#selectionCount'), '2 products + personalized product guide');
+    assert.equal(await content('#selectionCount'), '2 products + Product Match Report');
     assert.equal(initial.scripts.length, 4); // loader + engine + critical invariants + controller
     assert(!initial.observers, 'legacy observer runtime is active');
     assert(!banned.test(initial.text), 'internal language is visible');
@@ -150,7 +143,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.click('[data-plan="recovery"]');
     assert.equal(await page.locator('#total').innerText(), '$40.99');
     assert.equal(await content('#planName'), 'Support + recovery');
-    assert.equal(await content('#selectionCount'), '2 products + personalized product guide');
+    assert.equal(await content('#selectionCount'), '2 products + Product Match Report');
     assert((await page.locator('.kfxBuy').innerText()).includes('$40.99'));
 
     await page.click('#kfxPlanBtn');
@@ -159,7 +152,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await content('.finalSelection h2'), 'Support + recovery');
     assert((await content('.finalSelection')).includes('$40.99'));
     assert.equal(await page.locator('.finalSelection .planLine').count(), 3);
-    assert((await content('.finalSelection .planIncluded')).includes('Personalized product guide'));
+    assert((await content('.finalSelection .planIncluded')).includes('Keneflex Product Match Report'));
     assert((await content('.finalSelection .planIncluded')).includes('Included'));
     assert((await content('.kfxFinalBuy')).includes('$40.99 total'));
     assert(!(await page.locator('.kfxPlanPage').innerText()).includes('Workspace and device setup'));
@@ -170,7 +163,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.click('.kfxBuy');
     assert.equal(await page.locator('.kfxCheckout .totalx span:last-child').innerText(), '$40.99');
     assert.equal(await page.locator('.kfxCheckout .rowx:not(.planIncluded)').count(), 2);
-    assert((await content('.kfxCheckout .planIncluded')).includes('Personalized product guide'));
+    assert((await content('.kfxCheckout .planIncluded')).includes('Keneflex Product Match Report'));
     assert((await content('.kfxCheckout .planIncluded')).includes('Included'));
   });
 
@@ -230,26 +223,21 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert((await content('#fitMeasureError')).includes('two adjacent package ranges'));
     assert(await page.locator('.kfxBuy').isDisabled());
     await page.click('[data-fit-size="M"]');
-    assert(await page.locator('.fitDetails').evaluate(element => element.open));
-    await page.click('.fitEstimateConfirm');
     assert.equal(await page.locator('.kfxBuy').isDisabled(), false);
     assert((await content('#supportItem .planName')).includes('Medium'));
   });
 
-  await scenario('fit-estimate-requires-confirmation-and-explains-selection', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and gripping makes it worse.', async () => {
+  await scenario('plain-language-fit-selects-a-starting-size-and-explains-selection', 'My right wrist and thumb hurt at the base of my thumb for 4 weeks. It built up gradually and gripping makes it worse.', async () => {
     if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
     await page.waitForSelector('#solutionView:not(.hidden)');
     assert(await page.locator('.kfxBuy').isDisabled());
     assert.equal(await content('#supportState'), 'Choose size');
     await page.click('[data-fit-size="M"]');
-    assert((await content('.fitSelection')).includes('Estimated starting size'));
-    assert(await page.locator('.kfxBuy').isDisabled());
-    await page.click('#kfxPlanBtn');
-    assert(await page.locator('.kfxFinalBuy').isDisabled());
-    assert((await content('.kfxFinalBuy')).includes('Choose your support size'));
-    await page.click('[data-plan-close]');
-    await page.click('.fitEstimateConfirm');
+    assert((await content('.fitSelection')).includes('Starting size: Medium'));
     assert.equal(await page.locator('.kfxBuy').isDisabled(), false);
+    await page.click('#kfxPlanBtn');
+    assert.equal(await page.locator('.kfxFinalBuy').isDisabled(), false);
+    await page.click('[data-plan-close]');
     await page.click('.selectionReasons summary');
     const reasons = await content('.selectionReasonBody');
     assert(reasons.includes('Neo G Airflow Wrist & Thumb Support'));
@@ -689,9 +677,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert.equal(await page.locator('[data-safety="clear"]').count(), 1);
     await page.click('[data-safety="clear"]');
     await page.waitForSelector('#solutionView:not(.hidden)');
-    if (await page.locator('[data-fit-universal-confirm]').count()) {
-      await page.click('[data-fit-universal-confirm]');
-    } else {
+    if (await page.locator('#fitMeasure').count()) {
       await page.click('.fitDetails summary');
       await page.fill('#fitMeasure', '7');
       await page.click('#fitMeasureContinue');
@@ -735,9 +721,7 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     assert(!safety.includes('Self-care should pause here'));
     if (await page.locator('[data-safety="clear"]').count()) await page.click('[data-safety="clear"]');
     await page.waitForSelector('#solutionView:not(.hidden)');
-    if (await page.locator('[data-fit-universal-confirm]').count()) {
-      await page.click('[data-fit-universal-confirm]');
-    } else {
+    if (await page.locator('#fitMeasure').count()) {
       await page.click('.fitDetails summary');
       await page.fill('#fitMeasure', '7');
       await page.click('#fitMeasureContinue');
@@ -813,14 +797,10 @@ const banned = /prototype|p0 readiness|production engine|future commerce|commerc
     await page.waitForSelector('#solutionView:not(.hidden)');
     assert((await content('#supportItem .planName')).includes('BraceAbility Volar Wrist Splint'));
     assert.equal(await page.locator('#fitMeasure').count(), 0);
-    assert((await content('.fitChooser')).includes('No size choice needed'));
+    assert((await content('.fitChooser')).includes('One adjustable adult size'));
+    assert((await content('.fitChooser')).includes('You can continue without measuring'));
     assert((await content('.fitChooser')).includes('9.5 inches'));
     assert((await page.locator('#supportItem img').getAttribute('src')).includes('braceability.com'));
-    assert(await page.locator('.kfxBuy').isDisabled());
-    await page.click('[data-fit-universal-review]');
-    assert((await content('.fitChooser')).includes('Fit still needs confirmation'));
-    assert(await page.locator('.kfxBuy').isDisabled());
-    await page.click('[data-fit-universal-confirm]');
     assert.equal(await page.locator('.kfxBuy').isDisabled(), false);
   });
 

@@ -35,7 +35,7 @@ check(route.includes('<title>Keneflex</title>'), 'participant route uses consume
 check(route.includes("searchParams.set('participant','080')"), 'participant route requests launch-catalog release 0.8.0');
 check(route.includes("searchParams.set('build',String(stamp))") && route.includes("searchParams.set('cache','no-store')"), 'participant route uses unique no-store URL');
 check(route.includes('location.replace(u.href)'), 'participant route uses deterministic top-level navigation');
-check(html.includes('participant-consolidated.css?v=082'), 'participant route loads consolidated styles');
+check(html.includes('participant-consolidated.css?v=083'), 'participant route loads consolidated styles');
 check(!html.includes('function calcTotal()') && !html.includes('tune=function'), 'duplicated inline commerce runtime is absent');
 
 check(engine.includes("hand:'hand',wrist:'hand',thumb:'hand',finger:'hand'"), 'hand family canonicalization retained');
@@ -61,7 +61,7 @@ check(participant.includes('function checkout()'), 'checkout has one controller 
 check(participant.includes('function openPlan()'), 'plan page has one controller owner');
 check(participant.includes('function applyConsumerCopy()'), 'consumer copy has one controller owner');
 check(participant.includes('<small>product total</small>'), 'controller distinguishes the product total from plan value');
-check(participant.includes('Use the products selected for you with confidence.'), 'controller owns the topic-based product guide page');
+check(participant.includes('Why these products fit—and how to use them.'), 'controller owns the topic-based Product Match Report page');
 check(!participant.includes("window.open('', '_blank')"), 'consumer plan does not open as about:blank');
 check(participant.includes('function selectPlan(plan)') && html.includes('data-plan="complete"'), 'plan tiers are explicit structured choices');
 check(!participant.includes('MutationObserver'), 'controller does not repair itself with DOM observers');
